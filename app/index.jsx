@@ -3,6 +3,9 @@ import { StatusBar } from 'expo-status-bar'
 import { Text, View, ImageBackground, StyleSheet, Image } from 'react-native'
 import Button1 from '../components/Button1'
 import { useFonts } from 'expo-font'
+import { COLORS } from '../constants/colors'
+import LottieView from 'lottie-react-native'
+import spinner from '../assets/utils/spinner.json'
 
 const LogoBoiskoPlus = require('../assets/images/LogoBoiskoPlus.png')
 const background = require('../assets/images/pexels-jsalamanca-61143.jpg')
@@ -18,6 +21,26 @@ const Home = () => {
     height: 50,
     width: 220,
     fontSize: 18,
+  }
+
+  if (!fontsLoaded) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: COLORS.background,
+        }}
+      >
+        <LottieView
+          source={spinner}
+          autoPlay
+          loop
+          style={{ width: 80, height: 80 }}
+        />
+      </View>
+    )
   }
 
   return (
@@ -41,16 +64,30 @@ const Home = () => {
             </Text>
           </View>
           <View style={styles.buttonContainer}>
+            <Text
+              style={styles.description}
+              onPress={() => {
+                router.push('/(main)/(tabs)/show-map')
+              }}
+            >
+              Dev button → Dashboard Home
+            </Text>
             <Button1
               text='Zaloguj się'
               {...buttonSettings}
-              onPress={() => router.push('/Login')}
+              onPress={() => router.push('/login')}
             />
             <Button1
               text='Zarejestruj się'
               {...buttonSettings}
-              onPress={() => router.push('/Register')}
+              onPress={() => router.push('/register')}
             />
+            <Text
+              onPress={() => router.push('/rules')}
+              style={styles.description}
+            >
+              Regulamin
+            </Text>
           </View>
         </View>
       </ImageBackground>
@@ -100,6 +137,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: 20,
+    paddingBottom: 50,
   },
   logo: {
     width: '100%',
