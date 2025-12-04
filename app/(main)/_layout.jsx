@@ -61,19 +61,14 @@ function CustomDrawerContent(props) {
 
   return (
     <DrawerContentScrollView {...props} style={styles.drawerContainer}>
-      {/* User Profile Section */}
-      <View style={styles.profileSection}>
-        <Image
-          source={{ uri: 'https://via.placeholder.com/80' }}
-          style={styles.avatar}
-        />
-        <Text style={styles.username}>Jan Kowalski</Text>
-        <Text style={styles.email}>jan@example.com</Text>
-      </View>
-
       {/* Navigation Items */}
       <View style={styles.navSection}>
-        {/* Ekrany widoczne w Tabs */}
+        {/* Ekrany widoczne w Tabs + homepage*/}
+        <DrawerItem
+          icon='home'
+          label='Panel Główny'
+          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/dashboard-home')}
+        />
         <DrawerItem
           icon='map'
           label='Mapa'
@@ -81,28 +76,35 @@ function CustomDrawerContent(props) {
         />
         <DrawerItem
           icon='search'
-          label='Szukaj Gier'
+          label='Szukaj'
           onPress={() => navigateTo('/(main)/(tabs)/find-event')}
-        />
-        <DrawerItem
-          icon='calendar'
-          label='Moje Wydarzenia'
-          onPress={() => navigateTo('/(main)/(tabs)/my-events')}
         />
         <DrawerItem
           icon='chatbubbles'
           label='Czat'
           onPress={() => navigateTo('/(main)/(tabs)/chat')}
         />
-
-        {/* Separator */}
-        <View style={styles.separator} />
+        <DrawerItem
+          icon='calendar'
+          label='Moje Wydarzenia'
+          onPress={() => navigateTo('/(main)/(tabs)/my-events')}
+        />
 
         {/* Ekrany ukryte w Tabs (tylko w sidebar) */}
         <DrawerItem
-          icon='home'
-          label='Panel Główny'
-          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/dashboard-home')}
+          icon='add-circle'
+          label='Stwórz Wydarzenie'
+          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/add-event')}
+        />
+        <DrawerItem
+          icon='trophy'
+          label='Ranking'
+          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/ranking')}
+        />
+        <DrawerItem
+          icon='star'
+          label='Premium'
+          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/premium')}
         />
         <DrawerItem
           icon='person'
@@ -151,33 +153,6 @@ const styles = StyleSheet.create({
   drawerContainer: {
     flex: 1,
     backgroundColor: COLORS.backgroundSecondary,
-  },
-  profileSection: {
-    padding: 20,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.background,
-    backgroundColor: COLORS.background,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: COLORS.secondary,
-  },
-  username: {
-    fontSize: 18,
-    fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginTop: 5,
-  },
-  email: {
-    fontSize: 14,
-    fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    marginTop: 2,
   },
   navSection: {
     flex: 1,
