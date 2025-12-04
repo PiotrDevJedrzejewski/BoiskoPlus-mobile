@@ -5,6 +5,10 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import HeaderDrawer from '../../components/HeaderDrawer'
+// import MapBackground from '../../components/MapBackground'
+// import { MapProvider } from '../../context/MapContext'
 
 const MainLayout = () => {
   const router = useRouter()
@@ -19,40 +23,42 @@ const MainLayout = () => {
   }
 
   return (
+    // <MapProvider>
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Drawer
-        screenOptions={{
-          drawerStyle: {
-            backgroundColor: COLORS.backgroundSecondary,
-            width: 280,
-          },
-          headerStyle: {
-            backgroundColor: '#000000',
-          },
-          headerTintColor: COLORS.secondary,
-          headerTitleStyle: {
-            fontFamily: 'Montserrat-Bold',
-            fontSize: 18,
-          },
-        }}
-        drawerContent={(props) => <CustomDrawerContent {...props} />}
-      >
-        <Drawer.Screen
-          name='(tabs)'
-          options={{
-            headerShown: true,
-            drawerLabel: () => null,
-            drawerItemStyle: { display: 'none' },
+      {/* Mapa jako globalne tło */}
+      {/* <MapBackground /> */}
+
+      {/* Drawer i content na wierzchu mapy */}
+      <View style={styles.contentContainer}>
+        <Drawer
+          screenOptions={{
+            drawerStyle: {
+              backgroundColor: COLORS.backgroundSecondary,
+              width: 280,
+            },
+            header: () => <HeaderDrawer />,
           }}
-        />
-      </Drawer>
+          drawerContent={(props) => <CustomDrawerContent {...props} />}
+        >
+          <Drawer.Screen
+            name='(tabs)'
+            options={{
+              headerShown: true,
+              drawerLabel: () => null,
+              drawerItemStyle: { display: 'none' },
+            }}
+          />
+        </Drawer>
+      </View>
     </GestureHandlerRootView>
+    // </MapProvider>
   )
 }
 
 // Custom Drawer Content Component
 function CustomDrawerContent(props) {
   const router = useRouter()
+  const insets = useSafeAreaInsets()
 
   const navigateTo = (path) => {
     router.push(path)
@@ -60,76 +66,85 @@ function CustomDrawerContent(props) {
   }
 
   return (
-    <DrawerContentScrollView {...props} style={styles.drawerContainer}>
-      {/* Navigation Items */}
-      <View style={styles.navSection}>
-        {/* Ekrany widoczne w Tabs + homepage*/}
-        <DrawerItem
-          icon='home'
-          label='Panel Główny'
-          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/dashboard-home')}
-        />
-        <DrawerItem
-          icon='map'
-          label='Mapa'
-          onPress={() => navigateTo('/(main)/(tabs)/show-map')}
-        />
-        <DrawerItem
-          icon='search'
-          label='Szukaj'
-          onPress={() => navigateTo('/(main)/(tabs)/find-event')}
-        />
-        <DrawerItem
-          icon='chatbubbles'
-          label='Czat'
-          onPress={() => navigateTo('/(main)/(tabs)/chat')}
-        />
-        <DrawerItem
-          icon='calendar'
-          label='Moje Wydarzenia'
-          onPress={() => navigateTo('/(main)/(tabs)/my-events')}
-        />
-
-        {/* Ekrany ukryte w Tabs (tylko w sidebar) */}
-        <DrawerItem
-          icon='add-circle'
-          label='Stwórz Wydarzenie'
-          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/add-event')}
-        />
-        <DrawerItem
-          icon='trophy'
-          label='Ranking'
-          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/ranking')}
-        />
-        <DrawerItem
-          icon='star'
-          label='Premium'
-          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/premium')}
-        />
-        <DrawerItem
-          icon='person'
-          label='Profil'
-          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/profile')}
-        />
-        <DrawerItem
-          icon='settings'
-          label='Ustawienia'
-          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/settings')}
-        />
-      </View>
-
-      {/* Logout Button */}
-      <Pressable
-        style={styles.logoutButton}
-        onPress={() => {
-          // TODO: Add logout logic
-          router.replace('/')
+    <>
+      <View
+        style={{
+          height: insets.top,
+          backgroundColor: '#000',
         }}
-      >
-        <Ionicons name='log-out' size={24} color={COLORS.error} />
-        <Text style={styles.logoutText}>Wyloguj się</Text>
-      </Pressable>
-    </DrawerContentScrollView>
+      />
+
+      <DrawerContentScrollView {...props} style={styles.drawerContainer}>
+        {/* Navigation Items */}
+        <View style={styles.navSection}>
+          {/* Ekrany widoczne w Tabs + homepage*/}
+          <DrawerItem
+            icon='home'
+            label='Panel Główny'
+            onPress={() => navigateTo('/(main)/(tabs)/(hidden)/dashboard-home')}
+          />
+          <DrawerItem
+            icon='map'
+            label='Mapa'
+            onPress={() => navigateTo('/(main)/(tabs)/show-map')}
+          />
+          <DrawerItem
+            icon='search'
+            label='Szukaj'
+            onPress={() => navigateTo('/(main)/(tabs)/find-event')}
+          />
+          <DrawerItem
+            icon='chatbubbles'
+            label='Czat'
+            onPress={() => navigateTo('/(main)/(tabs)/chat')}
+          />
+          <DrawerItem
+            icon='calendar'
+            label='Moje Wydarzenia'
+            onPress={() => navigateTo('/(main)/(tabs)/my-events')}
+          />
+
+          {/* Ekrany ukryte w Tabs (tylko w sidebar) */}
+          <DrawerItem
+            icon='add-circle'
+            label='Stwórz Wydarzenie'
+            onPress={() => navigateTo('/(main)/(tabs)/(hidden)/add-event')}
+          />
+          <DrawerItem
+            icon='trophy'
+            label='Ranking'
+            onPress={() => navigateTo('/(main)/(tabs)/(hidden)/ranking')}
+          />
+          <DrawerItem
+            icon='star'
+            label='Premium'
+            onPress={() => navigateTo('/(main)/(tabs)/(hidden)/premium')}
+          />
+          <DrawerItem
+            icon='person'
+            label='Profil'
+            onPress={() => navigateTo('/(main)/(tabs)/(hidden)/profile')}
+          />
+          <DrawerItem
+            icon='settings'
+            label='Ustawienia'
+            onPress={() => navigateTo('/(main)/(tabs)/(hidden)/settings')}
+          />
+        </View>
+
+        {/* Logout Button */}
+        <Pressable
+          style={styles.logoutButton}
+          onPress={() => {
+            // TODO: Add logout logic
+            router.replace('/')
+          }}
+        >
+          <Ionicons name='log-out' size={24} color={COLORS.error} />
+          <Text style={styles.logoutText}>Wyloguj się</Text>
+        </Pressable>
+      </DrawerContentScrollView>
+    </>
   )
 }
 
@@ -150,6 +165,9 @@ function DrawerItem({ icon, label, onPress }) {
 export default MainLayout
 
 const styles = StyleSheet.create({
+  contentContainer: {
+    ...StyleSheet.absoluteFillObject,
+  },
   drawerContainer: {
     flex: 1,
     backgroundColor: COLORS.backgroundSecondary,
