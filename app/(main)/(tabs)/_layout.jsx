@@ -26,6 +26,15 @@ export default function TabsLayout() {
     >
       {/* 4 widoczne taby */}
       <Tabs.Screen
+        name='dashboard-home'
+        options={{
+          title: 'Start',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name='home' size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name='show-map'
         options={{
           title: 'Mapa',
@@ -43,15 +52,7 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name='my-events'
-        options={{
-          title: 'Moje',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name='calendar' size={size} color={color} />
-          ),
-        }}
-      />
+
       <Tabs.Screen
         name='chat'
         options={{

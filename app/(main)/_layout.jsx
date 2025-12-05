@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { LinearGradient } from 'expo-linear-gradient'
 import HeaderDrawer from '../../components/HeaderDrawer'
 // import MapBackground from '../../components/MapBackground'
 // import { MapProvider } from '../../context/MapContext'
@@ -33,7 +34,7 @@ const MainLayout = () => {
         <Drawer
           screenOptions={{
             drawerStyle: {
-              backgroundColor: COLORS.backgroundSecondary,
+              backgroundColor: 'transparent',
               width: 280,
             },
             header: () => <HeaderDrawer />,
@@ -65,14 +66,32 @@ function CustomDrawerContent(props) {
     props.navigation.closeDrawer()
   }
 
+  const closeDrawer = () => {
+    props.navigation.closeDrawer()
+  }
+
   return (
-    <>
+    <LinearGradient
+      colors={[COLORS.third, COLORS.background]}
+      start={{ x: 1, y: 0 }}
+      end={{ x: 0, y: 0 }}
+      style={styles.gradientContainer}
+    >
       <View
         style={{
           height: insets.top,
           backgroundColor: '#000',
         }}
       />
+
+      {/* Przycisk X do zamknięcia (prawy górny róg) */}
+      <Pressable
+        style={styles.closeButtonX}
+        onPress={closeDrawer}
+        android_ripple={{ color: COLORS.background }}
+      >
+        <Ionicons name='close' size={28} color={COLORS.primary} />
+      </Pressable>
 
       <DrawerContentScrollView {...props} style={styles.drawerContainer}>
         {/* Navigation Items */}
@@ -81,7 +100,7 @@ function CustomDrawerContent(props) {
           <DrawerItem
             icon='home'
             label='Panel Główny'
-            onPress={() => navigateTo('/(main)/(tabs)/(hidden)/dashboard-home')}
+            onPress={() => navigateTo('/(main)/(tabs)/dashboard-home')}
           />
           <DrawerItem
             icon='map'
@@ -101,7 +120,7 @@ function CustomDrawerContent(props) {
           <DrawerItem
             icon='calendar'
             label='Moje Wydarzenia'
-            onPress={() => navigateTo('/(main)/(tabs)/my-events')}
+            onPress={() => navigateTo('/(main)/(tabs)/(hidden)/my-events')}
           />
 
           {/* Ekrany ukryte w Tabs (tylko w sidebar) */}
@@ -132,6 +151,23 @@ function CustomDrawerContent(props) {
           />
         </View>
 
+        {/* Przycisk ze strzałkami do zamknięcia (dolna część) */}
+        <View style={styles.closeButtonContainer}>
+          <Pressable
+            style={styles.closeButtonArrows}
+            onPress={closeDrawer}
+            android_ripple={{ color: COLORS.background }}
+          >
+            <Ionicons name='chevron-back' size={32} color={COLORS.primary} />
+            <Ionicons
+              name='chevron-back'
+              size={32}
+              color={COLORS.primary}
+              style={{ marginLeft: -16 }}
+            />
+          </Pressable>
+        </View>
+
         {/* Logout Button */}
         <Pressable
           style={styles.logoutButton}
@@ -144,7 +180,7 @@ function CustomDrawerContent(props) {
           <Text style={styles.logoutText}>Wyloguj się</Text>
         </Pressable>
       </DrawerContentScrollView>
-    </>
+    </LinearGradient>
   )
 }
 
@@ -156,7 +192,7 @@ function DrawerItem({ icon, label, onPress }) {
       onPress={onPress}
       android_ripple={{ color: COLORS.background }}
     >
-      <Ionicons name={icon} size={24} color={COLORS.primary} />
+      <Ionicons name={icon} size={28} color={COLORS.secondary} />
       <Text style={styles.drawerItemText}>{label}</Text>
     </Pressable>
   )
@@ -168,23 +204,47 @@ const styles = StyleSheet.create({
   contentContainer: {
     ...StyleSheet.absoluteFillObject,
   },
+  gradientContainer: {
+    flex: 1,
+  },
   drawerContainer: {
     flex: 1,
-    backgroundColor: COLORS.backgroundSecondary,
+  },
+  closeButtonX: {
+    position: 'absolute',
+    top: 50,
+    right: 10,
+    zIndex: 100,
+    padding: 8,
+    borderRadius: 20,
+  },
+  closeButtonContainer: {
+    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 10,
+  },
+  closeButtonArrows: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 16,
   },
   navSection: {
     flex: 1,
     paddingVertical: 10,
+    marginTop: 40,
   },
   drawerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    gap: 15,
+    paddingVertical: 18,
+    paddingHorizontal: 25,
+    gap: 20,
+    marginVertical: 2,
   },
   drawerItemText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'Montserrat-Regular',
     color: COLORS.primary,
   },
@@ -201,7 +261,7 @@ const styles = StyleSheet.create({
     gap: 10,
     borderTopWidth: 1,
     borderTopColor: COLORS.background,
-    marginTop: 'auto',
+    marginTop: 10,
   },
   logoutText: {
     fontSize: 16,

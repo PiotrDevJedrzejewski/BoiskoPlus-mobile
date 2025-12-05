@@ -1,0 +1,1445 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3092192,
+          51.8201196
+        ]
+      },
+      "properties": {
+        "miasto": "Aleksandrów Łódzki",
+        "adres": "Aleja Wyzwolenia 3",
+        "geolocation_source": "3, Aleja Wyzwolenia, Aleksandrów Łódzki, gmina Aleksandrów Łódzki, powiat zgierski, województwo łódzkie, 95-070, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3101513,
+          51.8158227
+        ]
+      },
+      "properties": {
+        "miasto": "Aleksandrów Łódzki",
+        "adres": "ul. Waryńskiego 22/26",
+        "geolocation_source": "22/26, Ludwika Waryńskiego, Aleksandrów Łódzki, gmina Aleksandrów Łódzki, powiat zgierski, województwo łódzkie, 95-070, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3635043,
+          51.3591057
+        ]
+      },
+      "properties": {
+        "miasto": "Bełchatów",
+        "adres": "os. Dolnośląskie 112A",
+        "geolocation_source": "Szkoła Podstawowa nr 8 im. Jana Brzechwy, 112A, Osiedle Dolnośląskie, Dolnośląskie, Bełchatów, powiat bełchatowski, województwo łódzkie, 97-400, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3898427,
+          51.3569717
+        ]
+      },
+      "properties": {
+        "miasto": "Bełchatów",
+        "adres": "ul. Budryka 7",
+        "geolocation_source": "7, Witolda Budryka, Osiedle Binków, Binków, Bełchatów, powiat bełchatowski, województwo łódzkie, 97-400, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3832071,
+          51.3705042
+        ]
+      },
+      "properties": {
+        "miasto": "Bełchatów",
+        "adres": "ul. Sienkiewicza 25",
+        "geolocation_source": "25, Henryka Sienkiewicza, Osiedle Olsztyńskie, Bełchatów, powiat bełchatowski, województwo łódzkie, 97-400, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.379029,
+          51.3359813
+        ]
+      },
+      "properties": {
+        "miasto": "Bełchatów",
+        "adres": "ul. Szkolna 10",
+        "geolocation_source": "10, Szkolna, Grocholice, Bełchatów, powiat bełchatowski, województwo łódzkie, 97-400, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.7431684,
+          51.7980872
+        ]
+      },
+      "properties": {
+        "miasto": "Brzeziny",
+        "adres": "ul. Moniuszki 23",
+        "geolocation_source": "23, Stanisława Moniuszki, Brzeziny, powiat brzeziński, województwo łódzkie, 95-060, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.7598179,
+          51.8004129
+        ]
+      },
+      "properties": {
+        "miasto": "Brzeziny",
+        "adres": "ul. Sienkiewicza 17",
+        "geolocation_source": "17, Henryka Sienkiewicza, Brzeziny, powiat brzeziński, województwo łódzkie, 95-060, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.7192366,
+          51.9533992
+        ]
+      },
+      "properties": {
+        "miasto": "Głowno",
+        "adres": "ul. Gen. Władysława Andersa",
+        "geolocation_source": "Generała Władysława Andersa, Osiedle Generała Władysława Sikorskiego, Głowno, powiat zgierski, województwo łódzkie, 95-015, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.6930071,
+          51.9622145
+        ]
+      },
+      "properties": {
+        "miasto": "Głowno",
+        "adres": "ul. Karasicka 35",
+        "geolocation_source": "35, Karasicka, Stary Warchałów-Zabrzeźnia, Głowno, powiat zgierski, województwo łódzkie, 95-015, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3219176,
+          51.7509144
+        ]
+      },
+      "properties": {
+        "miasto": "Konstantynów Łódzki",
+        "adres": "ul. Sadowa 5/7",
+        "geolocation_source": "5/7, Sadowa, Konstantynów Łódzki, powiat pabianicki, województwo łódzkie, 95-050, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3386118,
+          51.774539
+        ]
+      },
+      "properties": {
+        "miasto": "Konstantynów Łódzki",
+        "adres": "ul. Zgierska 21/25",
+        "geolocation_source": "Zgierska, Konstantynów Łódzki, powiat pabianicki, województwo łódzkie, 94-413, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3807713,
+          52.2144804
+        ]
+      },
+      "properties": {
+        "miasto": "Kutno",
+        "adres": "ul. Łąkoszyńska 9",
+        "geolocation_source": "Łąkoszyńska, Wiktoryn, Kutno, powiat kutnowski, województwo łódzkie, 99-301, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3665428,
+          52.2274552
+        ]
+      },
+      "properties": {
+        "miasto": "Kutno",
+        "adres": "ul. Troczewskiego",
+        "geolocation_source": "Doktora Antoniego Troczewskiego, Osiedle Grunwald, Kutno, powiat kutnowski, województwo łódzkie, 99-300, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3570182,
+          52.2317559
+        ]
+      },
+      "properties": {
+        "miasto": "Kutno",
+        "adres": "ul. Wł. Jagiełły 6",
+        "geolocation_source": "Kutno, powiat kutnowski, województwo łódzkie, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3585551,
+          52.2397115
+        ]
+      },
+      "properties": {
+        "miasto": "Kutno",
+        "adres": "ul. Zamoyskiego 1",
+        "geolocation_source": "1, Kanclerza Andrzeja Zamoyskiego, Osiedle Tarnowskiego, Kutno, powiat kutnowski, województwo łódzkie, 99-300, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.1909483,
+          51.6145679
+        ]
+      },
+      "properties": {
+        "miasto": "Łask",
+        "adres": "ul. Lipowa (Kolumna)",
+        "geolocation_source": "Łask - Kolumna ul. Lipowa, Lipowa, Wierzchy, Łask-Kolumna, Łask, gmina Łask, powiat łaski, województwo łódzkie, 98-100, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.1618648,
+          51.591551
+        ]
+      },
+      "properties": {
+        "miasto": "Łask",
+        "adres": "ul. Szkolna 1",
+        "geolocation_source": "1, Szkolna, Osiedle Przylesie, Łask, gmina Łask, powiat łaski, województwo łódzkie, 98-100, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.9450979,
+          52.1191173
+        ]
+      },
+      "properties": {
+        "miasto": "Łowicz",
+        "adres": "ul. Grunwaldzka 9",
+        "geolocation_source": "Szkoła Podstawowa nr 3 im. Kardynała Karola Wojtyły – Papieża Polaka, 9, Grunwaldzka, Blich, Osiedle Korabka, Korabka, Łowicz, powiat łowicki, województwo łódzkie, 99-400, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.958366,
+          52.1072258
+        ]
+      },
+      "properties": {
+        "miasto": "Łowicz",
+        "adres": "os. Marii Konopnickiej",
+        "geolocation_source": "Osiedle Marii Konopnickiej, Osiedle Zatorze, Łowicz, powiat łowicki, województwo łódzkie, 99-400, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.5309818,
+          51.7564564
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Józefa Elsnera 8",
+        "geolocation_source": "8, Józefa Elsnera, Widzew Wschód, Widzew-Wschód, Widzew Wschód, Łódź-Widzew, Łódź, województwo łódzkie, 90-242, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.426345,
+          51.8176676
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Stawowa 28",
+        "geolocation_source": "Przedszkole Miejskie nr 235, 28, Stawowa, Radogoszcz, Łódź-Bałuty, Łódź, województwo łódzkie, 91-358, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4817042,
+          51.7876572
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Pankiewicza 15",
+        "geolocation_source": "15, Błogosławionego Anastazego Pankiewicza, Bałuty-Doły, Doły, Łódź-Bałuty, Łódź, województwo łódzkie, 91-738, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4352286,
+          51.7953203
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Mackiewicza 9",
+        "geolocation_source": "9, Antoniego Mackiewicza, Bałuty-Centrum, Stare Bałuty, Łódź-Bałuty, Łódź, województwo łódzkie, 91-349, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.5048866,
+          51.7416919
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Zbaraska 25a",
+        "geolocation_source": "25a, Zbaraska, Osiedle Jarosława Dąbrowskiego, Chojny-Dąbrowa, Dąbrowa, Łódź-Górna, Łódź, województwo łódzkie, 93-224, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.5654335,
+          51.7468094
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Skrzetuskiego Jana 6",
+        "geolocation_source": "blok 25, 6, Jana Skrzetuskiego, Olechów-Janów, Olechów, Łódź-Widzew, Łódź, województwo łódzkie, 92-433, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4990468,
+          51.734173
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Anczyca 6",
+        "geolocation_source": "6, Władysława Anczyca, Osiedle 1000-lecia Państwa Polskiego, Chojny-Dąbrowa, Dąbrowa, Łódź-Górna, Łódź, województwo łódzkie, 93-264, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3913889,
+          51.7413889
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Balonowa 1",
+        "geolocation_source": "Osiedle Balonowa, Retkinia, Łódź-Polesie, Łódź, województwo łódzkie, 94-050, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.526956,
+          51.7575392
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Czernika 1/3",
+        "geolocation_source": "1/3, Stanisława Czernika, Osiedle Stefana Batorego, Widzew-Wschód, Widzew Wschód, Łódź-Widzew, Łódź, województwo łódzkie, 92-538, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4741531,
+          51.737889
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Dąbrowskiego 15",
+        "geolocation_source": "15, Generała Jarosława Dąbrowskiego, Chojny-Dąbrowa, Chojny, Łódź-Górna, Łódź, województwo łódzkie, 93-177, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.5611399,
+          51.7437204
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Dąbrówki 1",
+        "geolocation_source": "1, Dąbrówki, Olechów-Janów, Olechów, Łódź-Widzew, Łódź, województwo łódzkie, 92-413, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4912659,
+          51.735915
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Deotymy 1",
+        "geolocation_source": "1, Deotymy, Osiedle Jarosława Dąbrowskiego, Chojny-Dąbrowa, Dąbrowa, Łódź-Górna, Łódź, województwo łódzkie, 93-267, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4285543,
+          51.7817517
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Drewnowska 171",
+        "geolocation_source": "171, Drewnowska, Bałuty-Centrum, Żubardź, Łódź-Bałuty, Łódź, województwo łódzkie, 91-008, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4784857,
+          51.7728245
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. E. Plater 28/32",
+        "geolocation_source": "Łódź, województwo łódzkie, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4610271,
+          51.7958864
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Franciszkańska 137",
+        "geolocation_source": "137, Franciszkańska, Bałuty-Doły, Stare Bałuty, Łódź-Bałuty, Łódź, województwo łódzkie, 91-845, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.5529685,
+          51.7093057
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Gościniec 1",
+        "geolocation_source": "1, Gościniec, Huta Szklana, Wiskitno, Łódź-Górna, Łódź, województwo łódzkie, 93-645, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.545471,
+          51.7607525
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Jurczyńskiego 1/3",
+        "geolocation_source": "1/3, Juliusza Jurczyńskiego, Osiedle Mieszka Pierwszego, Widzew-Wschód, Widzew Wschód, Łódź-Widzew, Łódź, województwo łódzkie, 92-517, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4618528,
+          51.7241915
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Karpacka 61",
+        "geolocation_source": "61, Karpacka, Piastów-Kurak, Kurak, Górna, Łódź-Górna, Łódź, województwo łódzkie, 93-533, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.5635072,
+          51.7470939
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Kmicica 5",
+        "geolocation_source": "Żłobek nr 9, 5, Andrzeja Kmicica, Olechów-Janów, Olechów, Łódź-Widzew, Łódź, województwo łódzkie, 92-432, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4853394,
+          51.7345534
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Krochmalna 21",
+        "geolocation_source": "21, Krochmalna, Chojny, Chojny-Dąbrowa, Chojny, Łódź-Górna, Łódź, województwo łódzkie, 93-272, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3882631,
+          51.7474852
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Kusocińskiego 116",
+        "geolocation_source": "Szkoła Podstawowa nr 6, 116, Janusza Kusocińskiego, Retkinia Zachód-Smulsko, Retkinia, Łódź-Polesie, Łódź, województwo łódzkie, 94-054, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4251097,
+          51.7046321
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Kuźnicka 12",
+        "geolocation_source": "12, Kuźnicka, Ruda Pabianicka, Łódź-Górna, Łódź, województwo łódzkie, 93-458, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4843298,
+          51.7461769
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Łęczycka 23",
+        "geolocation_source": "23, Łęczycka, Górniak, Łódź-Górna, Łódź, województwo łódzkie, 93-285, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4975521,
+          51.8152669
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Łupkowa 6",
+        "geolocation_source": "6, Łupkowa, Julianów-Marysin-Rogi, Rogi, Łódź-Bałuty, Łódź, województwo łódzkie, 91-528, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4848608,
+          51.7291575
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Malczewskiego 37/47",
+        "geolocation_source": "37/47, Jacka Malczewskiego, Chojny, Chojny-Dąbrowa, Chojny, Łódź-Górna, Łódź, województwo łódzkie, 93-149, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.505147,
+          51.771608
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Małachowskiego 3/5",
+        "geolocation_source": "Stanisława Małachowskiego, Stoki-Sikawa-Podgórze, Niciarniana, Łódź-Widzew, Łódź, województwo łódzkie, 92-216, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.5199363,
+          51.7556121
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Milionowa 64",
+        "geolocation_source": "64, Milionowa, Osiedle Stefana Batorego, Widzew-Wschód, Widzew Wschód, Łódź-Widzew, Łódź, województwo łódzkie, 92-335, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4313203,
+          51.7881189
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Obornicka 11/13",
+        "geolocation_source": "11/13, Obornicka, Bałuty-Centrum, Żubardź, Łódź-Bałuty, Łódź, województwo łódzkie, 91-042, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4125501,
+          51.7753393
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Perla 11",
+        "geolocation_source": "XVIII Liceum Ogólnokształcące im. Jędrzeja Śniadeckiego, 11, Feliksa Perla, imienia Józefa Montwiłła-Mireckiego, Zdrowie, Łódź-Polesie, Łódź, województwo łódzkie, 94-203, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4057328,
+          51.7912293
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Plantowa 7",
+        "geolocation_source": "Zespół Szkół Specjalnych nr 5, 7, Plantowa, Teofilów-Wielkopolska, Teofilów, Łódź-Bałuty, Łódź, województwo łódzkie, 91-104, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.5039835,
+          51.7403489
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Podhalańska 2A",
+        "geolocation_source": "2a, Podhalańska, Osiedle 1000-lecia Państwa Polskiego, Chojny-Dąbrowa, Dąbrowa, Łódź-Górna, Łódź, województwo łódzkie, 93-224, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4920017,
+          51.7163965
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Powszechna 15",
+        "geolocation_source": "15, Powszechna, Chojny, Stare Chojny, Górna, Łódź-Górna, Łódź, województwo łódzkie, 93-335, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4688215,
+          51.7214379
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Pryncypalna 74",
+        "geolocation_source": "74, Pryncypalna, Chojny, Stare Chojny, Górna, Łódź-Górna, Łódź, województwo łódzkie, 93-379, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4121025,
+          51.7506896
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Rajdowa 18",
+        "geolocation_source": "Szkoła Podstawowa nr 41 im. Króla Władysława Jagiełły w Łodzi, 18, Rajdowa, Karolew-Retkinia Wschód, Retkinia, Łódź-Polesie, Łódź, województwo łódzkie, 94-003, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3739994,
+          51.7923378
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Rojna 58C",
+        "geolocation_source": "58c, Rojna, Teofilów-Wielkopolska, Teofilów, Łódź-Bałuty, Łódź, województwo łódzkie, 91-158, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4580515,
+          51.7969956
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Rysownicza 1/3",
+        "geolocation_source": "1/3, Rysownicza, Bałuty-Doły, Stare Bałuty, Łódź-Bałuty, Łódź, województwo łódzkie, 91-855, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4856075,
+          51.7128192
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Rzgowska 247",
+        "geolocation_source": "Dworek na Chojnach, 247, Rzgowska, Chojny, Stare Chojny, Górna, Łódź-Górna, Łódź, województwo łódzkie, 93-317, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4502745,
+          51.8122776
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Sowińskiego 50/56",
+        "geolocation_source": "50/56, Józefa Sowińskiego, Julianów-Marysin-Rogi, Julianów, Łódź-Bałuty, Łódź, województwo łódzkie, 91-485, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4864414,
+          51.7948085
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Strykowska 10/18",
+        "geolocation_source": "10/18, Strykowska, Bałuty-Doły, Doły, Łódź-Bałuty, Łódź, województwo łódzkie, 91-725, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4443557,
+          51.8234188
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Syrenki 19a",
+        "geolocation_source": "Przedszkole Miejskie nr 231, 19a, Syrenki, Radogoszcz, Łódź-Bałuty, Łódź, województwo łódzkie, 91-496, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.5045721,
+          51.764951
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Szpitalna 9/11",
+        "geolocation_source": "Szpitalna, Stary Widzew, Łódź-Widzew, Łódź, województwo łódzkie, 92-207, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4297159,
+          51.7279209
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Św. Franciszka 53",
+        "geolocation_source": "53, Świętego Franciszka z Asyżu, Stare Rokicie, Rokicie, Łódź-Górna, Łódź, województwo łódzkie, 93-482, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4333625,
+          51.7850014
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Tybury 4",
+        "geolocation_source": "4, Generała Tadeusza Kutrzeby, Bałuty-Centrum, Żubardź, Łódź-Bałuty, Łódź, województwo łódzkie, 91-043, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4946689,
+          51.7495959
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Wacława 22/24",
+        "geolocation_source": "22/24, Wacława, Zarzew, Łódź-Widzew, Łódź, województwo łódzkie, 93-119, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4235235,
+          51.7519522
+        ]
+      },
+      "properties": {
+        "miasto": "Łódź",
+        "adres": "ul. Wileńska 22a",
+        "geolocation_source": "XXVI Liceum Ogólnokształcące im. Krzysztofa Kamila Baczyńskiego, 22a, Wileńska, Karolew-Retkinia Wschód, Karolew, Łódź-Polesie, Łódź, województwo łódzkie, 94-028, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3782342,
+          51.6543967
+        ]
+      },
+      "properties": {
+        "miasto": "Pabianice",
+        "adres": "ul. Mokra 28/34",
+        "geolocation_source": "28/34, Mokra, Osiedle Kopernika, Pabianice, powiat pabianicki, województwo łódzkie, 95-200, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3297845,
+          51.6571407
+        ]
+      },
+      "properties": {
+        "miasto": "Pabianice",
+        "adres": "ul. Moniuszki 132",
+        "geolocation_source": "ul. Moniuszki 132, Stanisława Moniuszki, Piaski, Karolew, Pabianice, powiat pabianicki, województwo łódzkie, 95-204, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.6886837,
+          51.412854
+        ]
+      },
+      "properties": {
+        "miasto": "Piotrków Trybunalski",
+        "adres": "ul. Balzacka 104/106",
+        "geolocation_source": "Piotrków Trybunalski, województwo łódzkie, 97-300, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.7098563,
+          51.4106925
+        ]
+      },
+      "properties": {
+        "miasto": "Piotrków Trybunalski",
+        "adres": "ul. Broniewskiego 5",
+        "geolocation_source": "IV Liceum Ogólnokształcące im. gen. Stefana Roweckiego-Grota, 5, Władysława Broniewskiego, Osiedle 800-lecia Miasta Piotrkowa Trybunalskiego, Stare Miasto, Piotrków Trybunalski, województwo łódzkie, 97-300, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.6804206,
+          51.4189847
+        ]
+      },
+      "properties": {
+        "miasto": "Piotrków Trybunalski",
+        "adres": "ul. Wysoka 10",
+        "geolocation_source": "Wysoka, Osiedle Wysoka Łódzka, Centrum, Piotrków Trybunalski, województwo łódzkie, 97-300, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4568863,
+          51.0662097
+        ]
+      },
+      "properties": {
+        "miasto": "Radomsko",
+        "adres": "ul. Rolna 65",
+        "geolocation_source": "65, Rolna, Osiedle Piastowskie, Radomsko, powiat radomszczański, województwo łódzkie, 97-500, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.2604585,
+          51.7741602
+        ]
+      },
+      "properties": {
+        "miasto": "Rawa Mazowiecka",
+        "adres": "ul. Kazimierza Wielkiego 28",
+        "geolocation_source": "28, Kazimierza Wielkiego, Osiedle Zamkowa Wola, Rawa Mazowiecka, powiat rawski, województwo łódzkie, 96-200, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.2464517,
+          51.7621743
+        ]
+      },
+      "properties": {
+        "miasto": "Rawa Mazowiecka",
+        "adres": "ul. Kościuszki 20",
+        "geolocation_source": "20, Tadeusza Kościuszki, Osiedle 9 Maja, Rawa Mazowiecka, powiat rawski, województwo łódzkie, 96-200, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.7353857,
+          51.5886326
+        ]
+      },
+      "properties": {
+        "miasto": "Sieradz",
+        "adres": "ul. 23 Stycznia 18",
+        "geolocation_source": "18, Księdza Apolinarego Leśniewskiego, Osiedle Żeromskiego, Sieradz, powiat sieradzki, województwo łódzkie, 98-200, Polska, Sieradz"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.7161375,
+          51.5909522
+        ]
+      },
+      "properties": {
+        "miasto": "Sieradz",
+        "adres": "al. Grunwaldzka 10",
+        "geolocation_source": "SZKOŁA PODSTAWOWA NR 10 im. Bolesława Zwolińskiego w Sieradzu, 10, Aleja Grunwaldzka, Osiedle Klonowe Pierwsze, Sieradz, powiat sieradzki, województwo łódzkie, 98-200, Polska, Sieradz"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.1356356,
+          51.9535196
+        ]
+      },
+      "properties": {
+        "miasto": "Skierniewice",
+        "adres": "ul. 1-go Maja 15",
+        "geolocation_source": "1-go Maja, Skierniewice, województwo łódzkie, 96-100, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.1577073,
+          51.9852463
+        ]
+      },
+      "properties": {
+        "miasto": "Skierniewice",
+        "adres": "ul. Działkowa 10",
+        "geolocation_source": "Zespół Szkół nr 3 im. Wisławy Szymborskiej, 10, Działkowa, Serwituty, Starbacicha, Skierniewice, województwo łódzkie, 96-100, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.1492153,
+          51.9703805
+        ]
+      },
+      "properties": {
+        "miasto": "Skierniewice",
+        "adres": "ul. Jasna 30",
+        "geolocation_source": "30, Jasna, Bielany, Widok, Skierniewice, województwo łódzkie, 96-100, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.1471894,
+          51.9512307
+        ]
+      },
+      "properties": {
+        "miasto": "Skierniewice",
+        "adres": "ul. Kilińskiego 9",
+        "geolocation_source": "9, Jana Kilińskiego, Skierniewice, województwo łódzkie, 96-100, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.214444,
+          51.9816438
+        ]
+      },
+      "properties": {
+        "miasto": "Skierniewice",
+        "adres": "ul. Podkładowa 4",
+        "geolocation_source": "4, Podkładowa, Ruda, Skierniewice, województwo łódzkie, 96-100, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.150549,
+          51.9758545
+        ]
+      },
+      "properties": {
+        "miasto": "Skierniewice",
+        "adres": "ul. Szarych Szeregów 6",
+        "geolocation_source": "6, Szarych Szeregów, Widok, Skierniewice, województwo łódzkie, 96-100, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.6046207,
+          51.8971797
+        ]
+      },
+      "properties": {
+        "miasto": "Stryków",
+        "adres": "ul. Targowa 21",
+        "geolocation_source": "Zespół Szkół nr 1 w Strykowie, 21, Targowa, Stary Rynek, Stryków, gmina Stryków, powiat zgierski, województwo łódzkie, 95-010, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.9965116,
+          51.530949
+        ]
+      },
+      "properties": {
+        "miasto": "Tomaszów Mazowiecki",
+        "adres": "al. Piłsudskiego 42/46",
+        "geolocation_source": "42/46, Aleja Marszałka Józefa Piłsudskiego, Osiedle Kanonierów, Tomaszów Mazowiecki, powiat tomaszowski, województwo łódzkie, 97-200, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.025757,
+          51.5259044
+        ]
+      },
+      "properties": {
+        "miasto": "Tomaszów Mazowiecki",
+        "adres": "ul. Jałowcowa 10",
+        "geolocation_source": "10, Jałowcowa, Osiedle 1000-lecia, Tomaszów Mazowiecki, powiat tomaszowski, województwo łódzkie, 97-200, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.9973475,
+          51.5283978
+        ]
+      },
+      "properties": {
+        "miasto": "Tomaszów Mazowiecki",
+        "adres": "ul. Legionów 47",
+        "geolocation_source": "47, Legionów, Osiedle Kanonierów, Tomaszów Mazowiecki, powiat tomaszowski, województwo łódzkie, 97-200, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.0230071,
+          51.5322605
+        ]
+      },
+      "properties": {
+        "miasto": "Tomaszów Mazowiecki",
+        "adres": "ul. Majowa 1/13",
+        "geolocation_source": "1/13, Majowa, Karpaty, Tomaszów Mazowiecki, powiat tomaszowski, województwo łódzkie, 97-200, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.0245009,
+          51.5354145
+        ]
+      },
+      "properties": {
+        "miasto": "Tomaszów Mazowiecki",
+        "adres": "ul. Nadrzeczna 17/25",
+        "geolocation_source": "III Liceum Ogólnokształcące, 17/25, Nadrzeczna, Michałowek, Tomaszów Mazowiecki, powiat tomaszowski, województwo łódzkie, 97-200, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          20.0210383,
+          51.5251241
+        ]
+      },
+      "properties": {
+        "miasto": "Tomaszów Mazowiecki",
+        "adres": "ul. Wiejska 29/31",
+        "geolocation_source": "29/31, Wiejska, Osiedle Wyzwolenia II, Tomaszów Mazowiecki, powiat tomaszowski, województwo łódzkie, 97-200, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.9168809,
+          51.6022959
+        ]
+      },
+      "properties": {
+        "miasto": "Ujazd",
+        "adres": "ul. Rokicińska 6",
+        "geolocation_source": "Gminny Ośrodek Sportu i Rekreacji w Ujeździe, 6, Rokicińska, Mącznik, Ujazd, gmina Ujazd, powiat tomaszowski, województwo łódzkie, 97-225, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.5814634,
+          51.218558
+        ]
+      },
+      "properties": {
+        "miasto": "Wieluń",
+        "adres": "ul. POW 14",
+        "geolocation_source": "Publiczne Przedszkole nr 2, 14, Polskiej Organizacji Wojskowej, Osiedle Stefana Kardynała Wyszyńskiego, Wieluń, gmina Wieluń, powiat wieluński, województwo łódzkie, 98-300, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.9333201,
+          51.6028615
+        ]
+      },
+      "properties": {
+        "miasto": "Zduńska Wola",
+        "adres": "ul. K.E.N. 6",
+        "geolocation_source": "Zduńska Wola, powiat zduńskowolski, województwo łódzkie, 98-220, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.0067341,
+          51.5745485
+        ]
+      },
+      "properties": {
+        "miasto": "Zduńska Wola",
+        "adres": "ul. Okrzei 5",
+        "geolocation_source": "5, Stefana Okrzei, Osiedle Karsznice, Zduńska Wola, powiat zduńskowolski, województwo łódzkie, 98-220, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.9506467,
+          51.5992654
+        ]
+      },
+      "properties": {
+        "miasto": "Zduńska Wola",
+        "adres": "ul. Zielona 46a",
+        "geolocation_source": "Szkoła Podstawowa nr 10 im. Marii Skłodowskiej-Curie, 46a, Zielona, Osiedle Panorama, Zduńska Wola, powiat zduńskowolski, województwo łódzkie, 98-220, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.4269502,
+          51.8543271
+        ]
+      },
+      "properties": {
+        "miasto": "Zgierz",
+        "adres": "os. Spacerowa",
+        "geolocation_source": "Osiedle Spacerowa, Zgierz, powiat zgierski, województwo łódzkie, 95-105, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.3879588,
+          51.8601743
+        ]
+      },
+      "properties": {
+        "miasto": "Zgierz",
+        "adres": "ul. Leśmiana 1",
+        "geolocation_source": "Bolesława Leśmiana, Osiedle 650-lecia, Zgierz, powiat zgierski, województwo łódzkie, 95-100, Polska"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          19.401712,
+          51.864043
+        ]
+      },
+      "properties": {
+        "miasto": "Zgierz",
+        "adres": "ul. Musierowicza 1/3",
+        "geolocation_source": "1-3, Arkadiusza Musierowicza, Przybyłów, Zgierz, powiat zgierski, województwo łódzkie, 95-100, Polska"
+      }
+    }
+  ]
+}

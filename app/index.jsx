@@ -67,7 +67,7 @@ const Home = () => {
             <Text
               style={styles.description}
               onPress={() => {
-                router.push('/(main)/(tabs)/show-map')
+                router.push('/(main)/(tabs)/dashboard-home')
               }}
             >
               Dev button → Dashboard Home
