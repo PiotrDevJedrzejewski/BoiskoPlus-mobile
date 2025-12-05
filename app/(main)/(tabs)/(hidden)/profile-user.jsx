@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -10,27 +10,43 @@ import {
   Alert,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import { COLORS } from '../../../../constants/colors'
 
 const defaultAvatar = require('../../../../assets/images/defaultAvatar.png')
 
-// Mock data - zalogowany użytkownik
-const MOCK_USER = {
-  _id: 'currentUser',
-  nickName: 'MójNick123',
-  name: 'Jan',
-  surname: 'Kowalski',
-  email: 'jan.kowalski@email.com',
-  avatarUrl: null,
+// router.push(`/(main)/(tabs)/(hidden)/profile-user?id=${userId}`)
+// Mock data - inny użytkownik
+const MOCK_USERS = {
+  user1: {
+    _id: 'user1',
+    nickName: 'SportyJohn',
+    name: 'Adam',
+    surname: 'Nowak',
+    avatarUrl: null,
+  },
+  user2: {
+    _id: 'user2',
+    nickName: 'FootballFan99',
+    name: 'Piotr',
+    surname: 'Wiśniewski',
+    avatarUrl: null,
+  },
 }
 
-// Mock data - statystyki użytkownika
 const MOCK_USER_STATS = {
-  gamesPlayed: 42,
-  eventsOrganized: 8,
-  totalLikes: 23,
-  points: 1250,
+  user1: {
+    gamesPlayed: 67,
+    eventsOrganized: 12,
+    totalLikes: 45,
+    points: 2150,
+  },
+  user2: {
+    gamesPlayed: 23,
+    eventsOrganized: 3,
+    totalLikes: 11,
+    points: 890,
+  },
 }
 
 const StatItem = ({ label, value }) => (
@@ -40,44 +56,63 @@ const StatItem = ({ label, value }) => (
   </View>
 )
 
-const Profile = () => {
+const ProfileUser = () => {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [user] = useState(MOCK_USER)
-  const [userStats] = useState(MOCK_USER_STATS)
+  const { id } = useLocalSearchParams()
 
-  const avatar = user.avatarUrl ? { uri: user.avatarUrl } : defaultAvatar
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
+  const [userStats, setUserStats] = useState(null)
+  const [isLiked, setIsLiked] = useState(false)
+  const [likeLoading, setLikeLoading] = useState(false)
 
-  const handleChangeAvatar = () => {
-    // W przyszłości: image picker
-    Alert.alert('Zmień avatar', 'Funkcja w przygotowaniu')
+  useEffect(() => {
+    // Symulacja ładowania danych
+    const fetchUserData = async () => {
+      setLoading(true)
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      // Mock: pobierz dane użytkownika na podstawie id
+      const userData = MOCK_USERS[id] || MOCK_USERS.user1
+      const statsData = MOCK_USER_STATS[id] || MOCK_USER_STATS.user1
+
+      setUser(userData)
+      setUserStats(statsData)
+      setLoading(false)
+    }
+
+    fetchUserData()
+  }, [id])
+
+  const avatar = user?.avatarUrl ? { uri: user.avatarUrl } : defaultAvatar
+
+  const handleLike = async () => {
+    setLikeLoading(true)
+    // Symulacja API call
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    setIsLiked(!isLiked)
+    setLikeLoading(false)
   }
 
-  const handleEditProfile = () => {
-    router.push('/(main)/(tabs)/(hidden)/profile-edit')
-  }
-
-  const handleChangePassword = () => {
-    // router.push('/forget-password')
-    Alert.alert('Zmień hasło', 'Funkcja w przygotowaniu')
-  }
-
-  const handleDeleteAccount = () => {
+  const handleReport = () => {
     Alert.alert(
-      'Usuń konto',
-      'Czy na pewno chcesz usunąć swoje konto? Ta akcja jest nieodwracalna!',
+      'Zgłoś użytkownika',
+      'Czy na pewno chcesz zgłosić tego użytkownika?',
       [
         { text: 'Anuluj', style: 'cancel' },
         {
-          text: 'Usuń',
+          text: 'Zgłoś',
           style: 'destructive',
           onPress: () => {
-            // W przyszłości: API call
-            console.log('Delete account')
+            Alert.alert('Zgłoszenie wysłane', 'Dziękujemy za zgłoszenie.')
           },
         },
       ]
     )
+  }
+
+  const handleGoBack = () => {
+    router.back()
   }
 
   if (loading) {
@@ -89,12 +124,34 @@ const Profile = () => {
     )
   }
 
+  if (!user) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Ionicons name='person-outline' size={64} color={COLORS.gray} />
+        <Text style={styles.loadingText}>Nie znaleziono użytkownika</Text>
+        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+          <Text style={styles.backButtonText}>Wróć</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name='person-circle' size={26} color={COLORS.secondary} />
-        <Text style={styles.headerText}>Profil Gracza</Text>
+        <TouchableOpacity
+          onPress={handleGoBack}
+          style={styles.backIconButton}
+          activeOpacity={0.7}
+        >
+          <Ionicons name='arrow-back' size={24} color={COLORS.secondary} />
+        </TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <Ionicons name='person-circle' size={26} color={COLORS.secondary} />
+          <Text style={styles.headerText}>Profil Gracza</Text>
+        </View>
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView
@@ -105,15 +162,6 @@ const Profile = () => {
         {/* Avatar */}
         <View style={styles.avatarSection}>
           <Image source={avatar} style={styles.avatar} />
-          <Text style={styles.avatarHint}>200x200</Text>
-          <TouchableOpacity
-            style={styles.changeAvatarButton}
-            onPress={handleChangeAvatar}
-            activeOpacity={0.8}
-          >
-            <Ionicons name='camera' size={18} color={COLORS.background} />
-            <Text style={styles.changeAvatarText}>Zmień Avatar</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Username */}
@@ -129,10 +177,6 @@ const Profile = () => {
             <Text style={styles.infoLabel}>Nazwisko:</Text>
             <Text style={styles.infoValue}>{user.surname}</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Email:</Text>
-            <Text style={styles.infoValue}>{user.email}</Text>
-          </View>
         </View>
 
         {/* Statystyki */}
@@ -146,35 +190,46 @@ const Profile = () => {
           </View>
         </View>
 
-        {/* Przyciski */}
+        {/* Przyciski akcji */}
         <View style={styles.buttonsSection}>
           <TouchableOpacity
-            style={styles.button}
-            onPress={handleEditProfile}
+            style={[
+              styles.likeButton,
+              isLiked && styles.likedButton,
+              likeLoading && styles.disabledButton,
+            ]}
+            onPress={handleLike}
+            disabled={likeLoading}
             activeOpacity={0.8}
           >
-            <Ionicons name='create-outline' size={20} color={COLORS.primary} />
-            <Text style={styles.buttonText}>Edytuj profil</Text>
+            {likeLoading ? (
+              <ActivityIndicator size='small' color={COLORS.primary} />
+            ) : (
+              <>
+                <Ionicons
+                  name={isLiked ? 'heart' : 'heart-outline'}
+                  size={22}
+                  color={isLiked ? COLORS.error : COLORS.primary}
+                />
+                <Text
+                  style={[
+                    styles.likeButtonText,
+                    isLiked && styles.likedButtonText,
+                  ]}
+                >
+                  {isLiked ? 'Polubiono' : 'Polub gracza'}
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.button}
-            onPress={handleChangePassword}
+            style={styles.reportButton}
+            onPress={handleReport}
             activeOpacity={0.8}
           >
-            <Ionicons name='key-outline' size={20} color={COLORS.primary} />
-            <Text style={styles.buttonText}>Zmień hasło</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.dangerButton]}
-            onPress={handleDeleteAccount}
-            activeOpacity={0.8}
-          >
-            <Ionicons name='trash-outline' size={20} color={COLORS.error} />
-            <Text style={[styles.buttonText, styles.dangerButtonText]}>
-              Usuń konto
-            </Text>
+            <Ionicons name='flag-outline' size={20} color={COLORS.error} />
+            <Text style={styles.reportButtonText}>Zgłoś użytkownika</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -182,7 +237,7 @@ const Profile = () => {
   )
 }
 
-export default Profile
+export default ProfileUser
 
 const styles = StyleSheet.create({
   container: {
@@ -201,18 +256,41 @@ const styles = StyleSheet.create({
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
+  backButton: {
+    marginTop: 20,
+    backgroundColor: COLORS.secondary,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  backButtonText: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.background,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
+  backIconButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   headerText: {
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: 10,
   },
   scrollView: {
     flex: 1,
@@ -232,27 +310,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 2,
     borderColor: COLORS.primary,
-  },
-  avatarHint: {
-    fontSize: 10,
-    fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    marginTop: 4,
-  },
-  changeAvatarButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.secondary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginTop: 12,
-  },
-  changeAvatarText: {
-    fontSize: 14,
-    fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
-    marginLeft: 8,
   },
   username: {
     fontSize: 28,
@@ -325,27 +382,48 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 12,
   },
-  button: {
+  likeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.backgroundSecondary,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: COLORS.secondary,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 20,
   },
-  buttonText: {
+  likedButton: {
+    borderColor: COLORS.error,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  disabledButton: {
+    opacity: 0.7,
+  },
+  likeButtonText: {
     fontSize: 16,
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
     marginLeft: 10,
   },
-  dangerButton: {
-    borderColor: COLORS.error,
-  },
-  dangerButtonText: {
+  likedButtonText: {
     color: COLORS.error,
+  },
+  reportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.error,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  reportButtonText: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.error,
+    marginLeft: 8,
   },
 })
