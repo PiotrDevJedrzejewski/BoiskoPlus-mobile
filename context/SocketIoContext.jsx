@@ -6,7 +6,7 @@ import {
   useCallback,
   useState,
 } from 'react'
-import { Audio } from 'expo-av'
+import { useAudioPlayer } from 'expo-audio'
 import Constants from 'expo-constants'
 import io from 'socket.io-client'
 import { useAuth } from './AuthContext'
@@ -17,10 +17,14 @@ const SocketIoContext = createContext()
 
 export const SocketIoProvider = ({ children }) => {
   const joinedRoomsRef = useRef(new Set())
-  const soundRef = useRef(null)
-  const { user } = useAuth()
+  const { user, isAuthChecked } = useAuth()
   const { shouldShowNotification } = useNotification()
   const [socket, setSocket] = useState(null)
+
+  // Nowe API expo-audio - hook do odtwarzania dźwięku
+  const notificationPlayer = useAudioPlayer(
+    require('../assets/sounds/notification-alert-269289.mp3')
+  )
 
   // State: pokoje i nieprzeczytane wiadomości
   // roomsState: [{ roomId, unreadCount, ...roomData }]
@@ -40,33 +44,12 @@ export const SocketIoProvider = ({ children }) => {
     )
   }
 
-  // Załaduj dźwięk powiadomienia
-  useEffect(() => {
-    const loadSound = async () => {
-      try {
-        const { sound } = await Audio.Sound.createAsync(
-          require('../assets/sounds/notification.mp3')
-        )
-        soundRef.current = sound
-      } catch (error) {
-        console.error('Błąd ładowania dźwięku powiadomienia:', error)
-      }
-    }
-
-    loadSound()
-
-    return () => {
-      if (soundRef.current) {
-        soundRef.current.unloadAsync()
-      }
-    }
-  }, [])
-
-  // Funkcja do odtwarzania dźwięku powiadomienia
-  const playNotificationSound = async () => {
+  // Funkcja do odtwarzania dźwięku powiadomienia (nowe API expo-audio)
+  const playNotificationSound = () => {
     try {
-      if (soundRef.current) {
-        await soundRef.current.replayAsync()
+      if (notificationPlayer) {
+        notificationPlayer.seekTo(0)
+        notificationPlayer.play()
       }
     } catch (error) {
       console.error('Błąd odtwarzania dźwięku:', error)
@@ -78,7 +61,7 @@ export const SocketIoProvider = ({ children }) => {
     // Skopiuj ref na początku efektu dla cleanup
     const joinedRooms = joinedRoomsRef.current
 
-    if (user && user.userID) {
+    if (isAuthChecked && user.userID) {
       // Utwórz socket tylko jeśli użytkownik jest zalogowany
       const newSocket = io(getSocketUrl(), {
         // W React Native nie używamy withCredentials, używamy tokena
@@ -104,7 +87,7 @@ export const SocketIoProvider = ({ children }) => {
         return null
       })
     }
-  }, [user?.userID])
+  }, [isAuthChecked])
 
   const joinRoom = useCallback(
     (roomId) => {
@@ -140,7 +123,7 @@ export const SocketIoProvider = ({ children }) => {
   useEffect(() => {
     const fetchAndJoinRooms = async () => {
       // Nie wykonuj zapytania jeśli user nie jest zalogowany
-      if (!user || !user.userID) {
+      if (!isAuthChecked || !user?.userID) {
         setRoomsState([])
         return
       }
@@ -171,13 +154,13 @@ export const SocketIoProvider = ({ children }) => {
       }
     }
     fetchAndJoinRooms()
-  }, [user?.userID, joinAllRooms])
+  }, [isAuthChecked, joinAllRooms])
 
   // Pobierz nieprzeczytane powiadomienia o eventach
   useEffect(() => {
     const fetchUnreadEvents = async () => {
       // Nie wykonuj zapytania jeśli user nie jest zalogowany
-      if (!user || !user.userID) {
+      if (!isAuthChecked || !user?.userID) {
         setUnreadEventsCount(0)
         setUnreadEventsList([])
         return
@@ -196,7 +179,7 @@ export const SocketIoProvider = ({ children }) => {
     }
 
     fetchUnreadEvents()
-  }, [user?.userID])
+  }, [isAuthChecked])
 
   // Aktualizuj roomsState po otrzymaniu nowej wiadomości
   useEffect(() => {

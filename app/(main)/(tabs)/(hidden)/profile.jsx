@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../../../../constants/colors'
+import { useAuth } from '../../../../context/AuthContext'
 
 const defaultAvatar = require('../../../../assets/images/defaultAvatar.png')
 
@@ -43,8 +44,7 @@ const StatItem = ({ label, value }) => (
 const Profile = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [user] = useState(MOCK_USER)
-  const [userStats] = useState(MOCK_USER_STATS)
+  const { user, userStats } = useAuth()
 
   const avatar = user.avatarUrl ? { uri: user.avatarUrl } : defaultAvatar
 

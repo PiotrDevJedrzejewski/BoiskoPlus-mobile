@@ -8,6 +8,12 @@ import spinner from '../assets/utils/spinner.json'
 import { View } from 'react-native'
 import ToastManager from 'toastify-react-native'
 
+// Importuj providery kontekstów
+import { AuthProvider } from '../context/AuthContext'
+import { DashboardProvider } from '../context/DashboardContext'
+import { NotificationProvider } from '../context/NotificationContext'
+import { SocketIoProvider } from '../context/SocketIoContext'
+
 const Layout = () => {
   const [fontsLoaded] = useFonts({
     'Montserrat-Bold': require('../assets/fonts/Montserrat-Bold.ttf'),
@@ -39,36 +45,42 @@ const Layout = () => {
   }
 
   return (
-    <>
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: COLORS.background }, // kolor tła paska
-          headerTintColor: COLORS.secondary, // kolor tekstu i ikon
-          headerTitleStyle: {
-            fontSize: 16, // zmniejszony rozmiar czcionki tytułu
-          },
-          header: (props) => <HeaderStack {...props} />,
-        }}
-      >
-        {/* Public screens */}
-        <Stack.Screen name='index' options={{ headerShown: true }} />
-        <Stack.Screen
-          name='login'
-          options={{ headerShown: true, title: 'Cofnij' }}
-        />
-        <Stack.Screen
-          name='register'
-          options={{ headerShown: true, title: 'Cofnij' }}
-        />
-        <Stack.Screen
-          name='rules'
-          options={{ headerShown: true, title: 'Cofnij' }}
-        />
-        {/* Protected screens */}
-        <Stack.Screen name='(main)' options={{ headerShown: false }} />
-      </Stack>
-      <ToastManager />
-    </>
+    <AuthProvider>
+      <NotificationProvider>
+        <SocketIoProvider>
+          <DashboardProvider>
+            <Stack
+              screenOptions={{
+                headerStyle: { backgroundColor: COLORS.background },
+                headerTintColor: COLORS.secondary,
+                headerTitleStyle: {
+                  fontSize: 16,
+                },
+                header: (props) => <HeaderStack {...props} />,
+              }}
+            >
+              {/* Public screens */}
+              <Stack.Screen name='index' options={{ headerShown: true }} />
+              <Stack.Screen
+                name='login'
+                options={{ headerShown: true, title: 'Cofnij' }}
+              />
+              <Stack.Screen
+                name='register'
+                options={{ headerShown: true, title: 'Cofnij' }}
+              />
+              <Stack.Screen
+                name='rules'
+                options={{ headerShown: true, title: 'Cofnij' }}
+              />
+              {/* Protected screens */}
+              <Stack.Screen name='(main)' options={{ headerShown: false }} />
+            </Stack>
+            <ToastManager />
+          </DashboardProvider>
+        </SocketIoProvider>
+      </NotificationProvider>
+    </AuthProvider>
   )
 }
 export default Layout

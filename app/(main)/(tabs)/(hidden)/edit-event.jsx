@@ -14,63 +14,7 @@ import { COLORS } from '../../../../constants/colors'
 import FormEvent from '../../../../components/FormEvent'
 import EditEventUserCard from '../../../../components/EditEventUserCard'
 import ConfirmModal from '../../../(Popup)/ConfirmModal'
-
-// Mock data
-const MOCK_EVENT = {
-  _id: 'event1',
-  eventName: 'Mecz na Orliku - Piłka nożna',
-  addressString: 'ul. Sportowa 15, Łódź',
-  eventDescription: 'Szukamy graczy do meczu towarzyskiego',
-  gameType: 'football',
-  level: 'intermediate',
-  playerCount: '4',
-  price: '10',
-  paymentMethod: 'cash',
-  duration: '2h',
-  startDate: '2025-12-10',
-  startHour: '18:00',
-  phoneNumber: '123456789',
-  isRecurring: false,
-}
-
-const MOCK_USERS = [
-  {
-    _id: 'status1',
-    status: 'interested',
-    userID: {
-      _id: 'user1',
-      nickName: 'FastRunner',
-      name: 'Adam',
-      surname: 'Nowak',
-      avatarUrl: null,
-    },
-    stats: { gamesPlayed: 23, eventsOrganized: 2, totalLikes: 15 },
-  },
-  {
-    _id: 'status2',
-    status: 'accepted',
-    userID: {
-      _id: 'user2',
-      nickName: 'GoalMaster',
-      name: 'Piotr',
-      surname: 'Wiśniewski',
-      avatarUrl: null,
-    },
-    stats: { gamesPlayed: 67, eventsOrganized: 8, totalLikes: 42 },
-  },
-  {
-    _id: 'status3',
-    status: 'rejected',
-    userID: {
-      _id: 'user3',
-      nickName: 'NewPlayer',
-      name: 'Michał',
-      surname: 'Kowalczyk',
-      avatarUrl: null,
-    },
-    stats: { gamesPlayed: 5, eventsOrganized: 0, totalLikes: 2 },
-  },
-]
+import customFetch from '../../../../assets/utils/customFetch'
 
 const StatBadge = ({ count, label, color }) => (
   <View style={[styles.statBadge, { borderColor: color }]}>
@@ -97,49 +41,155 @@ const EditEvent = () => {
   const acceptedCount = users.filter((u) => u.status === 'accepted').length
   const rejectedCount = users.filter((u) => u.status === 'rejected').length
 
+  // Pobierz dane wydarzenia
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      await new Promise((resolve) => setTimeout(resolve, 500))
-      setEvent(MOCK_EVENT)
-      setUsers(MOCK_USERS)
-      setLoading(false)
+    const fetchEvent = async () => {
+      try {
+        const response = await customFetch.get(`/football-events/${id}`)
+        setEvent(response.data.event)
+      } catch (error) {
+        console.error('Błąd pobierania wydarzenia:', error)
+        Alert.alert('Błąd', 'Nie udało się pobrać danych wydarzenia')
+      }
     }
-    fetchData()
+
+    if (id) fetchEvent()
+  }, [id])
+
+  // Pobierz listę użytkowników powiązanych z wydarzeniem
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true)
+      try {
+        const response = await customFetch.get(`/status/events/${id}/users`)
+        const eventUsers = response.data.eventUsers || []
+
+        // Pobierz statystyki dla użytkowników
+        if (eventUsers.length > 0) {
+          const userIds = eventUsers.map((u) => u.userID._id)
+          try {
+            const statsResponse = await customFetch.post(
+              '/user-stats/multiple',
+              {
+                userIds,
+              }
+            )
+
+            // Połącz użytkowników ze statystykami
+            const usersWithStats = eventUsers.map((user) => {
+              const userStats = statsResponse.data.stats?.find(
+                (stat) =>
+                  stat.userID?.toString() === user.userID._id?.toString()
+              )
+              return {
+                ...user,
+                stats: userStats || {
+                  gamesPlayed: 0,
+                  eventsOrganized: 0,
+                  totalLikes: 0,
+                },
+              }
+            })
+            setUsers(usersWithStats)
+          } catch (statsError) {
+            console.error('Błąd pobierania statystyk:', statsError)
+            setUsers(eventUsers)
+          }
+        } else {
+          setUsers([])
+        }
+      } catch (error) {
+        console.error('Błąd pobierania użytkowników:', error)
+        setUsers([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (id) fetchUsers()
   }, [id])
 
   const handleChangeUserStatus = async (userId, newStatus) => {
-    // Symulacja API call
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.userID._id === userId ? { ...u, status: newStatus } : u
-      )
-    )
-    Alert.alert('Sukces', `Status zmieniony na: ${newStatus}`)
+    try {
+      await customFetch.patch(`/status/events/${id}/users/${userId}/status`, {
+        status: newStatus,
+      })
+      // Odśwież listę użytkowników po zmianie
+      const response = await customFetch.get(`/status/events/${id}/users`)
+      const eventUsers = response.data.eventUsers || []
+
+      // Pobierz statystyki dla użytkowników
+      if (eventUsers.length > 0) {
+        const userIds = eventUsers.map((u) => u.userID._id)
+        try {
+          const statsResponse = await customFetch.post('/user-stats/multiple', {
+            userIds,
+          })
+          const usersWithStats = eventUsers.map((user) => {
+            const userStats = statsResponse.data.stats?.find(
+              (stat) => stat.userID?.toString() === user.userID._id?.toString()
+            )
+            return {
+              ...user,
+              stats: userStats || {
+                gamesPlayed: 0,
+                eventsOrganized: 0,
+                totalLikes: 0,
+              },
+            }
+          })
+          setUsers(usersWithStats)
+        } catch {
+          setUsers(eventUsers)
+        }
+      }
+      Alert.alert('Sukces', `Status zmieniony na: ${newStatus}`)
+    } catch (error) {
+      console.error('Błąd zmiany statusu:', error)
+      Alert.alert('Błąd', 'Nie udało się zmienić statusu')
+    }
   }
 
   const handleDeleteEvent = async () => {
     setActionLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setActionLoading(false)
-    setShowDeleteModal(false)
-    Alert.alert('Sukces', 'Wydarzenie zostało usunięte')
-    router.back()
+    try {
+      await customFetch.delete(`/football-events/${id}`)
+      setShowDeleteModal(false)
+      Alert.alert('Sukces', 'Wydarzenie zostało usunięte')
+      router.back()
+    } catch (error) {
+      console.error('Błąd usuwania wydarzenia:', error)
+      Alert.alert('Błąd', 'Nie udało się usunąć wydarzenia')
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   const handleFinishEvent = async () => {
     setActionLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setActionLoading(false)
-    setShowFinishModal(false)
-    Alert.alert('Sukces', 'Wydarzenie zostało zakończone')
-    router.back()
+    try {
+      await customFetch.patch(`/football-events/${id}/finish`)
+      setShowFinishModal(false)
+      Alert.alert('Sukces', 'Wydarzenie zostało zakończone')
+      router.back()
+    } catch (error) {
+      console.error('Błąd kończenia wydarzenia:', error)
+      Alert.alert('Błąd', 'Nie udało się zakończyć wydarzenia')
+    } finally {
+      setActionLoading(false)
+    }
   }
 
-  const handleFormSubmit = (formData) => {
-    console.log('Updated event:', formData)
-    setShowEditForm(false)
-    Alert.alert('Sukces', 'Wydarzenie zostało zaktualizowane')
+  const handleFormSubmit = async (formData) => {
+    try {
+      await customFetch.patch(`/football-events/${id}`, formData)
+      setEvent({ ...event, ...formData })
+      setShowEditForm(false)
+      Alert.alert('Sukces', 'Wydarzenie zostało zaktualizowane')
+    } catch (error) {
+      console.error('Błąd aktualizacji wydarzenia:', error)
+      Alert.alert('Błąd', 'Nie udało się zaktualizować wydarzenia')
+    }
   }
 
   const handleGoBack = () => {

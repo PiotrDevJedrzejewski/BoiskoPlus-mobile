@@ -3,65 +3,65 @@ import * as SecureStore from 'expo-secure-store'
 import customFetch, {
   setAuthToken,
   removeAuthToken,
+  hasAuthToken,
 } from '../assets/utils/customFetch'
+import { router } from 'expo-router'
 
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState({
-    msg: 'Zalogowane pomyślnie',
-    userID: null,
-    nickName: null,
-    email: null,
-    name: null,
-    surname: null,
-    role: null,
-    isActive: null,
-    avatarUrl: null,
-    age: null,
-  }) // Zalogowany użytkownik
+  // Początkowo null - inne konteksty sprawdzają user?.userID
+  const [user, setUser] = useState(null)
   const [userStats, setUserStats] = useState(null) // Statystyki użytkownika
   const [loading, setLoading] = useState(true) // Czy w trakcie sprawdzania
 
-  // Pobierz dane użytkownika przy montowaniu komponentu
-  useEffect(() => {
-    const fetchUserAndStats = async () => {
-      setLoading(true)
-      try {
-        // Sprawdź czy istnieje token
-        const token = await SecureStore.getItemAsync('authToken')
-        if (!token) {
-          setUser(null)
-          setUserStats(null)
-          setLoading(false)
-          return
-        }
+  //Nowy state dla asynchronizacji pomiędzy użytkownikiem a SecureStore
+  const [isAuthChecked, setIsAuthChecked] = useState(false)
 
-        // Pobierz dane użytkownika
-        const userRes = await customFetch.get('/users/current-user')
-        setUser(userRes.data.user)
+  const authorized = async () => {
+    setLoading(true)
+    try {
+      const token = await hasAuthToken()
+      if (token) {
+        const userResponse = await customFetch.get('/users/current-user')
+        const userStatsResponse = await customFetch.get('/user-stats/current')
 
-        // Pobierz statystyki użytkownika
-        try {
-          const statsRes = await customFetch.get('/user-stats/current')
-          setUserStats(statsRes.data.stats)
-        } catch {
-          // Cicha obsługa - brak statystyk nie jest błędem
-          setUserStats(null)
+        // Ustaw dane użytkownika z response (jak w webowej wersji)
+        // POPRAWKA: Pobierz user z response.data.user (nie response.data)
+        const userData = {
+          ...userResponse.data.user, // Spread na .user
+          _id: userResponse.data.user._id, // _id jest w .user
+          userID: userResponse.data.user._id, // Dla kompatybilności
         }
-      } catch (err) {
-        // Cicha obsługa 401 - brak autoryzacji oznacza że user nie jest zalogowany
-        if (err.response?.status !== 401) {
-          console.error('Error fetching user:', err)
-        }
+        setUser(userData)
+        setUserStats(userStatsResponse.data.stats)
+        setIsAuthChecked(true)
+        setLoading(false)
+        router.replace('/(main)/(tabs)/dashboard-home')
+        return
+      } else {
         setUser(null)
         setUserStats(null)
-      } finally {
+        router.replace('/login')
         setLoading(false)
+        return
       }
+    } catch (error) {
+      console.error('Błąd autoryzacji:', error)
+      setUser(null)
+      setUserStats(null)
+      router.replace('/login')
+      setLoading(false)
+      return
     }
+  }
 
-    fetchUserAndStats()
+  // Sprawdź czy użytkownik był zalogowany przy starcie aplikacji
+  useEffect(() => {
+    const userWasLoggedIn = async () => {
+      return await authorized()
+    }
+    userWasLoggedIn()
   }, [])
 
   // Funkcja do logowania (email/nick + hasło)
@@ -75,25 +75,10 @@ export const AuthProvider = ({ children }) => {
       // Zapisz token jeśli backend go zwraca
       if (response.data.token) {
         await setAuthToken(response.data.token)
+        await authorized()
       }
 
-      // Ustaw dane użytkownika z response (jak w webowej wersji)
-      const userData = {
-        ...response.data,
-        _id: response.data.userID, // Dodaj _id dla kompatybilności
-      }
-      setUser(userData)
-
-      // Pobierz statystyki użytkownika
-      try {
-        const statsRes = await customFetch.get('/user-stats/current')
-        setUserStats(statsRes.data.stats)
-      } catch {
-        console.error('Error fetching user stats after login:', statsErr)
-        setUserStats(null)
-      }
-
-      return { success: true }
+      return { status: true }
     } catch (error) {
       console.error('Błąd logowania:', error)
 
@@ -104,7 +89,7 @@ export const AuthProvider = ({ children }) => {
       )
 
       return {
-        success: false,
+        status: false,
         error: errorMsg,
         isEmailNotVerified,
       }
@@ -122,29 +107,7 @@ export const AuthProvider = ({ children }) => {
       // Zapisz token jeśli backend go zwraca
       if (response.data.token) {
         await setAuthToken(response.data.token)
-      }
-
-      // Ustaw dane użytkownika
-      const userData = {
-        email: response.data.email,
-        isActive: response.data.isActive,
-        name: response.data.name,
-        nickName: response.data.nickName,
-        role: response.data.role,
-        surname: response.data.surname,
-        userID: response.data.userID,
-        _id: response.data.userID,
-        age: response.data.age,
-        avatarUrl: response.data.avatarUrl,
-      }
-      setUser(userData)
-
-      // Pobierz statystyki użytkownika
-      try {
-        const statsRes = await customFetch.get('/user-stats/current')
-        setUserStats(statsRes.data.stats)
-      } catch {
-        setUserStats(null)
+        await authorized()
       }
 
       return { success: true }
@@ -181,6 +144,7 @@ export const AuthProvider = ({ children }) => {
       // Zapisz token jeśli backend go zwraca
       if (response.data.token) {
         await setAuthToken(response.data.token)
+        await authorized()
       }
 
       return { success: true }
@@ -320,6 +284,8 @@ export const AuthProvider = ({ children }) => {
       await removeAuthToken()
       setUser(null)
       setUserStats(null)
+      setIsAuthChecked(false)
+      router.replace('/login')
     }
   }
 
@@ -351,6 +317,7 @@ export const AuthProvider = ({ children }) => {
         refetchUser,
         logout,
         clearUserLocation,
+        isAuthChecked,
       }}
     >
       {children}

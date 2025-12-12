@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -10,115 +10,9 @@ import {
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../../../../constants/colors'
+import { useSocketIo } from '../../../../context/SocketIoContext'
+import customFetch from '../../../../assets/utils/customFetch'
 import MyEventCard from '../../../../components/MyEventCard'
-
-// Mock data - wydarzenia właściciela
-const MOCK_OWNER_EVENTS = [
-  {
-    _id: 'o1',
-    eventName: 'Mecz na orliku - Łódź Bałuty',
-    gameType: 'football',
-    addressString: 'ul. Bałucki Rynek 5, Łódź',
-    startDate: '2025-12-10',
-    startHour: '18:00',
-    duration: 90,
-    price: 10,
-    playerCount: 4,
-    eventStatus: 'upcoming',
-  },
-  {
-    _id: 'o2',
-    eventName: 'Siatkówka wieczorna',
-    gameType: 'volleyball',
-    addressString: 'Hala sportowa, Warszawa',
-    startDate: '2025-12-15',
-    startHour: '20:00',
-    duration: 120,
-    price: 15,
-    playerCount: 6,
-    eventStatus: 'upcoming',
-  },
-  {
-    _id: 'o3',
-    eventName: 'Stary mecz koszykówki',
-    gameType: 'basketball',
-    addressString: 'Boisko szkolne, Kraków',
-    startDate: '2025-11-20',
-    startHour: '17:00',
-    duration: 60,
-    price: 5,
-    playerCount: 0,
-    eventStatus: 'completed',
-  },
-]
-
-// Mock data - wydarzenia użytkownika
-const MOCK_USER_EVENTS = [
-  {
-    _id: 'u1',
-    eventID: {
-      _id: 'e1',
-      eventName: 'Piłka nożna - turniej',
-      gameType: 'football',
-      addressString: 'Orlik przy ul. Sportowej, Poznań',
-      startDate: '2025-12-12',
-      startHour: '16:00',
-      duration: 120,
-      price: 20,
-      playerCount: 2,
-    },
-    status: 'accepted',
-    readBy: true,
-  },
-  {
-    _id: 'u2',
-    eventID: {
-      _id: 'e2',
-      eventName: 'Koszykówka 3x3',
-      gameType: 'basketball',
-      addressString: 'Park miejski, Gdańsk',
-      startDate: '2025-12-18',
-      startHour: '15:00',
-      duration: 60,
-      price: 0,
-      playerCount: 3,
-    },
-    status: 'interested',
-    readBy: false,
-  },
-  {
-    _id: 'u3',
-    eventID: {
-      _id: 'e3',
-      eventName: 'Tenis stołowy',
-      gameType: 'table tennis',
-      addressString: 'Klub sportowy, Wrocław',
-      startDate: '2025-12-08',
-      startHour: '19:00',
-      duration: 90,
-      price: 10,
-      playerCount: 1,
-    },
-    status: 'rejected',
-    readBy: true,
-  },
-  {
-    _id: 'u4',
-    eventID: {
-      _id: 'e4',
-      eventName: 'Mecz zakończony',
-      gameType: 'football',
-      addressString: 'Stadion miejski, Lublin',
-      startDate: '2025-11-25',
-      startHour: '14:00',
-      duration: 90,
-      price: 15,
-      playerCount: 0,
-    },
-    status: 'finished',
-    readBy: true,
-  },
-]
 
 const FilterButton = ({ icon, label, isActive, onPress, color }) => (
   <TouchableOpacity
@@ -143,7 +37,11 @@ const FilterButton = ({ icon, label, isActive, onPress, color }) => (
 
 const MyEvents = () => {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const { socket } = useSocketIo()
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [myEventsOwner, setMyEventsOwner] = useState([])
+  const [myEventsUser, setMyEventsUser] = useState([])
 
   // Filtry statusów
   const [showOwnerEvents, setShowOwnerEvents] = useState(true)
@@ -152,21 +50,65 @@ const MyEvents = () => {
   const [showRejectedEvents, setShowRejectedEvents] = useState(true)
   const [showFinishedEvents, setShowFinishedEvents] = useState(true)
 
+  // Pobierz wydarzenia z API
+  const fetchAllEvents = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const [ownerResponse, participantResponse] = await Promise.all([
+        customFetch.get('/football-events'),
+        customFetch.get('/status/my-events'),
+      ])
+
+      setMyEventsOwner(ownerResponse.data.events || [])
+      setMyEventsUser(participantResponse.data.userEvents || [])
+    } catch (err) {
+      console.error('Błąd podczas pobierania wydarzeń:', err)
+      setError('Nie udało się pobrać wydarzeń')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Pobierz dane przy montowaniu
+  useEffect(() => {
+    fetchAllEvents()
+  }, [])
+
+  // Nasłuchiwanie socketów do odświeżania danych eventów
+  useEffect(() => {
+    if (!socket) return
+
+    const handleStatusUpdate = async () => {
+      // Odśwież dane użytkownika gdy otrzymamy powiadomienie o zmianie statusu
+      try {
+        const participantResponse = await customFetch.get('/status/my-events')
+        setMyEventsUser(participantResponse.data.userEvents || [])
+      } catch (error) {
+        console.error('Błąd podczas odświeżania danych po statusUpdate:', error)
+      }
+    }
+
+    socket.on('statusUpdate', handleStatusUpdate)
+
+    return () => {
+      socket.off('statusUpdate', handleStatusUpdate)
+    }
+  }, [socket])
+
   // Obsługa kliknięcia w wydarzenie
   const handleEventPress = (event, status) => {
     if (status === 'owner') {
       // Edycja wydarzenia
-      console.log('Edit event:', event._id)
-      // router.push(`/(main)/(tabs)/(hidden)/edit-event/${event._id}`)
+      router.push(`/(main)/(tabs)/(hidden)/edit-event?id=${event._id}`)
     } else {
       // Szczegóły wydarzenia
-      console.log('View event:', event._id)
-      // router.push(`/(main)/(tabs)/(hidden)/event/${event._id}`)
+      router.push(`/(main)/(tabs)/(hidden)/single-event?id=${event._id}`)
     }
   }
 
   // Filtrowanie wydarzeń właściciela
-  const filteredOwnerEvents = MOCK_OWNER_EVENTS.filter((event) => {
+  const filteredOwnerEvents = myEventsOwner.filter((event) => {
     if (!showOwnerEvents) return false
     if (
       !showFinishedEvents &&
@@ -178,7 +120,8 @@ const MyEvents = () => {
   })
 
   // Filtrowanie wydarzeń użytkownika
-  const filteredUserEvents = MOCK_USER_EVENTS.filter((event) => {
+  const filteredUserEvents = myEventsUser.filter((event) => {
+    if (!event.eventID) return false // Zabezpieczenie przed null eventID
     if (event.status === 'accepted' && !showAcceptedEvents) return false
     if (event.status === 'interested' && !showInterestedEvents) return false
     if (event.status === 'rejected' && !showRejectedEvents) return false
@@ -271,8 +214,19 @@ const MyEvents = () => {
         </View>
       )}
 
+      {/* Error */}
+      {error && !loading && (
+        <View style={styles.errorContainer}>
+          <Ionicons name='alert-circle-outline' size={60} color={COLORS.error} />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchAllEvents}>
+            <Text style={styles.retryButtonText}>Spróbuj ponownie</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Lista wydarzeń */}
-      {!loading && (
+      {!loading && !error && (
         <ScrollView
           style={styles.eventsList}
           contentContainerStyle={styles.eventsContent}
@@ -305,7 +259,7 @@ const MyEvents = () => {
                   event={item.eventID}
                   status={item.status}
                   onPress={() => handleEventPress(item.eventID, item.status)}
-                  showNotification={!item.readBy}
+                  statusData={item}
                 />
               ))}
             </View>
@@ -436,5 +390,30 @@ const styles = StyleSheet.create({
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
     textAlign: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontFamily: 'Lato-Regular',
+    color: COLORS.error,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 20,
+    backgroundColor: COLORS.secondary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.background,
   },
 })

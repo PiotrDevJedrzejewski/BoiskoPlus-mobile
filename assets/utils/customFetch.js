@@ -1,18 +1,37 @@
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store'
 import Constants from 'expo-constants'
+import { Platform } from 'react-native'
 
 // Pobierz URL serwera z konfiguracji Expo
 const getBaseURL = () => {
+  const isDev = process.env.EXPO_MODE === 'development' || __DEV__
+
+  if (isDev) {
+    // W development:
+    // - Android emulator: 10.0.2.2 to alias dla localhost hosta
+    // - iOS simulator: localhost działa
+    // - Fizyczne urządzenie: użyj IP komputera z .env
+    const devServerUrl =
+      process.env.EXPO_PUBLIC_SERVER_URL ||
+      (Platform.OS === 'android'
+        ? 'http://10.0.2.2:3000/api/v1'
+        : 'http://localhost:3000/api/v1')
+
+    return devServerUrl
+  }
+
+  // W produkcji - użyj URL z konfiguracji
   const serverUrl =
     Constants.expoConfig?.extra?.serverUrl ||
     process.env.EXPO_PUBLIC_SERVER_URL ||
-    'http://localhost:3000/api/v1'
+    'https://boiskoplus-backend.onrender.com/api/v1'
 
   return serverUrl
 }
 
 const baseURL = getBaseURL()
+console.log('API Base URL:', baseURL) // Debug - usuń w produkcji
 
 const customFetch = axios.create({
   baseURL,
@@ -99,6 +118,7 @@ export const removeAuthToken = async () => {
 export const hasAuthToken = async () => {
   try {
     const token = await SecureStore.getItemAsync('authToken')
+    // !! zmienia wartość na boolean
     return !!token
   } catch (error) {
     console.error('Błąd sprawdzania tokena:', error)

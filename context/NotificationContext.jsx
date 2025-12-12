@@ -15,7 +15,7 @@ const defaultPreferences = {
 }
 
 export const NotificationProvider = ({ children }) => {
-  const { user } = useAuth()
+  const { user, isAuthChecked } = useAuth()
   const [preferences, setPreferences] = useState(null)
   const [loading, setLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
@@ -24,7 +24,7 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     const fetchPreferences = async () => {
       // Nie wykonuj zapytania jeśli user nie jest zalogowany
-      if (!user || !user.userID) {
+      if (!isAuthChecked || !user?.userID) {
         setPreferences(defaultPreferences)
         setLoading(false)
         return
@@ -65,13 +65,13 @@ export const NotificationProvider = ({ children }) => {
     }
 
     fetchPreferences()
-  }, [user?.userID])
+  }, [isAuthChecked])
 
   // Pobierz nieprzeczytane powiadomienia
   useEffect(() => {
     const fetchUnreadCount = async () => {
       // Nie wykonuj zapytania jeśli user nie jest zalogowany
-      if (!user || !user.userID) {
+      if (!isAuthChecked || !user?.userID) {
         setUnreadCount(0)
         return
       }
@@ -88,7 +88,7 @@ export const NotificationProvider = ({ children }) => {
     if (!loading && preferences) {
       fetchUnreadCount()
     }
-  }, [loading, preferences, user?.userID])
+  }, [loading, preferences, isAuthChecked])
 
   // Cache preferencje w AsyncStorage
   useEffect(() => {

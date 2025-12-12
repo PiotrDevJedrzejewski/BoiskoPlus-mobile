@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   StyleSheet,
   Text,
@@ -9,180 +9,195 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../../constants/colors'
 import ChatRoomListItem from '../../../components/ChatRoomListItem'
 import ChatMessageBox from '../../../components/ChatMessageBox'
-
-// Mock data - pokoje czatu
-const MOCK_CHAT_ROOMS = [
-  {
-    roomId: '1',
-    roomType: 'private',
-    participants: [
-      { _id: 'user1', nickName: 'Jan Kowalski', avatarUrl: null },
-      { _id: 'currentUser', nickName: 'Ty' },
-    ],
-    lastMessage: { message: 'Hej, gramy dzisiaj?' },
-  },
-  {
-    roomId: '2',
-    roomType: 'group',
-    eventName: 'Mecz na orliku - Łódź',
-    eventOwnerNick: 'Piotr',
-    gameType: 'football',
-    participants: [
-      { _id: 'user2', nickName: 'Piotr' },
-      { _id: 'user3', nickName: 'Adam' },
-      { _id: 'currentUser', nickName: 'Ty' },
-    ],
-    lastMessage: { message: 'Widzimy się o 18:00!' },
-  },
-  {
-    roomId: '3',
-    roomType: 'private',
-    participants: [
-      { _id: 'user4', nickName: 'Anna Nowak', avatarUrl: null },
-      { _id: 'currentUser', nickName: 'Ty' },
-    ],
-    lastMessage: { message: 'Dzięki za grę!' },
-  },
-  {
-    roomId: '4',
-    roomType: 'group',
-    eventName: 'Siatkówka - Warszawa',
-    eventOwnerNick: 'Kasia',
-    gameType: 'volleyball',
-    participants: [
-      { _id: 'user5', nickName: 'Kasia' },
-      { _id: 'currentUser', nickName: 'Ty' },
-    ],
-    lastMessage: { message: 'Mamy już 6 osób!' },
-  },
-]
-
-// Mock data - wiadomości
-const MOCK_MESSAGES = {
-  1: [
-    {
-      _id: 'm1',
-      sender: { _id: 'user1', nickName: 'Jan Kowalski' },
-      message: 'Hej!',
-      createdAt: '2025-12-05T10:00:00',
-    },
-    {
-      _id: 'm2',
-      sender: { _id: 'currentUser', nickName: 'Ty' },
-      message: 'Cześć, co słychać?',
-      createdAt: '2025-12-05T10:01:00',
-    },
-    {
-      _id: 'm3',
-      sender: { _id: 'user1', nickName: 'Jan Kowalski' },
-      message: 'Wszystko dobrze! Gramy dzisiaj?',
-      createdAt: '2025-12-05T10:02:00',
-    },
-    {
-      _id: 'm4',
-      sender: { _id: 'currentUser', nickName: 'Ty' },
-      message: 'Jasne, o której?',
-      createdAt: '2025-12-05T10:03:00',
-    },
-    {
-      _id: 'm5',
-      sender: { _id: 'user1', nickName: 'Jan Kowalski' },
-      message: 'Hej, gramy dzisiaj?',
-      createdAt: '2025-12-05T10:05:00',
-    },
-  ],
-  2: [
-    {
-      _id: 'm6',
-      sender: { _id: 'user2', nickName: 'Piotr' },
-      message: 'Witam wszystkich w grupie!',
-      createdAt: '2025-12-05T09:00:00',
-    },
-    {
-      _id: 'm7',
-      sender: { _id: 'user3', nickName: 'Adam' },
-      message: 'Siema!',
-      createdAt: '2025-12-05T09:01:00',
-    },
-    {
-      _id: 'm8',
-      sender: { _id: 'currentUser', nickName: 'Ty' },
-      message: 'Hej, już nie mogę się doczekać!',
-      createdAt: '2025-12-05T09:02:00',
-    },
-    {
-      _id: 'm9',
-      sender: { _id: 'user2', nickName: 'Piotr' },
-      message: 'Widzimy się o 18:00!',
-      createdAt: '2025-12-05T09:03:00',
-    },
-  ],
-  3: [
-    {
-      _id: 'm10',
-      sender: { _id: 'user4', nickName: 'Anna Nowak' },
-      message: 'Dzięki za grę!',
-      createdAt: '2025-12-04T20:00:00',
-    },
-    {
-      _id: 'm11',
-      sender: { _id: 'currentUser', nickName: 'Ty' },
-      message: 'Również dziękuję, było super!',
-      createdAt: '2025-12-04T20:01:00',
-    },
-  ],
-  4: [
-    {
-      _id: 'm12',
-      sender: { _id: 'user5', nickName: 'Kasia' },
-      message: 'Szukamy jeszcze graczy!',
-      createdAt: '2025-12-05T08:00:00',
-    },
-    {
-      _id: 'm13',
-      sender: { _id: 'currentUser', nickName: 'Ty' },
-      message: 'Ja jestem!',
-      createdAt: '2025-12-05T08:01:00',
-    },
-    {
-      _id: 'm14',
-      sender: { _id: 'user5', nickName: 'Kasia' },
-      message: 'Mamy już 6 osób!',
-      createdAt: '2025-12-05T08:02:00',
-    },
-  ],
-}
+import customFetch from '../../../assets/utils/customFetch'
+import { useSocketIo } from '../../../context/SocketIoContext'
+import { useAuth } from '../../../context/AuthContext'
+import { useNotification } from '../../../context/NotificationContext'
 
 const Chat = () => {
+  const { user } = useAuth()
+  const {
+    socket,
+    joinRoom,
+    sendMessage: socketSendMessage,
+    setRoomAsRead,
+    setActiveRoomId,
+    roomsState,
+  } = useSocketIo()
+  const { muteChatRoom, unmuteChatRoom } = useNotification()
+
   const [filterType, setFilterType] = useState('all') // all | private | group
   const [selectedRoom, setSelectedRoom] = useState(null)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingRooms, setLoadingRooms] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [chatRooms, setChatRooms] = useState([])
+  const [eventParticipants, setEventParticipants] = useState([])
+  const [loadingParticipants, setLoadingParticipants] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+
+  // Infinite scroll state
+  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false)
+  const [hasMoreMessages, setHasMoreMessages] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [isNearBottom, setIsNearBottom] = useState(true)
+  const [isInitialLoad, setIsInitialLoad] = useState(false)
+
   const scrollViewRef = useRef(null)
 
-  const currentUser = { _id: 'currentUser', nickName: 'Ty' }
+  // Pobierz pokoje czatu przy załadowaniu
+  useEffect(() => {
+    const fetchChatRooms = async () => {
+      setLoadingRooms(true)
+      try {
+        const response = await customFetch.get('/chat/rooms')
+        setChatRooms(response.data.chatRooms || [])
+      } catch (error) {
+        console.error('Błąd pobierania pokoi:', error)
+      } finally {
+        setLoadingRooms(false)
+      }
+    }
+
+    if (user) {
+      fetchChatRooms()
+    }
+  }, [user])
+
+  // Pobierz uczestników wydarzeń użytkownika
+  useEffect(() => {
+    const fetchEventParticipants = async () => {
+      setLoadingParticipants(true)
+      try {
+        const response = await customFetch.get('/chat/event-participants')
+        setEventParticipants(response.data.participants || [])
+      } catch (error) {
+        console.error('Błąd pobierania uczestników wydarzeń:', error)
+      } finally {
+        setLoadingParticipants(false)
+      }
+    }
+
+    if (user) {
+      fetchEventParticipants()
+    }
+  }, [user])
+
+  // Obsługa nowych wiadomości z socket
+  useEffect(() => {
+    if (!socket) return
+
+    const handleNewMessage = (msg) => {
+      // Dodaj wiadomość tylko jeśli jesteśmy w tym pokoju
+      setMessages((prev) => {
+        if (selectedRoom && selectedRoom.roomId === msg.roomId) {
+          return [...prev, msg]
+        }
+        return prev
+      })
+
+      // Aktualizuj ostatnią wiadomość w liście pokoi
+      setChatRooms((prevRooms) =>
+        prevRooms.map((room) =>
+          room.roomId === msg.roomId ? { ...room, lastMessage: msg } : room
+        )
+      )
+    }
+
+    socket.on('newMessage', handleNewMessage)
+    return () => {
+      socket.off('newMessage', handleNewMessage)
+    }
+  }, [socket, selectedRoom, user?._id])
+
+  // Obsługa nowych pokojów z socket
+  useEffect(() => {
+    if (!socket) return
+
+    const handleNewChatRoom = (data) => {
+      if (data.userId === user?._id) {
+        setChatRooms((prevRooms) => {
+          const roomExists = prevRooms.some(
+            (room) => room.roomId === data.chatRoom.roomId
+          )
+          if (!roomExists) {
+            joinRoom(data.chatRoom.roomId)
+            return [data.chatRoom, ...prevRooms]
+          }
+          return prevRooms
+        })
+      }
+    }
+
+    socket.on('newChatRoom', handleNewChatRoom)
+    return () => {
+      socket.off('newChatRoom', handleNewChatRoom)
+    }
+  }, [socket, user?._id, joinRoom])
+
+  // Obsługa usuwania z pokojów
+  useEffect(() => {
+    if (!socket) return
+
+    const handleRemovedFromChatRoom = (data) => {
+      if (data.userId === user?._id) {
+        setChatRooms((prevRooms) =>
+          prevRooms.filter((room) => room.roomId !== data.roomId)
+        )
+
+        if (selectedRoom && selectedRoom.roomId === data.roomId) {
+          setSelectedRoom(null)
+          setMessages([])
+          setActiveRoomId(null)
+        }
+
+        socket.emit('leaveRoom', data.roomId)
+      }
+    }
+
+    socket.on('removedFromChatRoom', handleRemovedFromChatRoom)
+    return () => {
+      socket.off('removedFromChatRoom', handleRemovedFromChatRoom)
+    }
+  }, [socket, user?._id, selectedRoom, setActiveRoomId])
+
+  // Reset activeRoomId przy odmontowaniu
+  useEffect(() => {
+    return () => {
+      setActiveRoomId(null)
+    }
+  }, [setActiveRoomId])
+
+  // Scroll do końca przy nowych wiadomościach
+  useEffect(() => {
+    if (isInitialLoad) {
+      scrollViewRef.current?.scrollToEnd({ animated: false })
+      setIsInitialLoad(false)
+    } else if (isNearBottom && messages.length > 0) {
+      scrollViewRef.current?.scrollToEnd({ animated: true })
+    }
+  }, [messages, isInitialLoad, isNearBottom])
 
   // Filtrowanie pokoi
-  const filteredRooms = MOCK_CHAT_ROOMS.filter((room) => {
-    // Filtr po typie
+  const filteredRooms = chatRooms.filter((room) => {
     if (filterType === 'private' && room.roomType !== 'private') return false
     if (filterType === 'group' && room.roomType !== 'group') return false
 
-    // Filtr po wyszukiwaniu
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase()
       if (room.roomType === 'group') {
         return (room.eventName || '').toLowerCase().includes(searchLower)
       } else {
         const otherUser = room.participants?.find(
-          (p) => String(p._id) !== String(currentUser._id)
+          (p) => String(p._id) !== String(user?._id)
         )
         return (otherUser?.nickName || '').toLowerCase().includes(searchLower)
       }
@@ -191,52 +206,177 @@ const Chat = () => {
     return true
   })
 
+  // Oznaczanie wiadomości jako przeczytane
+  const markAllMessagesAsRead = async (roomId) => {
+    try {
+      await customFetch.patch('/chat/messages/read', { roomId })
+    } catch (error) {
+      console.error('Błąd oznaczania wiadomości jako przeczytane:', error)
+    }
+  }
+
   // Obsługa wyboru pokoju
-  const handleRoomSelect = (room) => {
+  const handleRoomSelect = async (room) => {
     setSelectedRoom(room)
+    setActiveRoomId(room.roomId)
     setLoading(true)
 
-    // Symulacja ładowania wiadomości
-    setTimeout(() => {
-      setMessages(MOCK_MESSAGES[room.roomId] || [])
+    // Zresetuj stan paginacji
+    setCurrentPage(1)
+    setHasMoreMessages(true)
+    setLoadingOlderMessages(false)
+    setIsNearBottom(true)
+    setIsInitialLoad(true)
+
+    // Oznacz wiadomości jako przeczytane
+    markAllMessagesAsRead(room.roomId)
+    setRoomAsRead(room.roomId)
+
+    try {
+      const response = await customFetch.get(`/chat/messages/${room.roomId}`)
+      setMessages(response.data.messages || [])
+
+      if ((response.data.messages || []).length < 30) {
+        setHasMoreMessages(false)
+      }
+    } catch (error) {
+      console.error('Błąd pobierania wiadomości:', error)
+      setMessages([])
+    } finally {
       setLoading(false)
-    }, 500)
+    }
+  }
+
+  // Ładowanie starszych wiadomości
+  const loadOlderMessages = async () => {
+    if (loadingOlderMessages || !hasMoreMessages || !selectedRoom) return
+
+    setLoadingOlderMessages(true)
+
+    try {
+      const nextPage = currentPage + 1
+      const response = await customFetch.get(
+        `/chat/messages/${selectedRoom.roomId}?page=${nextPage}&limit=30`
+      )
+
+      const olderMessages = response.data.messages || []
+
+      if (olderMessages.length > 0) {
+        setMessages((prev) => [...olderMessages, ...prev])
+        setCurrentPage(nextPage)
+
+        if (olderMessages.length < 30) {
+          setHasMoreMessages(false)
+        }
+      } else {
+        setHasMoreMessages(false)
+      }
+    } catch (error) {
+      console.error('Błąd ładowania starszych wiadomości:', error)
+    } finally {
+      setLoadingOlderMessages(false)
+    }
+  }
+
+  // Tworzenie nowego pokoju z użytkownikiem
+  const handleStartNewChat = async (otherUserId) => {
+    try {
+      const response = await customFetch.post('/chat/rooms', { otherUserId })
+      const newRoom = response.data.chatRoom
+
+      const roomExists = chatRooms.some(
+        (room) => room.roomId === newRoom.roomId
+      )
+      if (!roomExists) {
+        setChatRooms((prev) => [newRoom, ...prev])
+        joinRoom(newRoom.roomId)
+      }
+
+      handleRoomSelect(newRoom)
+    } catch (error) {
+      console.error('Błąd tworzenia pokoju:', error)
+      Alert.alert('Błąd', 'Nie udało się utworzyć pokoju czatu')
+    }
   }
 
   // Powrót do listy pokojów
   const handleBackToList = () => {
     setSelectedRoom(null)
     setMessages([])
+    setActiveRoomId(null)
+    setShowSettings(false)
   }
 
   // Wysyłanie wiadomości
   const handleSend = () => {
-    if (!input.trim() || !selectedRoom) return
-
-    const newMessage = {
-      _id: `new_${Date.now()}`,
-      sender: currentUser,
-      message: input.trim(),
-      createdAt: new Date().toISOString(),
+    if (!input.trim() || !user || !selectedRoom) {
+      if (!selectedRoom) {
+        Alert.alert('Info', 'Wybierz pokój czatu, aby wysłać wiadomość')
+      }
+      return
     }
 
-    setMessages((prev) => [...prev, newMessage])
-    setInput('')
+    if (!socket) {
+      Alert.alert('Błąd', 'Brak połączenia z serwerem. Spróbuj ponownie.')
+      return
+    }
 
-    // Scroll do końca
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true })
-    }, 100)
+    socketSendMessage(selectedRoom.roomId, input, user._id)
+    setInput('')
   }
 
-  // Scroll do końca przy nowych wiadomościach
-  useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: false })
-      }, 100)
+  // Wyciszanie czatu
+  const handleMuteChat = async (duration) => {
+    if (!selectedRoom) return
+
+    let muteExpiresAt = null
+
+    if (duration === 'permanent') {
+      muteExpiresAt = null
+    } else if (duration === '1h') {
+      muteExpiresAt = new Date(Date.now() + 1000 * 60 * 60)
+    } else if (duration === '12h') {
+      muteExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 12)
+    } else if (duration === '24h') {
+      muteExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24)
+    } else if (duration === '1w') {
+      muteExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
     }
-  }, [selectedRoom])
+
+    try {
+      const result = await muteChatRoom(selectedRoom.roomId, muteExpiresAt)
+      if (result.success) {
+        Alert.alert(
+          'Sukces',
+          `Czat wyciszony na ${duration === 'permanent' ? 'stałe' : duration}`
+        )
+      } else {
+        Alert.alert('Błąd', 'Błąd wyciszania czatu')
+      }
+    } catch (error) {
+      Alert.alert('Błąd', 'Błąd wyciszania czatu')
+      console.error('Błąd wyciszania czatu:', error)
+    }
+
+    setShowSettings(false)
+  }
+
+  const handleUnmuteChat = async () => {
+    if (!selectedRoom) return
+    try {
+      const result = await unmuteChatRoom(selectedRoom.roomId)
+      if (result.success) {
+        Alert.alert('Sukces', 'Powiadomienia w czacie włączone')
+      } else {
+        Alert.alert('Błąd', 'Błąd odciszania czatu')
+      }
+    } catch (error) {
+      Alert.alert('Błąd', 'Błąd odciszania czatu')
+      console.error('Błąd odciszania czatu:', error)
+    }
+
+    setShowSettings(false)
+  }
 
   // Nazwa wybranego pokoju
   const getSelectedRoomName = () => {
@@ -245,9 +385,15 @@ const Chat = () => {
       return selectedRoom.eventName || 'Wydarzenie grupowe'
     }
     const otherUser = selectedRoom.participants?.find(
-      (p) => String(p._id) !== String(currentUser._id)
+      (p) => String(p._id) !== String(user?._id)
     )
     return otherUser?.nickName || 'Użytkownik'
+  }
+
+  // Pobierz unreadCount dla pokoju z roomsState
+  const getUnreadCount = (roomId) => {
+    const roomData = roomsState.find((r) => r.roomId === roomId)
+    return roomData?.unreadCount || 0
   }
 
   // Widok listy pokojów
@@ -353,10 +499,10 @@ const Chat = () => {
               <ChatRoomListItem
                 key={room.roomId}
                 room={room}
-                currentUser={currentUser}
+                currentUser={user}
                 onPress={() => handleRoomSelect(room)}
                 isSelected={false}
-                unreadCount={room.roomId === '1' ? 2 : 0} // Mock nieprzeczytanych
+                unreadCount={getUnreadCount(room.roomId)}
               />
             ))
           ) : (
@@ -396,10 +542,55 @@ const Chat = () => {
             </Text>
           )}
         </View>
-        <TouchableOpacity style={styles.settingsButton}>
+        <TouchableOpacity
+          style={styles.settingsButton}
+          onPress={() => setShowSettings(!showSettings)}
+        >
           <Ionicons name='settings-outline' size={22} color={COLORS.primary} />
         </TouchableOpacity>
       </View>
+
+      {/* Settings dropdown */}
+      {showSettings && (
+        <View style={styles.settingsDropdown}>
+          <TouchableOpacity
+            style={styles.settingsOption}
+            onPress={() => handleMuteChat('1h')}
+          >
+            <Text style={styles.settingsOptionText}>Wycisz na 1h</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.settingsOption}
+            onPress={() => handleMuteChat('12h')}
+          >
+            <Text style={styles.settingsOptionText}>Wycisz na 12h</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.settingsOption}
+            onPress={() => handleMuteChat('24h')}
+          >
+            <Text style={styles.settingsOptionText}>Wycisz na 24h</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.settingsOption}
+            onPress={() => handleMuteChat('1w')}
+          >
+            <Text style={styles.settingsOptionText}>Wycisz na tydzień</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.settingsOption}
+            onPress={() => handleMuteChat('permanent')}
+          >
+            <Text style={styles.settingsOptionText}>Wycisz na stałe</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.settingsOption, styles.settingsOptionLast]}
+            onPress={handleUnmuteChat}
+          >
+            <Text style={styles.settingsOptionText}>Włącz powiadomienia</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Wiadomości */}
       {loading ? (
@@ -413,13 +604,43 @@ const Chat = () => {
           style={styles.messagesContainer}
           contentContainerStyle={styles.messagesContent}
           showsVerticalScrollIndicator={false}
+          onScroll={({ nativeEvent }) => {
+            const { contentOffset, contentSize, layoutMeasurement } =
+              nativeEvent
+            const distanceFromBottom =
+              contentSize.height - contentOffset.y - layoutMeasurement.height
+            setIsNearBottom(distanceFromBottom <= 200)
+
+            // Ładuj starsze wiadomości gdy scroll blisko góry
+            if (
+              contentOffset.y < 100 &&
+              !loadingOlderMessages &&
+              hasMoreMessages
+            ) {
+              loadOlderMessages()
+            }
+          }}
+          scrollEventThrottle={100}
         >
+          {loadingOlderMessages && (
+            <View style={styles.loadingOlder}>
+              <ActivityIndicator size='small' color={COLORS.secondary} />
+              <Text style={styles.loadingOlderText}>
+                Ładowanie starszych wiadomości...
+              </Text>
+            </View>
+          )}
+          {!hasMoreMessages && messages.length > 0 && (
+            <Text style={styles.noMoreMessages}>
+              To są wszystkie wiadomości w tym pokoju
+            </Text>
+          )}
           {messages.length > 0 ? (
             messages.map((msg) => (
               <ChatMessageBox
                 key={msg._id}
                 message={msg.message}
-                isOwn={msg.sender?._id === currentUser._id}
+                isOwn={msg.sender?._id === user?._id}
                 senderName={msg.sender?.nickName || 'Użytkownik'}
                 time={
                   msg.createdAt
@@ -655,5 +876,46 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: COLORS.backgroundSecondary,
+  },
+  // Settings dropdown styles
+  settingsDropdown: {
+    backgroundColor: COLORS.backgroundSecondary,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.third,
+  },
+  settingsOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  settingsOptionLast: {
+    borderBottomWidth: 0,
+  },
+  settingsOptionText: {
+    fontSize: 14,
+    fontFamily: 'Lato-Regular',
+    color: COLORS.primary,
+  },
+  // Infinite scroll styles
+  loadingOlder: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  loadingOlderText: {
+    marginLeft: 8,
+    fontSize: 12,
+    fontFamily: 'Lato-Regular',
+    color: COLORS.gray,
+  },
+  noMoreMessages: {
+    textAlign: 'center',
+    paddingVertical: 10,
+    fontSize: 12,
+    fontFamily: 'Lato-Regular',
+    color: COLORS.gray,
+    fontStyle: 'italic',
   },
 })

@@ -31,22 +31,22 @@ export const DashboardProvider = ({ children }) => {
   const [mapTheme, setMapTheme] = useState('dark')
 
   // Pobierz geolokalizację z serwera
-  useEffect(() => {
-    const fetchGeolocation = async () => {
-      try {
-        const response = await customFetch.get('/location/decrypt')
-        if (response.data) {
-          setUserLocation(response.data)
-          setGeolocationAccepted(true)
-          setGeolocationExists(true)
-        }
-      } catch (error) {
-        console.error('Geolocation not setup yet or dont exist:', error)
-      }
-    }
+  // useEffect(() => {
+  //   const fetchGeolocation = async () => {
+  //     try {
+  //       const response = await customFetch.get('/location/decrypt')
+  //       if (response.data) {
+  //         setUserLocation(response.data)
+  //         setGeolocationAccepted(true)
+  //         setGeolocationExists(true)
+  //       }
+  //     } catch (error) {
+  //       console.error('Geolocation not setup yet or dont exist:', error)
+  //     }
+  //   }
 
-    fetchGeolocation()
-  }, [])
+  //   fetchGeolocation()
+  // }, [])
 
   // Wczytaj motyw mapy z AsyncStorage
   useEffect(() => {
@@ -109,7 +109,7 @@ export const DashboardProvider = ({ children }) => {
         setFilteredEvents,
         mapTheme,
         updateMapTheme,
-        saveUserLocation,
+        // saveUserLocation,
       }}
     >
       {children}

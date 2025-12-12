@@ -1,12 +1,18 @@
+import { useState } from 'react'
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../constants/colors'
 import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
+import { useSocketIo } from '../context/SocketIoContext'
 
-const MyEventCard = ({ event, status, onPress, showNotification = false }) => {
+const MyEventCard = ({ event, status, onPress, statusData }) => {
+  const { markEventAsRead } = useSocketIo()
+  const [isRead, setIsRead] = useState(statusData?.readBy !== false)
+
   if (!event) return null
 
   const icon = getGameTypeIcon(event.gameType)
+  const showNotification = statusData && statusData.readBy === false && !isRead
 
   // Kolory w zależności od statusu
   const getStatusColor = () => {
@@ -57,10 +63,27 @@ const MyEventCard = ({ event, status, onPress, showNotification = false }) => {
     'cancelled',
   ].includes(status)
 
+  // Obsługa kliknięcia z oznaczeniem jako przeczytane
+  const handlePress = async () => {
+    // Oznacz jako przeczytane jeśli readBy jest false
+    if (statusData && statusData.readBy === false && !isRead) {
+      try {
+        await markEventAsRead(event._id)
+        setIsRead(true)
+      } catch (error) {
+        console.error('Błąd podczas oznaczania jako przeczytane:', error)
+      }
+    }
+    // Wywołaj oryginalny onPress
+    if (onPress) {
+      onPress()
+    }
+  }
+
   return (
     <TouchableOpacity
       style={[styles.card, { opacity: isDisabled ? 0.6 : 1 }]}
-      onPress={onPress}
+      onPress={handlePress}
       activeOpacity={0.8}
       disabled={isDisabled}
     >

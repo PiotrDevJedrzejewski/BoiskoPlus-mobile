@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -11,82 +11,9 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { Picker } from '@react-native-picker/picker'
 import { COLORS } from '../../../../constants/colors'
+import customFetch from '../../../../assets/utils/customFetch'
 
 const defaultAvatar = require('../../../../assets/images/defaultAvatar.png')
-
-// Mock data - ranking użytkowników
-const MOCK_LEADERBOARD = [
-  {
-    userID: { _id: '1', nickName: 'ProPlayer123', avatarUrl: null },
-    gamesPlayed: 156,
-    eventsOrganized: 23,
-    totalLikes: 89,
-    points: 2450,
-  },
-  {
-    userID: { _id: '2', nickName: 'SportowiecMax', avatarUrl: null },
-    gamesPlayed: 142,
-    eventsOrganized: 18,
-    totalLikes: 67,
-    points: 2180,
-  },
-  {
-    userID: { _id: '3', nickName: 'Pilkarz_Lodzki', avatarUrl: null },
-    gamesPlayed: 128,
-    eventsOrganized: 31,
-    totalLikes: 54,
-    points: 1950,
-  },
-  {
-    userID: { _id: '4', nickName: 'TeamLeader', avatarUrl: null },
-    gamesPlayed: 98,
-    eventsOrganized: 45,
-    totalLikes: 112,
-    points: 1820,
-  },
-  {
-    userID: { _id: '5', nickName: 'GoalMaster', avatarUrl: null },
-    gamesPlayed: 87,
-    eventsOrganized: 12,
-    totalLikes: 43,
-    points: 1650,
-  },
-  {
-    userID: { _id: '6', nickName: 'Siatkarz99', avatarUrl: null },
-    gamesPlayed: 76,
-    eventsOrganized: 8,
-    totalLikes: 38,
-    points: 1420,
-  },
-  {
-    userID: { _id: '7', nickName: 'KoszMistrz', avatarUrl: null },
-    gamesPlayed: 65,
-    eventsOrganized: 15,
-    totalLikes: 29,
-    points: 1280,
-  },
-  {
-    userID: { _id: '8', nickName: 'Sportowiec2000', avatarUrl: null },
-    gamesPlayed: 54,
-    eventsOrganized: 6,
-    totalLikes: 21,
-    points: 980,
-  },
-  {
-    userID: { _id: '9', nickName: 'NowicjuszPL', avatarUrl: null },
-    gamesPlayed: 32,
-    eventsOrganized: 3,
-    totalLikes: 12,
-    points: 620,
-  },
-  {
-    userID: { _id: '10', nickName: 'Gracz_Nowy', avatarUrl: null },
-    gamesPlayed: 18,
-    eventsOrganized: 1,
-    totalLikes: 5,
-    points: 340,
-  },
-]
 
 const SORT_OPTIONS = [
   { label: 'Punkty', value: 'points' },
@@ -96,6 +23,9 @@ const SORT_OPTIONS = [
 ]
 
 const RankingCard = ({ user, rank, sortBy }) => {
+  // Zabezpieczenie przed null userID
+  if (!user.userID) return null
+
   const avatar = user.userID.avatarUrl
     ? { uri: user.userID.avatarUrl }
     : defaultAvatar
@@ -153,25 +83,49 @@ const RankingCard = ({ user, rank, sortBy }) => {
 
 const Ranking = () => {
   const [sortBy, setSortBy] = useState('points')
-  const [loading, setLoading] = useState(false)
-  const [leaderboardData, setLeaderboardData] = useState(
-    MOCK_LEADERBOARD.map((user, index) => ({ ...user, rank: index + 1 }))
-  )
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [leaderboardData, setLeaderboardData] = useState([])
+
+  // Pobierz dane rankingu z API
+  const fetchLeaderboard = async (sortOption = 'points') => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const response = await customFetch.get(
+        `/user-stats/leaderboard?sortBy=${sortOption}&limit=10`
+      )
+      const { leaderboard } = response.data
+
+      // Filtruj użytkowników z null userID (usuniętych użytkowników)
+      const validLeaderboard = leaderboard.filter(
+        (user) => user.userID !== null
+      )
+
+      // Dodaj ranking do każdego użytkownika
+      const rankedData = validLeaderboard.map((user, index) => ({
+        ...user,
+        rank: index + 1,
+      }))
+
+      setLeaderboardData(rankedData)
+    } catch (err) {
+      console.error('Błąd podczas pobierania rankingu:', err)
+      setError('Nie udało się pobrać danych rankingu')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Pobierz dane przy montowaniu i zmianie sortowania
+  useEffect(() => {
+    fetchLeaderboard(sortBy)
+  }, [sortBy])
 
   // Sortowanie danych
   const handleSortChange = (newSortBy) => {
     setSortBy(newSortBy)
-    setLoading(true)
-
-    // Symulacja ładowania + sortowanie
-    setTimeout(() => {
-      const sorted = [...MOCK_LEADERBOARD].sort(
-        (a, b) => b[newSortBy] - a[newSortBy]
-      )
-      const ranked = sorted.map((user, index) => ({ ...user, rank: index + 1 }))
-      setLeaderboardData(ranked)
-      setLoading(false)
-    }, 300)
   }
 
   return (
@@ -226,6 +180,21 @@ const Ranking = () => {
           <ActivityIndicator size='large' color={COLORS.secondary} />
           <Text style={styles.loadingText}>Ładowanie rankingu...</Text>
         </View>
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Ionicons
+            name='alert-circle-outline'
+            size={60}
+            color={COLORS.error}
+          />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => fetchLeaderboard(sortBy)}
+          >
+            <Text style={styles.retryButtonText}>Spróbuj ponownie</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <ScrollView
           style={styles.list}
@@ -234,7 +203,7 @@ const Ranking = () => {
         >
           {leaderboardData.map((user) => (
             <RankingCard
-              key={user.userID._id}
+              key={user.userID?._id || user._id}
               user={user}
               rank={user.rank}
               sortBy={sortBy}
@@ -325,6 +294,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontFamily: 'Lato-Regular',
+    color: COLORS.error,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 20,
+    backgroundColor: COLORS.secondary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.background,
   },
   list: {
     flex: 1,

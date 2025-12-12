@@ -14,60 +14,9 @@ import { COLORS } from '../../../../constants/colors'
 import PlayerCard from '../../../../components/PlayerCard'
 import ConfirmModal from '../../../(Popup)/ConfirmModal'
 import FullScreenAd from '../../../(Popup)/FullScreenAd'
-
-// Mock data - wydarzenie
-const MOCK_EVENT = {
-  _id: 'event1',
-  eventName: 'Mecz na Orliku - Piłka nożna',
-  addressString: 'ul. Sportowa 15, Łódź',
-  startDate: '2025-12-10',
-  startHour: '18:00',
-  eventDescription:
-    'Szukamy graczy do meczu towarzyskiego na orliku. Poziom średnio-zaawansowany.',
-  duration: '2 godziny',
-  fieldType: 'Orlik (sztuczna trawa)',
-  gameType: 'Piłka nożna',
-  level: 'Średnio-zaawansowany',
-  playerCount: 4,
-  price: '10 zł/os',
-  paymentMethod: 'Gotówka na miejscu',
-  phoneNumber: '123456789',
-  isRecurring: false,
-  eventStatus: 'active',
-  createdBy: 'owner1',
-}
-
-const MOCK_OWNER = {
-  _id: 'owner1',
-  nickName: 'SportyJohn',
-  name: 'Jan',
-  surname: 'Kowalski',
-  avatarUrl: null,
-  userStats: {
-    gamesPlayed: 45,
-    eventsOrganized: 12,
-    totalLikes: 34,
-  },
-}
-
-const MOCK_PLAYERS = [
-  {
-    _id: 'player1',
-    nickName: 'FastRunner',
-    name: 'Adam',
-    surname: 'Nowak',
-    avatarUrl: null,
-    userStats: { gamesPlayed: 23, eventsOrganized: 2, totalLikes: 15 },
-  },
-  {
-    _id: 'player2',
-    nickName: 'GoalMaster',
-    name: 'Piotr',
-    surname: 'Wiśniewski',
-    avatarUrl: null,
-    userStats: { gamesPlayed: 67, eventsOrganized: 8, totalLikes: 42 },
-  },
-]
+import customFetch from '../../../../assets/utils/customFetch'
+import { useDashboard } from '../../../../context/DashboardContext'
+import { useNotification } from '../../../../context/NotificationContext'
 
 const ActionButton = ({ icon, label, onPress, muted = false }) => (
   <TouchableOpacity
@@ -116,12 +65,18 @@ const InfoRow = ({ label, value }) => (
 const SingleEvent = () => {
   const router = useRouter()
   const { id } = useLocalSearchParams()
+  const eventID = id
+
+  const { filteredEvents, adShow, setAdShow } = useDashboard()
+  const { muteChatRoom, unmuteChatRoom, muteEvent, unmuteEvent, preferences } =
+    useNotification()
 
   const [loading, setLoading] = useState(true)
   const [event, setEvent] = useState(null)
   const [owner, setOwner] = useState(null)
   const [players, setPlayers] = useState([])
-  const [userStatus, setUserStatus] = useState(null) // null | 'interested' | 'accepted' | 'rejected'
+  const [playersLoading, setPlayersLoading] = useState(false)
+  const [userStatus, setUserStatus] = useState(null)
   const [statusLoading, setStatusLoading] = useState(false)
 
   const [showInfo, setShowInfo] = useState(false)
@@ -133,21 +88,149 @@ const SingleEvent = () => {
   const [showAd, setShowAd] = useState(false)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
 
+  // Pobierz wydarzenie
   useEffect(() => {
-    // Symulacja pobierania danych
-    const fetchData = async () => {
+    const fetchEvent = async () => {
       setLoading(true)
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      setEvent(MOCK_EVENT)
-      setOwner(MOCK_OWNER)
-      setPlayers(MOCK_PLAYERS)
-      setUserStatus(null) // Brak statusu = nie dołączył
-      setLoading(false)
+      try {
+        // Najpierw sprawdź w filteredEvents
+        if (filteredEvents?.events) {
+          const found = filteredEvents.events.find((e) => e._id === eventID)
+          if (found) {
+            setEvent(found)
+            setLoading(false)
+            return
+          }
+        }
+        // Jeśli nie znaleziono, pobierz z backendu
+        const response = await customFetch.get(`/football-events/${eventID}`)
+        setEvent(response.data.event)
+      } catch (error) {
+        console.error('Błąd pobierania wydarzenia:', error)
+        setEvent(undefined)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    fetchData()
-  }, [id])
+    if (eventID) fetchEvent()
+  }, [eventID, filteredEvents])
+
+  // Pobierz status użytkownika dla wydarzenia
+  useEffect(() => {
+    if (!eventID) return
+    setStatusLoading(true)
+
+    const fetchStatus = async () => {
+      try {
+        const response = await customFetch.get(
+          `/status/events/${eventID}/my-status`
+        )
+        if (response.data?.status) {
+          setUserStatus(response.data.status)
+        } else {
+          setUserStatus(null)
+        }
+      } catch (error) {
+        setUserStatus(null)
+      } finally {
+        setStatusLoading(false)
+      }
+    }
+
+    fetchStatus()
+  }, [eventID])
+
+  // Pobierz informacje o właścicielu wydarzenia
+  useEffect(() => {
+    if (!event?.createdBy) return
+
+    const fetchOwnerInfo = async () => {
+      try {
+        let userId = event.createdBy
+        if (typeof event.createdBy === 'object' && event.createdBy._id) {
+          userId = event.createdBy._id
+        } else if (typeof event.createdBy === 'object') {
+          userId = String(event.createdBy)
+        }
+        const response = await customFetch.get(`/users/${userId}`)
+        setOwner(response.data.user)
+      } catch (error) {
+        console.error('Błąd pobierania właściciela:', error)
+      }
+    }
+
+    fetchOwnerInfo()
+  }, [event])
+
+  // Pobierz zaakceptowanych uczestników
+  useEffect(() => {
+    if (!eventID) return
+
+    const fetchAcceptedPlayers = async () => {
+      setPlayersLoading(true)
+      try {
+        const response = await customFetch.get(
+          `/status/events/${eventID}/users`
+        )
+        const acceptedUsers = response.data.usersByStatus?.accepted || []
+
+        if (acceptedUsers.length > 0) {
+          const userIds = acceptedUsers.map((user) => user.userID._id)
+          const statsResponse = await customFetch.post('/user-stats/multiple', {
+            userIds,
+          })
+
+          const playersWithStats = acceptedUsers.map((user) => {
+            const userStats = statsResponse.data.stats?.find(
+              (stat) => stat.userID?.toString() === user.userID._id?.toString()
+            )
+            return {
+              _id: user.userID._id,
+              nickName: user.userID.nickName,
+              name: user.userID.name,
+              surname: user.userID.surname,
+              avatarUrl: user.userID.avatarUrl,
+              userStats: userStats || {
+                gamesPlayed: 0,
+                eventsOrganized: 0,
+                totalLikes: 0,
+              },
+            }
+          })
+          setPlayers(playersWithStats)
+        } else {
+          setPlayers([])
+        }
+      } catch (error) {
+        console.error('Błąd pobierania uczestników:', error)
+        setPlayers([])
+      } finally {
+        setPlayersLoading(false)
+      }
+    }
+
+    fetchAcceptedPlayers()
+  }, [eventID])
+
+  // Sprawdzanie czy chat i event są wyciszone
+  useEffect(() => {
+    if (!preferences || !eventID) return
+
+    const chatRoomId = `group_${eventID}`
+    const isChatMutedInPrefs = preferences.mutedChatRooms?.some((room) => {
+      const isMuted = room.chatRoomId === chatRoomId
+      const isExpired =
+        room.muteExpiresAt && new Date() > new Date(room.muteExpiresAt)
+      return isMuted && !isExpired
+    })
+    setIsChatMuted(isChatMutedInPrefs || false)
+
+    const isEventMutedInPrefs = preferences.mutedEvents?.some(
+      (mutedEvent) => mutedEvent.eventId === eventID
+    )
+    setIsNotificationsMuted(isEventMutedInPrefs || false)
+  }, [preferences, eventID])
 
   const handleJoinRequest = async () => {
     if (userStatus === 'interested' || userStatus === 'accepted') {
@@ -155,14 +238,19 @@ const SingleEvent = () => {
       return
     }
 
-    // Pokaż reklamę
-    setShowAd(true)
+    try {
+      setShowAd(true)
+      setUserStatus('interested')
+      await customFetch.post(`/status/events/${eventID}/join`)
+    } catch (error) {
+      Alert.alert('Info', 'Już masz status dla tego wydarzenia')
+      console.error(error)
+    }
   }
 
   const handleAfterAd = () => {
     setShowAd(false)
-    setUserStatus('interested')
-    Alert.alert('Sukces', 'Prośba o dołączenie została wysłana')
+    if (setAdShow) setAdShow(false)
   }
 
   const handleLeave = () => {
@@ -170,33 +258,80 @@ const SingleEvent = () => {
   }
 
   const confirmLeave = async () => {
-    setShowLeaveConfirm(false)
-    setUserStatus(null)
-    Alert.alert('Sukces', 'Pomyślnie wycofano z wydarzenia')
+    try {
+      await customFetch.delete(`/status/events/${eventID}/leave`)
+      setUserStatus(null)
+      setShowLeaveConfirm(false)
+      Alert.alert('Sukces', 'Pomyślnie wycofano z wydarzenia')
+    } catch (error) {
+      Alert.alert('Błąd', 'Nie możesz się wycofać z tego wydarzenia')
+      console.error('Błąd podczas wycofywania z wydarzenia:', error)
+    }
   }
 
-  const handleToggleChatMute = () => {
-    setIsChatMuted(!isChatMuted)
-    Alert.alert(
-      'Sukces',
-      isChatMuted
-        ? 'Powiadomienia z czatu włączone'
-        : 'Powiadomienia z czatu wyciszone'
-    )
+  const handleToggleChatMute = async () => {
+    try {
+      const chatRoomId = `group_${eventID}`
+
+      if (isChatMuted) {
+        const result = await unmuteChatRoom(chatRoomId)
+        if (result.success) {
+          setIsChatMuted(false)
+          Alert.alert('Sukces', 'Powiadomienia z czatu zostały włączone')
+        } else {
+          Alert.alert('Błąd', 'Błąd podczas włączania powiadomień z czatu')
+        }
+      } else {
+        const result = await muteChatRoom(chatRoomId)
+        if (result.success) {
+          setIsChatMuted(true)
+          Alert.alert('Sukces', 'Powiadomienia z czatu zostały wyciszone')
+        } else {
+          Alert.alert('Błąd', 'Błąd podczas wyciszania powiadomień z czatu')
+        }
+      }
+    } catch (error) {
+      Alert.alert('Błąd', 'Błąd podczas zmiany ustawień powiadomień z czatu')
+      console.error('Błąd handleChatNotifications:', error)
+    }
   }
 
-  const handleToggleNotificationsMute = () => {
-    setIsNotificationsMuted(!isNotificationsMuted)
-    Alert.alert(
-      'Sukces',
-      isNotificationsMuted
-        ? 'Powiadomienia wydarzenia włączone'
-        : 'Powiadomienia wydarzenia wyciszone'
-    )
+  const handleToggleNotificationsMute = async () => {
+    try {
+      if (isNotificationsMuted) {
+        const result = await unmuteEvent(eventID)
+        if (result.success) {
+          setIsNotificationsMuted(false)
+          Alert.alert('Sukces', 'Powiadomienia z wydarzenia zostały włączone')
+        } else {
+          Alert.alert('Błąd', 'Błąd podczas włączania powiadomień z wydarzenia')
+        }
+      } else {
+        const result = await muteEvent(eventID)
+        if (result.success) {
+          setIsNotificationsMuted(true)
+          Alert.alert('Sukces', 'Powiadomienia z wydarzenia zostały wyciszone')
+        } else {
+          Alert.alert(
+            'Błąd',
+            'Błąd podczas wyciszania powiadomień z wydarzenia'
+          )
+        }
+      }
+    } catch (error) {
+      Alert.alert(
+        'Błąd',
+        'Błąd podczas zmiany ustawień powiadomień z wydarzenia'
+      )
+      console.error('Błąd handleEventNotifications:', error)
+    }
   }
 
   const handleReport = () => {
-    Alert.alert('Zgłoś wydarzenie', 'Funkcja w przygotowaniu')
+    router.push({
+      pathname: '/(main)/(tabs)/(hidden)/report',
+      params: { type: 'event', reportedEventId: eventID },
+    })
   }
 
   const handleGoBack = () => {
@@ -333,7 +468,9 @@ const SingleEvent = () => {
           onToggle={() => setShowPlayers(!showPlayers)}
           badge={`${players.length} zaakceptowanych`}
         >
-          {players.length > 0 ? (
+          {playersLoading ? (
+            <ActivityIndicator size='small' color={COLORS.secondary} />
+          ) : players.length > 0 ? (
             players.map((player) => (
               <PlayerCard key={player._id} playerInfo={player} />
             ))
