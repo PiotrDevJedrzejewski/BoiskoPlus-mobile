@@ -19,16 +19,28 @@ import customFetch from '../../../assets/utils/customFetch'
 import { useSocketIo } from '../../../context/SocketIoContext'
 import { useAuth } from '../../../context/AuthContext'
 import { useNotification } from '../../../context/NotificationContext'
+import LottieView from 'lottie-react-native'
+import { useFonts } from 'expo-font'
+
+const typing = require('../../../assets/utils/typing.json')
 
 const Chat = () => {
   const { user } = useAuth()
   const {
-    socket,
+    chatSocket,
+    socket, // kompatybilność wsteczna
     joinRoom,
+    leaveRoom,
     sendMessage: socketSendMessage,
     setRoomAsRead,
     setActiveRoomId,
     roomsState,
+    isConnected,
+    chatConnectionState,
+    ConnectionState,
+    sendTyping,
+    sendStopTyping,
+    isUserOnline,
   } = useSocketIo()
   const { muteChatRoom, unmuteChatRoom } = useNotification()
 
@@ -50,6 +62,12 @@ const Chat = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [isNearBottom, setIsNearBottom] = useState(true)
   const [isInitialLoad, setIsInitialLoad] = useState(false)
+  const [typingUsers, setTypingUsers] = useState({})
+  const typingTimeoutRef = useRef({})
+
+  const [fontsLoaded] = useFonts({
+    ObjectFont: require('../../../assets/fonts/object.ttf'),
+  })
 
   const scrollViewRef = useRef(null)
 
@@ -93,7 +111,7 @@ const Chat = () => {
 
   // Obsługa nowych wiadomości z socket
   useEffect(() => {
-    if (!socket) return
+    if (!chatSocket) return
 
     const handleNewMessage = (msg) => {
       // Dodaj wiadomość tylko jeśli jesteśmy w tym pokoju
@@ -112,15 +130,15 @@ const Chat = () => {
       )
     }
 
-    socket.on('newMessage', handleNewMessage)
+    chatSocket.on('newMessage', handleNewMessage)
     return () => {
-      socket.off('newMessage', handleNewMessage)
+      chatSocket.off('newMessage', handleNewMessage)
     }
-  }, [socket, selectedRoom, user?._id])
+  }, [chatSocket, selectedRoom, user?._id])
 
   // Obsługa nowych pokojów z socket
   useEffect(() => {
-    if (!socket) return
+    if (!chatSocket) return
 
     const handleNewChatRoom = (data) => {
       if (data.userId === user?._id) {
@@ -137,15 +155,15 @@ const Chat = () => {
       }
     }
 
-    socket.on('newChatRoom', handleNewChatRoom)
+    chatSocket.on('newChatRoom', handleNewChatRoom)
     return () => {
-      socket.off('newChatRoom', handleNewChatRoom)
+      chatSocket.off('newChatRoom', handleNewChatRoom)
     }
-  }, [socket, user?._id, joinRoom])
+  }, [chatSocket, user?._id, joinRoom])
 
   // Obsługa usuwania z pokojów
   useEffect(() => {
-    if (!socket) return
+    if (!chatSocket) return
 
     const handleRemovedFromChatRoom = (data) => {
       if (data.userId === user?._id) {
@@ -159,15 +177,92 @@ const Chat = () => {
           setActiveRoomId(null)
         }
 
-        socket.emit('leaveRoom', data.roomId)
+        // V2: użyj funkcji leaveRoom zamiast socket.emit
+        leaveRoom(data.roomId)
       }
     }
 
-    socket.on('removedFromChatRoom', handleRemovedFromChatRoom)
+    chatSocket.on('removedFromChatRoom', handleRemovedFromChatRoom)
     return () => {
-      socket.off('removedFromChatRoom', handleRemovedFromChatRoom)
+      chatSocket.off('removedFromChatRoom', handleRemovedFromChatRoom)
     }
-  }, [socket, user?._id, selectedRoom, setActiveRoomId])
+  }, [chatSocket, user?._id, selectedRoom, setActiveRoomId, leaveRoom])
+
+  // Obsługa typing indicator
+  useEffect(() => {
+    if (!chatSocket) return
+
+    const handleUserTyping = (data) => {
+      const roomId = data.roomId
+      const userId = data.userId || data.userID || data.user_id
+
+      if (
+        selectedRoom &&
+        selectedRoom.roomId === roomId &&
+        userId !== user?._id
+      ) {
+        // Znajdź użytkownika w liście uczestników pokoju
+        let nickName = 'Użytkownik'
+        if (selectedRoom.participants && selectedRoom.participants.length > 0) {
+          const typingUser = selectedRoom.participants.find(
+            (p) => String(p._id) === String(userId)
+          )
+          if (typingUser) {
+            nickName =
+              typingUser.nickName ||
+              typingUser.nickname ||
+              typingUser.nick ||
+              'Użytkownik'
+          }
+        }
+
+        setTypingUsers((prev) => ({
+          ...prev,
+          [userId]: nickName,
+        }))
+
+        // Usuń status typing po 3 sekundach
+        if (typingTimeoutRef.current[userId]) {
+          clearTimeout(typingTimeoutRef.current[userId])
+        }
+        typingTimeoutRef.current[userId] = setTimeout(() => {
+          setTypingUsers((prev) => {
+            const newTyping = { ...prev }
+            delete newTyping[userId]
+            return newTyping
+          })
+        }, 3000)
+      }
+    }
+
+    const handleUserStoppedTyping = (data) => {
+      const roomId = data.roomId
+      const userId = data.userId || data.userID || data.user_id
+
+      if (selectedRoom && selectedRoom.roomId === roomId) {
+        if (typingTimeoutRef.current[userId]) {
+          clearTimeout(typingTimeoutRef.current[userId])
+          delete typingTimeoutRef.current[userId]
+        }
+        setTypingUsers((prev) => {
+          const newTyping = { ...prev }
+          delete newTyping[userId]
+          return newTyping
+        })
+      }
+    }
+
+    chatSocket.on('userTyping', handleUserTyping)
+    chatSocket.on('userStoppedTyping', handleUserStoppedTyping)
+
+    return () => {
+      chatSocket.off('userTyping', handleUserTyping)
+      chatSocket.off('userStoppedTyping', handleUserStoppedTyping)
+      // Clear all typing timeouts
+      Object.values(typingTimeoutRef.current).forEach(clearTimeout)
+      typingTimeoutRef.current = {}
+    }
+  }, [chatSocket, selectedRoom, user?._id])
 
   // Reset activeRoomId przy odmontowaniu
   useEffect(() => {
@@ -227,6 +322,11 @@ const Chat = () => {
     setLoadingOlderMessages(false)
     setIsNearBottom(true)
     setIsInitialLoad(true)
+
+    // Wyczyść typing users
+    setTypingUsers({})
+    Object.values(typingTimeoutRef.current).forEach(clearTimeout)
+    typingTimeoutRef.current = {}
 
     // Oznacz wiadomości jako przeczytane
     markAllMessagesAsRead(room.roomId)
@@ -305,10 +405,31 @@ const Chat = () => {
     setMessages([])
     setActiveRoomId(null)
     setShowSettings(false)
+    setTypingUsers({})
+    // Clear all typing timeouts
+    Object.values(typingTimeoutRef.current).forEach(clearTimeout)
+    typingTimeoutRef.current = {}
+  }
+
+  // Obsługa zmiany input - wysyłanie typing events
+  const handleInputChange = (text) => {
+    setInput(text)
+
+    if (!selectedRoom || !sendTyping) return
+
+    // Wyślij typing event gdy użytkownik zaczyna pisać
+    if (text.trim() && !input.trim()) {
+      sendTyping(selectedRoom.roomId)
+    }
+
+    // Wyślij stopTyping gdy użytkownik usuwa cały tekst
+    if (!text.trim() && input.trim() && sendStopTyping) {
+      sendStopTyping(selectedRoom.roomId)
+    }
   }
 
   // Wysyłanie wiadomości
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() || !user || !selectedRoom) {
       if (!selectedRoom) {
         Alert.alert('Info', 'Wybierz pokój czatu, aby wysłać wiadomość')
@@ -316,13 +437,24 @@ const Chat = () => {
       return
     }
 
-    if (!socket) {
+    if (!chatSocket || !isConnected) {
       Alert.alert('Błąd', 'Brak połączenia z serwerem. Spróbuj ponownie.')
       return
     }
 
-    socketSendMessage(selectedRoom.roomId, input, user._id)
-    setInput('')
+    try {
+      // Wyślij stopTyping przed wysłaniem wiadomości
+      if (sendStopTyping) {
+        sendStopTyping(selectedRoom.roomId)
+      }
+
+      // V2: sendMessage zwraca Promise i nie wymaga senderId
+      await socketSendMessage(selectedRoom.roomId, input)
+      setInput('')
+    } catch (error) {
+      console.error('Błąd wysyłania wiadomości:', error)
+      Alert.alert('Błąd', 'Nie udało się wysłać wiadomości')
+    }
   }
 
   // Wyciszanie czatu
@@ -394,6 +526,29 @@ const Chat = () => {
   const getUnreadCount = (roomId) => {
     const roomData = roomsState.find((r) => r.roomId === roomId)
     return roomData?.unreadCount || 0
+  }
+
+  // Oblicz tekst typing indicator
+  const getTypingText = () => {
+    const typingUsersList = Object.values(typingUsers)
+    if (typingUsersList.length === 0) return null
+    if (typingUsersList.length === 1) return `${typingUsersList[0]} pisze`
+    if (typingUsersList.length === 2)
+      return `${typingUsersList[0]} i ${typingUsersList[1]} piszą`
+    return `${typingUsersList.length} osób pisze`
+  }
+
+  const typingText = getTypingText()
+
+  // Loading screen dla czcionek
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size='large' color={COLORS.secondary} />
+        </View>
+      </View>
+    )
   }
 
   // Widok listy pokojów
@@ -503,6 +658,7 @@ const Chat = () => {
                 onPress={() => handleRoomSelect(room)}
                 isSelected={false}
                 unreadCount={getUnreadCount(room.roomId)}
+                isUserOnline={isUserOnline}
               />
             ))
           ) : (
@@ -670,12 +826,33 @@ const Chat = () => {
 
       {/* Input */}
       <View style={styles.inputContainer}>
+        {/* Typing indicator */}
+        {typingText && (
+          <View style={styles.typingIndicator}>
+            <Text style={styles.typingIndicatorText}>{typingText}</Text>
+            <View style={styles.typingAnimationWrapper}>
+              <LottieView
+                source={typing}
+                autoPlay
+                loop
+                style={{
+                  width: 80,
+                  height: 80,
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+                }}
+              />
+            </View>
+          </View>
+        )}
         <TextInput
           style={styles.messageInput}
           placeholder='Napisz wiadomość...'
           placeholderTextColor={COLORS.gray}
           value={input}
-          onChangeText={setInput}
+          onChangeText={handleInputChange}
           onSubmitEditing={handleSend}
           returnKeyType='send'
         />
@@ -854,6 +1031,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderTopWidth: 1,
     borderTopColor: COLORS.third,
+    position: 'relative',
+  },
+  typingIndicator: {
+    position: 'absolute',
+    flexDirection: 'row',
+    top: -24,
+    left: 16,
+  },
+  typingIndicatorText: {
+    fontSize: 12,
+    fontFamily: 'ObjectFont',
+    color: COLORS.primary,
+  },
+  typingAnimationWrapper: {
+    width: 50,
+    height: 20,
+    overflow: 'hidden',
+    position: 'relative',
   },
   messageInput: {
     flex: 1,

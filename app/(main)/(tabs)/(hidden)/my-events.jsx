@@ -37,7 +37,9 @@ const FilterButton = ({ icon, label, isActive, onPress, color }) => (
 
 const MyEvents = () => {
   const router = useRouter()
-  const { socket } = useSocketIo()
+  // V2: używamy notificationSocket do nasłuchiwania statusUpdate
+  const { notificationSocket, notificationConnectionState, ConnectionState } =
+    useSocketIo()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [myEventsOwner, setMyEventsOwner] = useState([])
@@ -76,8 +78,13 @@ const MyEvents = () => {
   }, [])
 
   // Nasłuchiwanie socketów do odświeżania danych eventów
+  // V2: używamy notificationSocket zamiast socket
   useEffect(() => {
-    if (!socket) return
+    if (
+      !notificationSocket ||
+      notificationConnectionState !== ConnectionState.CONNECTED
+    )
+      return
 
     const handleStatusUpdate = async () => {
       // Odśwież dane użytkownika gdy otrzymamy powiadomienie o zmianie statusu
@@ -89,12 +96,12 @@ const MyEvents = () => {
       }
     }
 
-    socket.on('statusUpdate', handleStatusUpdate)
+    notificationSocket.on('statusUpdate', handleStatusUpdate)
 
     return () => {
-      socket.off('statusUpdate', handleStatusUpdate)
+      notificationSocket.off('statusUpdate', handleStatusUpdate)
     }
-  }, [socket])
+  }, [notificationSocket, notificationConnectionState, ConnectionState])
 
   // Obsługa kliknięcia w wydarzenie
   const handleEventPress = (event, status) => {
@@ -217,7 +224,11 @@ const MyEvents = () => {
       {/* Error */}
       {error && !loading && (
         <View style={styles.errorContainer}>
-          <Ionicons name='alert-circle-outline' size={60} color={COLORS.error} />
+          <Ionicons
+            name='alert-circle-outline'
+            size={60}
+            color={COLORS.error}
+          />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={fetchAllEvents}>
             <Text style={styles.retryButtonText}>Spróbuj ponownie</Text>

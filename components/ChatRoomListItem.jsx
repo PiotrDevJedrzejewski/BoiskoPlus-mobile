@@ -2,6 +2,15 @@ import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../constants/colors'
 import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
+  withSequence,
+  Easing,
+} from 'react-native-reanimated'
+import { useEffect } from 'react'
 
 const defaultAvatar = require('../assets/images/defaultAvatar.png')
 
@@ -11,10 +20,12 @@ const ChatRoomListItem = ({
   onPress,
   isSelected,
   unreadCount = 0,
+  isUserOnline = () => false,
 }) => {
   let displayName = ''
   let avatar = null
   let gameTypeIcon = null
+  let otherUserId = null
 
   if (room.roomType === 'group') {
     displayName = room.eventName || 'Wydarzenie'
@@ -27,12 +38,36 @@ const ChatRoomListItem = ({
     const otherUser = room.participants?.find(
       (p) => String(p._id) !== String(currentUser?._id)
     )
+    otherUserId = otherUser?._id
     displayName = otherUser?.nickName || 'Użytkownik'
     avatar =
       otherUser?.avatarUrl || otherUser?.avatar
         ? { uri: otherUser.avatarUrl || otherUser.avatar }
         : defaultAvatar
   }
+
+  const scale = useSharedValue(1)
+
+  useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.15, {
+          duration: 500,
+          easing: Easing.inOut(Easing.ease),
+        }),
+        withTiming(1, {
+          duration: 500,
+          easing: Easing.inOut(Easing.ease),
+        })
+      ),
+      -1,
+      false
+    )
+  }, [])
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }))
 
   return (
     <TouchableOpacity
@@ -43,11 +78,11 @@ const ChatRoomListItem = ({
       <View style={styles.content}>
         {/* Notification badge */}
         {unreadCount > 0 && (
-          <View style={styles.notification}>
+          <Animated.View style={[styles.notification, animatedStyle]}>
             <Text style={styles.notificationText}>
               {unreadCount > 9 ? '9+' : unreadCount}
             </Text>
-          </View>
+          </Animated.View>
         )}
 
         {/* Avatar */}
@@ -55,6 +90,14 @@ const ChatRoomListItem = ({
           <Image source={avatar} style={styles.avatar} />
           {room.roomType === 'group' && (
             <View style={styles.gameTypeIconWrapper}>{gameTypeIcon}</View>
+          )}
+          {room.roomType === 'private' && otherUserId && (
+            <View
+              style={[
+                styles.onlineStatus,
+                isUserOnline(otherUserId) ? styles.online : styles.offline,
+              ]}
+            />
           )}
         </View>
 
@@ -103,19 +146,19 @@ const styles = StyleSheet.create({
   },
   notification: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: '50%',
+    right: 40,
     backgroundColor: 'red',
-    borderRadius: 10,
-    width: 20,
-    height: 20,
+    borderRadius: '50%',
+    width: 25,
+    height: 25,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
   },
   notificationText: {
     color: COLORS.white,
-    fontSize: 10,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   avatarWrapper: {
@@ -134,6 +177,24 @@ const styles = StyleSheet.create({
     bottom: -4,
     right: -4,
     transform: [{ scale: 0.5 }],
+    transformOrigin: 'bottom right',
+  },
+  onlineStatus: {
+    position: 'absolute',
+    transformOrigin: 'bottom left',
+    bottom: 0,
+    left: 0,
+    width: 12,
+    height: 12,
+    borderRadius: '50%',
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+  },
+  online: {
+    backgroundColor: '#4caf50',
+  },
+  offline: {
+    backgroundColor: COLORS.gray,
   },
   info: {
     flex: 1,
