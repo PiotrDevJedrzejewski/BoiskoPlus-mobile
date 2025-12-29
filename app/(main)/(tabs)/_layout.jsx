@@ -18,10 +18,13 @@ export default function TabsLayout() {
           paddingHorizontal: 10,
         },
         tabBarLabelStyle: {
-          fontFamily: 'Object',
+          fontFamily: 'ObjectFont',
           fontSize: 12,
         },
         headerShown: false,
+        sceneContainerStyle: {
+          backgroundColor: 'transparent',
+        },
       }}
     >
       {/* 4 widoczne taby */}

@@ -8,6 +8,7 @@ import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
 import HeaderDrawer from '../../components/HeaderDrawer'
+import fakeMap from '../../assets/images/fakeMap.png'
 // import MapBackground from '../../components/MapBackground'
 // import { MapProvider } from '../../context/MapContext'
 
@@ -26,18 +27,21 @@ const MainLayout = () => {
   return (
     // <MapProvider>
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {/* Mapa jako globalne tło */}
-      {/* <MapBackground /> */}
-
-      {/* Drawer i content na wierzchu mapy */}
       <View style={styles.contentContainer}>
+        {/* <MapBackground /> */}
+        <Image source={fakeMap} style={styles.mapBackground} />
+
+        {/* Drawer i content na wierzchu mapy */}
         <Drawer
           screenOptions={{
             drawerStyle: {
-              backgroundColor: 'transparent',
-              width: 280,
+              minWidth: 280,
+              maxWidth: 320,
             },
             header: () => <HeaderDrawer />,
+            sceneContainerStyle: {
+              backgroundColor: 'transparent',
+            },
           }}
           drawerContent={(props) => <CustomDrawerContent {...props} />}
         >
@@ -84,16 +88,15 @@ function CustomDrawerContent(props) {
         }}
       />
 
-      {/* Przycisk X do zamknięcia (prawy górny róg) */}
-      <Pressable
-        style={styles.closeButtonX}
-        onPress={closeDrawer}
-        android_ripple={{ color: COLORS.background }}
-      >
-        <Ionicons name='close' size={28} color={COLORS.primary} />
-      </Pressable>
-
       <DrawerContentScrollView {...props} style={styles.drawerContainer}>
+        {/* Przycisk X do zamknięcia (prawy górny róg) */}
+        <Pressable
+          style={styles.closeButtonX}
+          onPress={closeDrawer}
+          android_ripple={{ color: COLORS.background }}
+        >
+          <Ionicons name='close' size={28} color={COLORS.primary} />
+        </Pressable>
         {/* Navigation Items */}
         <View style={styles.navSection}>
           {/* Ekrany widoczne w Tabs + homepage*/}
@@ -145,7 +148,7 @@ function CustomDrawerContent(props) {
             onPress={() => navigateTo('/(main)/(tabs)/(hidden)/profile')}
           />
           <DrawerItem
-            icon='settings'
+            icon='settings-sharp'
             label='Ustawienia'
             onPress={() => navigateTo('/(main)/(tabs)/(hidden)/settings')}
           />
@@ -192,7 +195,7 @@ function DrawerItem({ icon, label, onPress }) {
       onPress={onPress}
       android_ripple={{ color: COLORS.background }}
     >
-      <Ionicons name={icon} size={28} color={COLORS.secondary} />
+      <Ionicons name={icon} size={30} color={COLORS.secondary} />
       <Text style={styles.drawerItemText}>{label}</Text>
     </Pressable>
   )
@@ -204,15 +207,23 @@ const styles = StyleSheet.create({
   contentContainer: {
     ...StyleSheet.absoluteFillObject,
   },
+  mapBackground: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
   gradientContainer: {
     flex: 1,
   },
   drawerContainer: {
     flex: 1,
+    position: 'relative',
+    zIndex: 2,
   },
   closeButtonX: {
     position: 'absolute',
-    top: 50,
+    top: 10,
     right: 10,
     zIndex: 100,
     padding: 8,
@@ -232,8 +243,6 @@ const styles = StyleSheet.create({
   },
   navSection: {
     flex: 1,
-    paddingVertical: 10,
-    marginTop: 40,
   },
   drawerItem: {
     flexDirection: 'row',
@@ -245,7 +254,7 @@ const styles = StyleSheet.create({
   },
   drawerItemText: {
     fontSize: 18,
-    fontFamily: 'Montserrat-Regular',
+    fontFamily: 'ObjectFont',
     color: COLORS.primary,
   },
   separator: {

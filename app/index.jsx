@@ -64,14 +64,6 @@ const Home = () => {
             </Text>
           </View>
           <View style={styles.buttonContainer}>
-            <Text
-              style={styles.description}
-              onPress={() => {
-                router.push('/(main)/(tabs)/dashboard-home')
-              }}
-            >
-              Dev button → Dashboard Home
-            </Text>
             <Button1
               text='Zaloguj się'
               {...buttonSettings}

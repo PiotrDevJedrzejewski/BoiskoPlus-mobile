@@ -7,13 +7,15 @@ import {
   ScrollView,
   Pressable,
   Alert,
-  ActivityIndicator,
 } from 'react-native'
 import { COLORS } from '../constants/colors'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'expo-router'
 import { useAuth } from '../context/AuthContext'
 import Button1 from '../components/Button1'
+import spinner from '../assets/utils/spinner.json'
+import LottieView from 'lottie-react-native'
+
 // import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
 // import { auth } from '../assets/utils/firebase'
 // import * as Google from 'expo-auth-session/providers/google'
@@ -198,12 +200,9 @@ const Login = () => {
           </View>
 
           {/* Submit Button */}
+          {/* isLoading */}
           {isLoading ? (
-            <ActivityIndicator
-              size='large'
-              color={COLORS.secondary}
-              style={styles.loader}
-            />
+            <LottieView source={spinner} autoPlay loop style={styles.loader} />
           ) : (
             <Button1
               text='Zaloguj się'
@@ -221,7 +220,7 @@ const Login = () => {
         {/* Alternate Options */}
         <View style={styles.authFormAlternate}>
           <Text style={styles.authFormAlternateText}>
-            Nie masz konta?{' '}
+            Nie masz konta?{'    '}
             <Text style={styles.link} onPress={handleGoToRegister}>
               Zarejestruj się
             </Text>
@@ -348,6 +347,8 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   loader: {
-    marginVertical: 10,
+    width: 50,
+    height: 50,
+    alignSelf: 'center',
   },
 })

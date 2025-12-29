@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router'
 import { COLORS } from '../../../constants/colors'
 import CardDashboard from '../../../components/CardDashboard'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import Entypo from '@expo/vector-icons/Entypo'
 
 const DashboardHome = () => {
   const router = useRouter()
@@ -32,7 +33,7 @@ const DashboardHome = () => {
           <View style={styles.cardWrapper}>
             <CardDashboard
               icon={
-                <Ionicons name='location' size={50} color={COLORS.secondary} />
+                <Entypo name='location' size={50} color={COLORS.secondary} />
               }
               title='Znajdź Grę'
               desc='Przeglądaj dostępne gry i zapisuj się na mecze'
@@ -54,7 +55,11 @@ const DashboardHome = () => {
             />
             <CardDashboard
               icon={
-                <Ionicons name='calendar' size={50} color={COLORS.secondary} />
+                <Ionicons
+                  name='calendar-sharp'
+                  size={50}
+                  color={COLORS.secondary}
+                />
               }
               title='Moje Gry'
               desc='Zarządzaj swoimi grami i sprawdzaj statystyki'
@@ -64,7 +69,11 @@ const DashboardHome = () => {
             />
             <CardDashboard
               icon={
-                <Ionicons name='settings' size={50} color={COLORS.secondary} />
+                <Ionicons
+                  name='settings-sharp'
+                  size={50}
+                  color={COLORS.secondary}
+                />
               }
               title='Ustawienia'
               desc='Dostosuj swoje preferencje i powiadomienia'
@@ -98,7 +107,7 @@ export default DashboardHome
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: 'transparent',
   },
   scrollView: {
     flex: 1,
@@ -110,6 +119,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     paddingTop: 40,
+    backgroundColor: 'transparent',
     alignItems: 'center',
   },
   title: {

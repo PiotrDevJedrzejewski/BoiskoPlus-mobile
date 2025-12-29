@@ -11,7 +11,6 @@ const HeaderStack = ({ navigation, route, options, back }) => {
       <View
         style={{
           height: insets.top,
-          backgroundColor: '#000',
         }}
       />
       <View style={styles.headerContainer}>
@@ -78,7 +77,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: COLORS.background,
     justifyContent: 'space-between',
   },
   logoContainer: {
