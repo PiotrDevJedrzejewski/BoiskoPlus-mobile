@@ -206,7 +206,7 @@ const EditEvent = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity

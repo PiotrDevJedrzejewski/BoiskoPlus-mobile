@@ -13,52 +13,7 @@ import { Picker } from '@react-native-picker/picker'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../../../constants/colors'
 import FindEventListElement from '../../../components/FindEventListElement'
-
-// Przykładowe dane wydarzeń (w przyszłości z API)
-const MOCK_EVENTS = [
-  {
-    _id: '1',
-    eventName: 'Mecz piłkarski na orliku',
-    gameType: 'football',
-    addressString: 'ul. Sportowa 15, Łódź',
-    startDate: '2025-12-10',
-    startHour: '18:00',
-    eventDescription:
-      'Szukamy chętnych na mecz towarzyski. Poziom średni, przyjdź i zagraj!',
-    duration: 90,
-    price: 10,
-    level: 'średni',
-    playerCount: 4,
-  },
-  {
-    _id: '2',
-    eventName: 'Siatkówka plażowa',
-    gameType: 'volleyball',
-    addressString: 'Plaża miejska, Warszawa',
-    startDate: '2025-12-12',
-    startHour: '16:00',
-    eventDescription:
-      'Gramy na piasku! Potrzebujemy jeszcze kilku osób do drużyny.',
-    duration: 120,
-    price: 0,
-    level: 'początkujący',
-    playerCount: 6,
-  },
-  {
-    _id: '3',
-    eventName: 'Koszykówka 3x3',
-    gameType: 'basketball',
-    addressString: 'Boisko przy szkole nr 5, Kraków',
-    startDate: '2025-12-15',
-    startHour: '19:30',
-    eventDescription:
-      'Turniej streetball 3x3. Zapisz swoją drużynę lub dołącz do istniejącej!',
-    duration: 60,
-    price: 5,
-    level: 'zaawansowany',
-    playerCount: 3,
-  },
-]
+import MapRenderer from '../../../components/MapRenderer'
 
 const GAME_TYPES = [
   { label: 'Wybierz typ gry', value: '' },
@@ -115,7 +70,10 @@ const FindEvent = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pointerEvents='box-none'>
+      {/* Mapa jako przyciemnione tło */}
+      <MapRenderer />
+
       {/* Header */}
       <View style={styles.titleWrapper}>
         <Ionicons name='location' size={26} color={COLORS.secondary} />
@@ -238,7 +196,7 @@ export default FindEvent
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: 'transparent',
   },
   titleWrapper: {
     flexDirection: 'row',

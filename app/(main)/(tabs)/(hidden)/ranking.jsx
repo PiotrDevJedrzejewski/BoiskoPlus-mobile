@@ -129,7 +129,7 @@ const Ranking = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
         <Ionicons name='trophy' size={26} color={COLORS.secondary} />

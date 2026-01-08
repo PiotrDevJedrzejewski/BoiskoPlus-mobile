@@ -22,7 +22,7 @@ export default function TabsLayout() {
           fontSize: 12,
         },
         headerShown: false,
-        sceneContainerStyle: {
+        sceneStyle: {
           backgroundColor: 'transparent',
         },
       }}
@@ -67,11 +67,11 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* Ukryte ekrany - nie widoczne w tab bar, ale mają dostęp do tabs */}
+      {/* Ukryte ekrany */}
       <Tabs.Screen
         name='(hidden)'
         options={{
-          href: null, // Ukrywa z tab bar
+          href: null,
         }}
       />
     </Tabs>

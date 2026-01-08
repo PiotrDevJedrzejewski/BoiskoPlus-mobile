@@ -13,6 +13,9 @@ export default function HiddenLayout() {
           fontFamily: 'Montserrat-Bold',
         },
         headerShown: false, // Drawer ma swój header
+        contentStyle: {
+          backgroundColor: COLORS.background,
+        },
       }}
     />
   )

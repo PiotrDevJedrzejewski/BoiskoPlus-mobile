@@ -15,15 +15,6 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../../../../constants/colors'
 
-// Mock data - zalogowany użytkownik
-const MOCK_USER = {
-  _id: 'currentUser',
-  nickName: 'MójNick123',
-  name: 'Jan',
-  surname: 'Kowalski',
-  age: 25,
-}
-
 const ProfileEdit = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -105,6 +96,7 @@ const ProfileEdit = () => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      pointerEvents='box-none'
     >
       {/* Header */}
       <View style={styles.header}>

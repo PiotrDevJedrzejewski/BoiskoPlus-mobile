@@ -1,12 +1,15 @@
-import { createContext, useContext, useState, useRef } from 'react'
+import { createContext, useContext, useState, useRef, useCallback } from 'react'
 
 const MapContext = createContext()
 
 export const MapProvider = ({ children }) => {
   const mapRef = useRef(null)
-  const [isInteractive, setIsInteractive] = useState(true)
+
+  // Czy pokazywać markery
   const [showMarkers, setShowMarkers] = useState(true)
-  const [overlayOpacity, setOverlayOpacity] = useState(0) // 0 = pełna mapa, 0.7 = przyciemnione tło
+
+  // Opacity overlay (dla przyciemnienia tła)
+  const [overlayOpacity, setOverlayOpacity] = useState(0.3)
 
   // Kamera mapy
   const [camera, setCamera] = useState({
@@ -14,7 +17,10 @@ export const MapProvider = ({ children }) => {
     zoomLevel: 5,
   })
 
-  const flyTo = (coordinates, zoom = 14) => {
+  // Komponent mapy do współdzielenia między ekranami
+  const [mapComponent, setMapComponent] = useState(null)
+
+  const flyTo = useCallback((coordinates, zoom = 14) => {
     if (mapRef.current) {
       mapRef.current.setCamera({
         centerCoordinate: coordinates,
@@ -22,14 +28,12 @@ export const MapProvider = ({ children }) => {
         animationDuration: 1000,
       })
     }
-  }
+  }, [])
 
   return (
     <MapContext.Provider
       value={{
         mapRef,
-        isInteractive,
-        setIsInteractive,
         showMarkers,
         setShowMarkers,
         overlayOpacity,
@@ -37,6 +41,8 @@ export const MapProvider = ({ children }) => {
         camera,
         setCamera,
         flyTo,
+        mapComponent,
+        setMapComponent,
       }}
     >
       {children}

@@ -16,24 +16,6 @@ import { useAuth } from '../../../../context/AuthContext'
 
 const defaultAvatar = require('../../../../assets/images/defaultAvatar.png')
 
-// Mock data - zalogowany użytkownik
-const MOCK_USER = {
-  _id: 'currentUser',
-  nickName: 'MójNick123',
-  name: 'Jan',
-  surname: 'Kowalski',
-  email: 'jan.kowalski@email.com',
-  avatarUrl: null,
-}
-
-// Mock data - statystyki użytkownika
-const MOCK_USER_STATS = {
-  gamesPlayed: 42,
-  eventsOrganized: 8,
-  totalLikes: 23,
-  points: 1250,
-}
-
 const StatItem = ({ label, value }) => (
   <View style={styles.statItem}>
     <Text style={styles.statValue}>{value}</Text>
@@ -90,7 +72,7 @@ const Profile = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
         <Ionicons name='person-circle' size={26} color={COLORS.secondary} />

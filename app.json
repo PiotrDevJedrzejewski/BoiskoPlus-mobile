@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/BoiskoPlusKonceptArt.jpg",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -29,13 +29,13 @@
       "output": "static",
       "favicon": "./assets/images/favicon.ico"
     },
-    "plugins": ["expo-router", "expo-secure-store"],
+    "plugins": ["expo-router", "expo-secure-store", "@rnmapbox/maps"],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "826ce042-408b-47a0-b6f6-5718e63e52b3"
       }
     }
   }

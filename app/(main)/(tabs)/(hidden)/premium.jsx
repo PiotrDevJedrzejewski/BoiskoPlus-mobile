@@ -4,7 +4,7 @@ import { COLORS } from '../../../../constants/colors'
 
 const Premium = () => {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
         <Ionicons name='diamond' size={26} color={COLORS.secondary} />

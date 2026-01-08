@@ -4,6 +4,8 @@ import { COLORS } from '../../../constants/colors'
 import CardDashboard from '../../../components/CardDashboard'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import Entypo from '@expo/vector-icons/Entypo'
+import { BlurView } from 'expo-blur'
+import MapRenderer from '../../../components/MapRenderer'
 
 const DashboardHome = () => {
   const router = useRouter()
@@ -13,89 +15,95 @@ const DashboardHome = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pointerEvents='box-none'>
+      {/* Mapa jako przyciemnione tło */}
+      <MapRenderer />
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
-          {/* Tytuł */}
-          <Text style={styles.title}>Znajdź i stwórz grę zespołową</Text>
+          <BlurView intensity={4} style={styles.blurView}>
+            <View style={styles.titleWrapper}>
+              {/* Tytuł */}
+              <Text style={styles.title}>Znajdź i stwórz grę zespołową</Text>
 
-          {/* Opis */}
-          <Text style={styles.desc}>
-            Aplikacja Boisko+ pozwala umawiać się na wspólne uprawianie sportów
-            drużynowych.
-          </Text>
+              {/* Opis */}
+              <Text style={styles.desc}>
+                Aplikacja Boisko+ pozwala umawiać się na wspólne uprawianie
+                sportów drużynowych.
+              </Text>
+            </View>
+            {/* Karty */}
 
-          {/* Karty */}
-          <View style={styles.cardWrapper}>
-            <CardDashboard
-              icon={
-                <Entypo name='location' size={50} color={COLORS.secondary} />
-              }
-              title='Znajdź Grę'
-              desc='Przeglądaj dostępne gry i zapisuj się na mecze'
-              onPress={() => handleCardPress('/(main)/(tabs)/find-event')}
-            />
-            <CardDashboard
-              icon={
-                <MaterialCommunityIcons
-                  name='pencil'
-                  size={50}
-                  color={COLORS.secondary}
-                />
-              }
-              title='Stwórz Grę'
-              desc='Zaproponuj nową grę i zaproś znajomych'
-              onPress={() =>
-                handleCardPress('/(main)/(tabs)/(hidden)/add-event')
-              }
-            />
-            <CardDashboard
-              icon={
+            <View style={styles.cardWrapper}>
+              <CardDashboard
+                icon={
+                  <Entypo name='location' size={50} color={COLORS.secondary} />
+                }
+                title='Znajdź Grę'
+                desc='Przeglądaj dostępne gry i zapisuj się na mecze'
+                onPress={() => handleCardPress('/(main)/(tabs)/find-event')}
+              />
+              <CardDashboard
+                icon={
+                  <MaterialCommunityIcons
+                    name='pencil'
+                    size={50}
+                    color={COLORS.secondary}
+                  />
+                }
+                title='Stwórz Grę'
+                desc='Zaproponuj nową grę i zaproś znajomych'
+                onPress={() =>
+                  handleCardPress('/(main)/(tabs)/(hidden)/add-event')
+                }
+              />
+              <CardDashboard
+                icon={
+                  <Ionicons
+                    name='calendar-sharp'
+                    size={50}
+                    color={COLORS.secondary}
+                  />
+                }
+                title='Moje Gry'
+                desc='Zarządzaj swoimi grami i sprawdzaj statystyki'
+                onPress={() =>
+                  handleCardPress('/(main)/(tabs)/(hidden)/my-events')
+                }
+              />
+              <CardDashboard
+                icon={
+                  <Ionicons
+                    name='settings-sharp'
+                    size={50}
+                    color={COLORS.secondary}
+                  />
+                }
+                title='Ustawienia'
+                desc='Dostosuj swoje preferencje i powiadomienia'
+                onPress={() =>
+                  handleCardPress('/(main)/(tabs)/(hidden)/settings')
+                }
+              />
+              {/* Przycisk Pokaż Mapę */}
+              <Pressable
+                style={styles.mapButton}
+                onPress={() => handleCardPress('/(main)/(tabs)/show-map')}
+              >
                 <Ionicons
-                  name='calendar-sharp'
-                  size={50}
+                  name='map'
+                  size={24}
                   color={COLORS.secondary}
+                  style={styles.mapIcon}
                 />
-              }
-              title='Moje Gry'
-              desc='Zarządzaj swoimi grami i sprawdzaj statystyki'
-              onPress={() =>
-                handleCardPress('/(main)/(tabs)/(hidden)/my-events')
-              }
-            />
-            <CardDashboard
-              icon={
-                <Ionicons
-                  name='settings-sharp'
-                  size={50}
-                  color={COLORS.secondary}
-                />
-              }
-              title='Ustawienia'
-              desc='Dostosuj swoje preferencje i powiadomienia'
-              onPress={() =>
-                handleCardPress('/(main)/(tabs)/(hidden)/settings')
-              }
-            />
-          </View>
-
-          {/* Przycisk Pokaż Mapę */}
-          <Pressable
-            style={styles.mapButton}
-            onPress={() => handleCardPress('/(main)/(tabs)/show-map')}
-          >
-            <Ionicons
-              name='map'
-              size={24}
-              color={COLORS.secondary}
-              style={styles.mapIcon}
-            />
-            <Text style={styles.mapButtonText}>Pokaż Mapę</Text>
-          </Pressable>
+                <Text style={styles.mapButtonText}>Pokaż Mapę</Text>
+              </Pressable>
+            </View>
+          </BlurView>
         </View>
       </ScrollView>
     </View>
@@ -111,20 +119,20 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     flexGrow: 1,
+    backgroundColor: 'transparent',
   },
   content: {
-    flex: 1,
-    padding: 20,
-    paddingTop: 40,
-    backgroundColor: 'transparent',
+    padding: 10,
+    paddingTop: 20,
     alignItems: 'center',
   },
   title: {
-    fontSize: 32,
-    fontFamily: 'Montserrat-Bold',
+    fontSize: 36,
+    fontFamily: 'ObjectFont',
     color: COLORS.primary,
     textAlign: 'center',
     marginBottom: 16,
@@ -132,25 +140,36 @@ const styles = StyleSheet.create({
   },
   desc: {
     fontSize: 16,
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'ObjectFont',
     color: COLORS.primary,
     textAlign: 'center',
     marginBottom: 32,
     paddingHorizontal: 10,
     opacity: 0.9,
   },
+  titleWrapper: {
+    borderTopStartRadius: 16,
+    borderTopEndRadius: 16,
+  },
+  blurView: {
+    paddingTop: 20,
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(18, 115, 64, 0.7)',
+  },
   cardWrapper: {
     width: '100%',
-    marginBottom: 24,
+    borderBottomEndRadius: 16,
+    borderBottomStartRadius: 16,
   },
   mapButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.background,
-    borderWidth: 2,
-    borderColor: COLORS.secondary,
-    borderRadius: 12,
+    borderBottomEndRadius: 16,
+    borderBottomStartRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 32,
     width: '100%',

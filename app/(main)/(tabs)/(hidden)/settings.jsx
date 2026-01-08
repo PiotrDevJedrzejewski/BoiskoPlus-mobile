@@ -146,7 +146,7 @@ const Settings = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
         <Ionicons name='settings' size={26} color={COLORS.secondary} />

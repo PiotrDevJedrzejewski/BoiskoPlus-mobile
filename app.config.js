@@ -3,7 +3,7 @@ import 'dotenv/config'
 export default {
   expo: {
     name: 'BoiskoPlus-mobile',
-    slug: 'BoiskoPlus-mobile',
+    slug: 'boiskoplus',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/images/BoiskoPlusKonceptArt.jpg',
@@ -21,7 +21,7 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/images/adaptive-icon.png',
+        foregroundImage: './assets/images/BoiskoPlusKonceptArt.jpg',
         backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,
@@ -33,11 +33,26 @@ export default {
       output: 'static',
       favicon: './assets/images/favicon.ico',
     },
-    plugins: ['expo-router', 'expo-secure-store', 'expo-audio'],
+    plugins: [
+      'expo-router',
+      'expo-secure-store',
+      'expo-audio',
+      [
+        '@rnmapbox/maps',
+        {
+          RNMapboxMapsDownloadToken:
+            process.env.EXPO_PUBLIC_MAPBOX_DOWNLOAD_TOKEN,
+        },
+      ],
+    ],
     experiments: {
       typedRoutes: true,
     },
     extra: {
+      // Mapbox
+      mapboxToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
+      mapboxDownloadToken: process.env.EXPO_PUBLIC_MAPBOX_DOWNLOAD_TOKEN,
+
       // Firebase config
       firebaseApiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -56,7 +71,9 @@ export default {
 
       // EAS
       eas: {
-        projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID || 'your-project-id',
+        projectId:
+          process.env.EXPO_PUBLIC_EAS_PROJECT_ID ||
+          '826ce042-408b-47a0-b6f6-5718e63e52b3',
       },
     },
   },

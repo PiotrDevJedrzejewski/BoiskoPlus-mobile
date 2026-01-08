@@ -113,6 +113,7 @@ const Report = () => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      pointerEvents='box-none'
     >
       {/* Header */}
       <View style={styles.header}>
