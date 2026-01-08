@@ -25,27 +25,26 @@ const MainLayout = () => {
   return (
     <MapProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={styles.contentContainer}>
-          <Drawer
-            screenOptions={{
-              drawerStyle: {
-                minWidth: 280,
-                maxWidth: 320,
-              },
-              header: () => <HeaderDrawer />,
+        <Drawer
+          screenOptions={{
+            drawerStyle: {
+              minWidth: 280,
+              maxWidth: 320,
+            },
+            header: () => <HeaderDrawer />,
+            sceneContainerStyle: { backgroundColor: 'transparent' },
+          }}
+          drawerContent={(props) => <CustomDrawerContent {...props} />}
+        >
+          <Drawer.Screen
+            name='(tabs)'
+            options={{
+              headerShown: true,
+              drawerLabel: () => null,
+              drawerItemStyle: { display: 'none' },
             }}
-            drawerContent={(props) => <CustomDrawerContent {...props} />}
-          >
-            <Drawer.Screen
-              name='(tabs)'
-              options={{
-                headerShown: true,
-                drawerLabel: () => null,
-                drawerItemStyle: { display: 'none' },
-              }}
-            />
-          </Drawer>
-        </View>
+          />
+        </Drawer>
       </GestureHandlerRootView>
     </MapProvider>
   )
@@ -201,9 +200,6 @@ function DrawerItem({ icon, label, onPress }) {
 export default MainLayout
 
 const styles = StyleSheet.create({
-  contentContainer: {
-    ...StyleSheet.absoluteFillObject,
-  },
   gradientContainer: {
     flex: 1,
   },
@@ -230,7 +226,6 @@ const styles = StyleSheet.create({
   drawerContainer: {
     flex: 1,
   },
-
   drawerItem: {
     alignItems: 'center',
     gap: 5,
@@ -251,7 +246,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 2,
-    // 10% fix for full width line
     width: '110%',
     opacity: 0.2,
   },

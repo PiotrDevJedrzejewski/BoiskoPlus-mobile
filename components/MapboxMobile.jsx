@@ -73,7 +73,7 @@ const PredefinedPlaceMarker = ({ feature, index, onPress, isSelected }) => {
 const MapboxMobile = () => {
   const { filteredEvents, mapTheme, userLocation, geolocationAccepted } =
     useDashboard()
-  const { mapRef, camera, setCamera, overlayOpacity } = useMap()
+  const { mapRef, camera, setCamera } = useMap()
 
   // State
   const [selectedClusterEvents, setSelectedClusterEvents] = useState(null)
@@ -213,6 +213,13 @@ const MapboxMobile = () => {
           animationDuration={1000}
         />
 
+        {/* Images component for markers */}
+        <Mapbox.Images
+          images={{
+            'event-marker': require('../assets/images/favicon-32x32.png'),
+          }}
+        />
+
         {/* User location marker */}
         {geolocationAccepted &&
           userLocation.latitude &&
@@ -260,7 +267,7 @@ const MapboxMobile = () => {
               textSize: 13,
               textColor: '#ffffff',
               textFont: ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
-              iconImage: require('../assets/images/favicon-32x32.png'),
+              iconImage: 'event-marker',
               iconSize: 1,
               iconAllowOverlap: true,
               textAllowOverlap: true,
@@ -271,7 +278,7 @@ const MapboxMobile = () => {
             id='single-events'
             filter={['!', ['has', 'point_count']]}
             style={{
-              iconImage: require('../assets/images/favicon-32x32.png'),
+              iconImage: 'event-marker',
               iconSize: 1,
               iconAllowOverlap: true,
             }}

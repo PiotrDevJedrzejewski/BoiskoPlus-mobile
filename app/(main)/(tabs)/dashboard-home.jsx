@@ -5,7 +5,6 @@ import CardDashboard from '../../../components/CardDashboard'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import Entypo from '@expo/vector-icons/Entypo'
 import { BlurView } from 'expo-blur'
-import MapRenderer from '../../../components/MapRenderer'
 
 const DashboardHome = () => {
   const router = useRouter()
@@ -16,9 +15,6 @@ const DashboardHome = () => {
 
   return (
     <View style={styles.container} pointerEvents='box-none'>
-      {/* Mapa jako przyciemnione tło */}
-      <MapRenderer />
-
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -115,6 +111,7 @@ export default DashboardHome
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    zIndex: 5,
     backgroundColor: 'transparent',
   },
   scrollView: {

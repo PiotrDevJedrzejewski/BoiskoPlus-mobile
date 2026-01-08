@@ -11,6 +11,9 @@ export const MapProvider = ({ children }) => {
   // Opacity overlay (dla przyciemnienia tła)
   const [overlayOpacity, setOverlayOpacity] = useState(0.3)
 
+  // Czy mapa jest interaktywna
+  const [isInteractive, setIsInteractive] = useState(false)
+
   // Kamera mapy
   const [camera, setCamera] = useState({
     centerCoordinate: [19.145136, 51.919438], // Polska
@@ -38,6 +41,8 @@ export const MapProvider = ({ children }) => {
         setShowMarkers,
         overlayOpacity,
         setOverlayOpacity,
+        isInteractive,
+        setIsInteractive,
         camera,
         setCamera,
         flyTo,

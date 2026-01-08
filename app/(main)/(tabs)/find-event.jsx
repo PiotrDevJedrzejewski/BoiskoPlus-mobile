@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import {
   StyleSheet,
   Text,
@@ -10,10 +10,10 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Picker } from '@react-native-picker/picker'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { COLORS } from '../../../constants/colors'
 import FindEventListElement from '../../../components/FindEventListElement'
-import MapRenderer from '../../../components/MapRenderer'
+import { useMap } from '../../../context/MapContext'
 
 const GAME_TYPES = [
   { label: 'Wybierz typ gry', value: '' },
@@ -34,6 +34,7 @@ const GAME_TYPES = [
 
 const FindEvent = () => {
   const router = useRouter()
+  const { setIsInteractive, setOverlayOpacity } = useMap()
   const [loading, setLoading] = useState(false)
   const [userInput, setUserInput] = useState({
     City: '',
@@ -42,6 +43,19 @@ const FindEvent = () => {
   })
   const [filteredEvents, setFilteredEvents] = useState([])
   const [hasSearched, setHasSearched] = useState(false)
+
+  // Włącz interaktywność mapy gdy ekran jest aktywny
+  useFocusEffect(
+    useCallback(() => {
+      setIsInteractive(true)
+      setOverlayOpacity(0.4) // Lekkie przyciemnienie dla lepszej czytelności formularza
+
+      return () => {
+        setIsInteractive(false)
+        setOverlayOpacity(0.3)
+      }
+    }, [])
+  )
 
   const handleSearch = async () => {
     setLoading(true)
@@ -71,17 +85,14 @@ const FindEvent = () => {
 
   return (
     <View style={styles.container} pointerEvents='box-none'>
-      {/* Mapa jako przyciemnione tło */}
-      <MapRenderer />
-
       {/* Header */}
-      <View style={styles.titleWrapper}>
+      <View style={styles.titleWrapper} pointerEvents='auto'>
         <Ionicons name='location' size={26} color={COLORS.secondary} />
         <Text style={styles.titleText}>Znajdź Wydarzenie</Text>
       </View>
 
       {/* Formularz wyszukiwania */}
-      <View style={styles.searchContainer}>
+      <View style={styles.searchContainer} pointerEvents='auto'>
         {/* Lokalizacja */}
         <View style={styles.inputRow}>
           <TextInput
@@ -141,7 +152,7 @@ const FindEvent = () => {
 
       {/* Loading */}
       {loading && (
-        <View style={styles.loaderContainer}>
+        <View style={styles.loaderContainer} pointerEvents='auto'>
           <ActivityIndicator size='large' color={COLORS.secondary} />
           <Text style={styles.loaderText}>Ładowanie...</Text>
         </View>
@@ -153,6 +164,7 @@ const FindEvent = () => {
           style={styles.eventList}
           contentContainerStyle={styles.eventListContent}
           showsVerticalScrollIndicator={false}
+          pointerEvents='auto'
         >
           {filteredEvents.length > 0 ? (
             filteredEvents.map((event) => (

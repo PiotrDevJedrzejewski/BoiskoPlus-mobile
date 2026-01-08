@@ -1,24 +1,34 @@
 import { StyleSheet, View, TouchableOpacity } from 'react-native'
-import { useEffect } from 'react'
 import { Ionicons } from '@expo/vector-icons'
+import { useFocusEffect } from 'expo-router'
+import { useCallback } from 'react'
 import { useMap } from '../../../context/MapContext'
 import { COLORS } from '../../../constants/colors'
-import MapboxMobile from '../../../components/MapboxMobile'
 import { useDashboard } from '../../../context/DashboardContext'
+import MapboxMobile from '../../../components/MapboxMobile'
 
 const ShowMap = () => {
-  const { flyTo, setShowMarkers, showMarkers, setMapComponent } = useMap()
+  const {
+    flyTo,
+    setShowMarkers,
+    showMarkers,
+    setIsInteractive,
+    setOverlayOpacity,
+  } = useMap()
   const { userLocation, geolocationAccepted } = useDashboard()
 
-  // Zapisz mapę w kontekście gdy komponent się montuje
-  useEffect(() => {
-    setMapComponent(<MapboxMobile />)
-    
-    // Cleanup - usuń mapę z kontekstu gdy ekran jest unmountowany
-    return () => {
-      setMapComponent(null)
-    }
-  }, [setMapComponent])
+  // Włącz interaktywność mapy gdy ekran jest aktywny
+  useFocusEffect(
+    useCallback(() => {
+      setIsInteractive(true)
+      setOverlayOpacity(0) // Brak przyciemnienia na mapie
+
+      return () => {
+        setIsInteractive(false)
+        setOverlayOpacity(0.3) // Przywróć przyciemnienie
+      }
+    }, [])
+  )
 
   const handleMyLocation = () => {
     if (
@@ -31,16 +41,11 @@ const ShowMap = () => {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Prawdziwa, interaktywna mapa */}
-      <View style={styles.mapContainer} pointerEvents='auto'>
-        <MapboxMobile />
-      </View>
-
+    <View style={styles.container} pointerEvents='box-none'>
       {/* UI Controls - zawsze nad mapą */}
       <View style={styles.controlsWrapper} pointerEvents='box-none'>
         {/* Kontrolki na mapie */}
-        <View style={styles.controlsContainer}>
+        <View style={styles.controlsContainer} pointerEvents='box-none'>
           <TouchableOpacity
             style={styles.controlButton}
             onPress={handleMyLocation}
@@ -71,14 +76,12 @@ export default ShowMap
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  mapContainer: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 0,
+    backgroundColor: 'transparent',
   },
   controlsWrapper: {
     flex: 1,
     zIndex: 10,
+    backgroundColor: 'transparent',
   },
   controlsContainer: {
     position: 'absolute',
