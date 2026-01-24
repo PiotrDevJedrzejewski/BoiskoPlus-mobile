@@ -6,16 +6,27 @@ import { useFonts } from 'expo-font'
 import { COLORS } from '../constants/colors'
 import LottieView from 'lottie-react-native'
 import spinner from '../assets/utils/spinner.json'
+import { useAuth } from '../context/AuthContext'
+import CookiesAndRules from '../components/popup/CookiesAndRules'
+import { useEffect } from 'react'
 
 const LogoBoiskoPlus = require('../assets/images/LogoBoiskoPlus.png')
 const background = require('../assets/images/pexels-jsalamanca-61143.jpg')
 
 const Home = () => {
   const router = useRouter()
+  const { needsConsent, user, loading } = useAuth()
 
   const [fontsLoaded] = useFonts({
     ObjectFont: require('../assets/fonts/object.ttf'),
   })
+
+  // Przekieruj zalogowanego użytkownika do dashboard
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace('/(main)/(tabs)/dashboard-home')
+    }
+  }, [user, loading])
 
   const buttonSettings = {
     height: 50,
@@ -23,7 +34,7 @@ const Home = () => {
     fontSize: 18,
   }
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || loading) {
     return (
       <View
         style={{
@@ -51,6 +62,7 @@ const Home = () => {
         style={styles.imageBackground}
         resizeMode='cover'
       >
+        {needsConsent && <CookiesAndRules />}
         <View style={styles.logoContainer}>
           <Image source={LogoBoiskoPlus} style={styles.logo} />
         </View>

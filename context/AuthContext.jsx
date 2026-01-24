@@ -9,11 +9,27 @@ import { router } from 'expo-router'
 
 const AuthContext = createContext()
 
+const CONSENTS_KEY = 'bp_consents_v1'
+const defaultConsents = {
+  rulesAccepted: false,
+  marketingAccepted: false,
+  locationAccepted: false,
+  updatedAt: null,
+}
+
 export const AuthProvider = ({ children }) => {
   // Początkowo null - inne konteksty sprawdzają user?.userID
   const [user, setUser] = useState(null)
   const [userStats, setUserStats] = useState(null) // Statystyki użytkownika
   const [loading, setLoading] = useState(true) // Czy w trakcie sprawdzania
+
+  const [consents, setConsents] = useState(null)
+  const [consentsLoading, setConsentsLoading] = useState(true)
+  const [pendingConsents, setPendingConsents] = useState({
+    rulesAccepted: false,
+    marketingAccepted: false,
+    locationAccepted: false,
+  })
 
   //Nowy state dla asynchronizacji pomiędzy użytkownikiem a SecureStore
   const [isAuthChecked, setIsAuthChecked] = useState(false)
@@ -42,7 +58,6 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null)
         setUserStats(null)
-        router.replace('/login')
         setLoading(false)
         return
       }
@@ -50,7 +65,6 @@ export const AuthProvider = ({ children }) => {
       console.error('Błąd autoryzacji:', error)
       setUser(null)
       setUserStats(null)
-      router.replace('/login')
       setLoading(false)
       return
     }
@@ -63,6 +77,38 @@ export const AuthProvider = ({ children }) => {
     }
     userWasLoggedIn()
   }, [])
+
+  // Wczytaj zapisane zgody z urządzenia
+  useEffect(() => {
+    const loadConsents = async () => {
+      setConsentsLoading(true)
+      try {
+        const stored = await SecureStore.getItemAsync(CONSENTS_KEY)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          setConsents({ ...defaultConsents, ...parsed })
+        } else {
+          setConsents({ ...defaultConsents })
+        }
+      } catch (error) {
+        console.error('Błąd wczytywania zgód:', error)
+        setConsents({ ...defaultConsents })
+      } finally {
+        setConsentsLoading(false)
+      }
+    }
+    loadConsents()
+  }, [])
+
+  useEffect(() => {
+    if (!consentsLoading && consents) {
+      setPendingConsents({
+        rulesAccepted: !!consents.rulesAccepted,
+        marketingAccepted: !!consents.marketingAccepted,
+        locationAccepted: !!consents.locationAccepted,
+      })
+    }
+  }, [consentsLoading, consents])
 
   // Funkcja do logowania (email/nick + hasło)
   const login = async (email, password) => {
@@ -85,7 +131,7 @@ export const AuthProvider = ({ children }) => {
       // Sprawdź czy błąd dotyczy niezweryfikowanego emaila
       const errorMsg = error.response?.data?.msg || 'Błąd logowania'
       const isEmailNotVerified = errorMsg.includes(
-        'zweryfikować swój adres email'
+        'zweryfikować swój adres email',
       )
 
       return {
@@ -236,7 +282,7 @@ export const AuthProvider = ({ children }) => {
         `/auth-mobile/reset-password/${token}`,
         {
           password,
-        }
+        },
       )
       return {
         success: true,
@@ -285,7 +331,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null)
       setUserStats(null)
       setIsAuthChecked(false)
-      router.replace('/login')
+      router.replace('/')
     }
   }
 
@@ -298,6 +344,63 @@ export const AuthProvider = ({ children }) => {
       console.error('Błąd podczas usuwania lokalizacji:', error)
       return { success: false, error: error.message }
     }
+  }
+
+  const updateConsents = async (updates) => {
+    const nextConsents = {
+      ...(consents || defaultConsents),
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    }
+    setConsents(nextConsents)
+    try {
+      await SecureStore.setItemAsync(CONSENTS_KEY, JSON.stringify(nextConsents))
+      return { success: true }
+    } catch (error) {
+      console.error('Błąd zapisu zgód:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  const setRulesAccepted = (value) => {
+    setPendingConsents((prev) => ({
+      ...prev,
+      rulesAccepted: value,
+    }))
+  }
+
+  const setMarketingAccepted = (value) => {
+    setPendingConsents((prev) => ({
+      ...prev,
+      marketingAccepted: value,
+    }))
+  }
+
+  const setLocationAccepted = (value) => {
+    setPendingConsents((prev) => ({
+      ...prev,
+      locationAccepted: value,
+    }))
+  }
+
+  const needsConsent =
+    !consentsLoading && (!consents || !consents.rulesAccepted)
+
+  const saveConsents = async () => {
+    if (!pendingConsents.rulesAccepted) {
+      return { success: false, error: 'Akceptacja regulaminu jest wymagana.' }
+    }
+    return await updateConsents({ ...pendingConsents })
+  }
+
+  const acceptAllConsents = async () => {
+    const nextConsents = {
+      rulesAccepted: true,
+      marketingAccepted: true,
+      locationAccepted: true,
+    }
+    setPendingConsents(nextConsents)
+    return await updateConsents(nextConsents)
   }
 
   return (
@@ -318,6 +421,16 @@ export const AuthProvider = ({ children }) => {
         logout,
         clearUserLocation,
         isAuthChecked,
+        consents,
+        consentsLoading,
+        updateConsents,
+        pendingConsents,
+        setRulesAccepted,
+        setMarketingAccepted,
+        setLocationAccepted,
+        needsConsent,
+        saveConsents,
+        acceptAllConsents,
       }}
     >
       {children}

@@ -12,8 +12,8 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { COLORS } from '../../../../constants/colors'
 import PlayerCard from '../../../../components/PlayerCard'
-import ConfirmModal from '../../../(Popup)/ConfirmModal'
-import FullScreenAd from '../../../(Popup)/FullScreenAd'
+import ConfirmModal from '../../../../components/popup/ConfirmModal'
+import FullScreenAd from '../../../../components/popup/FullScreenAd'
 import customFetch from '../../../../assets/utils/customFetch'
 import { useDashboard } from '../../../../context/DashboardContext'
 import { useNotification } from '../../../../context/NotificationContext'
@@ -124,7 +124,7 @@ const SingleEvent = () => {
     const fetchStatus = async () => {
       try {
         const response = await customFetch.get(
-          `/status/events/${eventID}/my-status`
+          `/status/events/${eventID}/my-status`,
         )
         if (response.data?.status) {
           setUserStatus(response.data.status)
@@ -171,7 +171,7 @@ const SingleEvent = () => {
       setPlayersLoading(true)
       try {
         const response = await customFetch.get(
-          `/status/events/${eventID}/users`
+          `/status/events/${eventID}/users`,
         )
         const acceptedUsers = response.data.usersByStatus?.accepted || []
 
@@ -183,7 +183,7 @@ const SingleEvent = () => {
 
           const playersWithStats = acceptedUsers.map((user) => {
             const userStats = statsResponse.data.stats?.find(
-              (stat) => stat.userID?.toString() === user.userID._id?.toString()
+              (stat) => stat.userID?.toString() === user.userID._id?.toString(),
             )
             return {
               _id: user.userID._id,
@@ -227,7 +227,7 @@ const SingleEvent = () => {
     setIsChatMuted(isChatMutedInPrefs || false)
 
     const isEventMutedInPrefs = preferences.mutedEvents?.some(
-      (mutedEvent) => mutedEvent.eventId === eventID
+      (mutedEvent) => mutedEvent.eventId === eventID,
     )
     setIsNotificationsMuted(isEventMutedInPrefs || false)
   }, [preferences, eventID])
@@ -314,14 +314,14 @@ const SingleEvent = () => {
         } else {
           Alert.alert(
             'Błąd',
-            'Błąd podczas wyciszania powiadomień z wydarzenia'
+            'Błąd podczas wyciszania powiadomień z wydarzenia',
           )
         }
       }
     } catch (error) {
       Alert.alert(
         'Błąd',
-        'Błąd podczas zmiany ustawień powiadomień z wydarzenia'
+        'Błąd podczas zmiany ustawień powiadomień z wydarzenia',
       )
       console.error('Błąd handleEventNotifications:', error)
     }

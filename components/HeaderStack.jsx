@@ -16,9 +16,9 @@ const HeaderStack = ({ navigation, route, options, back }) => {
       />
       <View style={styles.headerContainer}>
         {/* Przycisk cofania */}
-        {back ? (
+        {back && route.name !== 'index' ? (
           <Pressable
-            onPress={navigation.goBack}
+            onPress={() => navigation.navigate('index')}
             style={{
               width: 64,
               height: '100%',
@@ -29,7 +29,7 @@ const HeaderStack = ({ navigation, route, options, back }) => {
           >
             <Ionicons name='chevron-back' size={28} color={COLORS.secondary} />
             <Text style={styles.title}>
-              {options.title ? options.title : 'Forgotten'}
+              Cofnij
             </Text>
           </Pressable>
         ) : (

@@ -1,77 +1,17 @@
 import { useState } from 'react'
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Alert,
-  Linking,
-} from 'react-native'
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { StyleSheet, Text, View, ScrollView, Alert } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../../../../constants/colors'
-
-const SettingSection = ({ title, children }) => (
-  <View style={styles.section}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {children}
-  </View>
-)
-
-const SettingRow = ({
-  icon,
-  iconFamily = 'ionicons',
-  label,
-  value,
-  onPress,
-  isSwitch = false,
-  switchValue,
-  onSwitchChange,
-  disabled = false,
-  danger = false,
-}) => {
-  const IconComponent =
-    iconFamily === 'material' ? MaterialCommunityIcons : Ionicons
-
-  return (
-    <TouchableOpacity
-      style={[styles.settingRow, disabled && styles.settingRowDisabled]}
-      onPress={isSwitch ? undefined : onPress}
-      activeOpacity={isSwitch ? 1 : 0.7}
-      disabled={disabled}
-    >
-      <View style={styles.settingRowLeft}>
-        <IconComponent
-          name={icon}
-          size={22}
-          color={danger ? COLORS.error : COLORS.secondary}
-        />
-        <Text style={[styles.settingRowLabel, danger && styles.dangerText]}>
-          {label}
-        </Text>
-      </View>
-      {isSwitch ? (
-        <Switch
-          value={switchValue}
-          onValueChange={onSwitchChange}
-          trackColor={{ false: '#555', true: COLORS.third }}
-          thumbColor={switchValue ? COLORS.secondary : '#f4f3f4'}
-          disabled={disabled}
-        />
-      ) : (
-        <View style={styles.settingRowRight}>
-          {value && <Text style={styles.settingRowValue}>{value}</Text>}
-          <Ionicons name='chevron-forward' size={20} color={COLORS.gray} />
-        </View>
-      )}
-    </TouchableOpacity>
-  )
-}
+import { useMap } from '../../../../context/MapContext'
+import { useAuth } from '../../../../context/AuthContext'
+import SettingSection from '../../../../components/settingsComponents/SettingSection'
+import SettingRow from '../../../../components/settingsComponents/SettingRow'
 
 const Settings = () => {
   const router = useRouter()
+  const { userLocation } = useMap()
+  const { consents, updateConsents, clearUserLocation } = useAuth()
 
   // Ustawienia powiadomień
   const [chatNotifications, setChatNotifications] = useState(true)
@@ -106,9 +46,13 @@ const Settings = () => {
         {
           text: 'Usuń',
           style: 'destructive',
-          onPress: () => {
-            // W przyszłości: API call
-            Alert.alert('Sukces', 'Lokalizacja została usunięta')
+          onPress: async () => {
+            const result = await clearUserLocation()
+            if (result.success) {
+              Alert.alert('Sukces', 'Lokalizacja została usunięta')
+            } else {
+              Alert.alert('Błąd', 'Nie udało się usunąć lokalizacji')
+            }
           },
         },
       ]
@@ -143,6 +87,14 @@ const Settings = () => {
 
   const handleOpenRules = () => {
     router.push('/rules')
+  }
+
+  const handleMarketingToggle = async (value) => {
+    await updateConsents({ marketingAccepted: value })
+  }
+
+  const handleLocationToggle = async (value) => {
+    await updateConsents({ locationAccepted: value })
   }
 
   return (
@@ -189,9 +141,30 @@ const Settings = () => {
         {/* Prywatność i dane */}
         <SettingSection title='Prywatność i dane'>
           <SettingRow
-            icon='location'
+            icon='location-sharp'
             label='Usuń lokalizację'
             onPress={handleClearLocation}
+          />
+
+            <View style={styles.locationInfo}>
+              <Text style={styles.locationInfoText}>
+                Aktualna lokalizacja: {userLocation?.City || 'brak'}, {userLocation?.Country || ''}
+              </Text>
+            </View>
+
+          <SettingRow
+            icon='business'
+            label='Zgoda marketingowa'
+            isSwitch
+            switchValue={consents?.marketingAccepted || false}
+            onSwitchChange={handleMarketingToggle}
+          />
+          <SettingRow
+            icon='navigate'
+            label='Zgoda na geolokalizację'
+            isSwitch
+            switchValue={consents?.locationAccepted || false}
+            onSwitchChange={handleLocationToggle}
           />
           <SettingRow
             icon='trash'
@@ -247,54 +220,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
-    textTransform: 'uppercase',
-    marginBottom: 12,
-    marginLeft: 4,
-  },
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
-  settingRowDisabled: {
-    opacity: 0.5,
-  },
-  settingRowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  settingRowLabel: {
-    fontSize: 16,
-    fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginLeft: 12,
-  },
-  dangerText: {
-    color: COLORS.error,
-  },
-  settingRowRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  settingRowValue: {
-    fontSize: 14,
-    fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    marginRight: 8,
-  },
   versionContainer: {
     alignItems: 'center',
     marginTop: 20,
@@ -302,6 +227,25 @@ const styles = StyleSheet.create({
   versionText: {
     fontSize: 12,
     fontFamily: 'Lato-Regular',
+    color: COLORS.gray,
+  },
+  locationInfo: {
+    backgroundColor: COLORS.backgroundSecondary,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    //border 1 px solid color.secondary
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+  },
+  locationInfoText: {
+    textAlign: 'center',
+    fontSize: 14,
+    fontFamily: 'Lato-Regular',
+    fontStyle: 'italic',
+    textTransform: 'capitalize',
+    fontWeight: 'bold',
     color: COLORS.gray,
   },
 })

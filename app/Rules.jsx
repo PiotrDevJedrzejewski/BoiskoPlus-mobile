@@ -1,5 +1,4 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native'
-import React from 'react'
 import { COLORS } from '../constants/colors'
 
 const Rules = () => {

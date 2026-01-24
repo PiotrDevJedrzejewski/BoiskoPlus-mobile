@@ -63,15 +63,15 @@ const Layout = () => {
               <Stack.Screen name='index' options={{ headerShown: true }} />
               <Stack.Screen
                 name='login'
-                options={{ headerShown: true, title: 'Cofnij' }}
+                options={{ headerShown: true}}
               />
               <Stack.Screen
                 name='register'
-                options={{ headerShown: true, title: 'Cofnij' }}
+                options={{ headerShown: true }}
               />
               <Stack.Screen
                 name='rules'
-                options={{ headerShown: true, title: 'Cofnij' }}
+                options={{ headerShown: true }}
               />
               {/* Protected screens */}
               <Stack.Screen name='(main)' options={{ headerShown: false }} />

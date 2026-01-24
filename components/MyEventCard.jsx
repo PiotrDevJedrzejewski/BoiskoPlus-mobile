@@ -95,8 +95,8 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
             {
               color:
                 status === 'finished' || status === 'completed'
-                  ? COLORS.background
-                  : COLORS.primary,
+                  ? COLORS.primary
+                  : COLORS.secondary,
             },
           ]}
         >
@@ -152,6 +152,14 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
           <Text style={styles.footerText}>{event.price}zł</Text>
         </View>
         <View style={styles.footerItem}>
+          <Ionicons
+            name='speedometer-outline'
+            size={14}
+            color={COLORS.secondary}
+          />
+          <Text style={styles.footerText}>{event.level} </Text>
+        </View>
+        <View style={styles.footerItem}>
           <Ionicons name='people' size={14} color={COLORS.secondary} />
           <Text style={styles.footerText}>{event.playerCount}</Text>
         </View>
@@ -170,16 +178,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   statusBadge: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 12,
-    zIndex: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   statusText: {
-    fontSize: 11,
+    fontSize: 16,
     fontFamily: 'Montserrat-Bold',
   },
   notificationBadge: {

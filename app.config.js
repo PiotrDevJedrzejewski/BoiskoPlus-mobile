@@ -18,6 +18,10 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.boiskoplusmobile.app',
+      infoPlist: {
+        NSLocationWhenInUseUsageDescription:
+          'Aplikacja potrzebuje jednorazowego dostępu do lokalizacji, aby wskazać Twoje położenie na mapie.',
+      },
     },
     android: {
       adaptiveIcon: {
@@ -27,6 +31,7 @@ export default {
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: 'com.boiskoplusmobile.app',
+      permissions: ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION'],
     },
     web: {
       bundler: 'metro',

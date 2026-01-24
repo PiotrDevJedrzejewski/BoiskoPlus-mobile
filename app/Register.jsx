@@ -8,7 +8,6 @@ import {
   Pressable,
 } from 'react-native'
 import { COLORS } from '../constants/colors'
-import React from 'react'
 import Button1 from '../components/Button1'
 
 const Register = () => {

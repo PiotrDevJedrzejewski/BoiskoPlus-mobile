@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Picker } from '@react-native-picker/picker'
-import { useRouter, useFocusEffect } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import { COLORS } from '../../../constants/colors'
 import FindEventListElement from '../../../components/FindEventListElement'
 import { useMap } from '../../../context/MapContext'
@@ -33,7 +33,6 @@ const GAME_TYPES = [
 ]
 
 const FindEvent = () => {
-  const router = useRouter()
   const { setIsInteractive, setOverlayOpacity } = useMap()
   const [loading, setLoading] = useState(false)
   const [userInput, setUserInput] = useState({
@@ -54,7 +53,7 @@ const FindEvent = () => {
         setIsInteractive(false)
         setOverlayOpacity(0.3)
       }
-    }, [])
+    }, []),
   )
 
   const handleSearch = async () => {
@@ -68,7 +67,7 @@ const FindEvent = () => {
       // Filtrowanie po typie gry
       if (userInput.gameType) {
         results = results.filter(
-          (event) => event.gameType === userInput.gameType
+          (event) => event.gameType === userInput.gameType,
         )
       }
 
@@ -117,6 +116,7 @@ const FindEvent = () => {
             >
               {GAME_TYPES.map((type) => (
                 <Picker.Item
+                  style={styles.pickerItem}
                   key={type.value}
                   label={type.label}
                   value={type.value}
@@ -253,9 +253,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
     justifyContent: 'center',
     overflow: 'hidden',
+    paddingLeft: 10,
   },
   picker: {
-    height: 50,
+    height: 'auto',
+  },
+  pickerItem: {
+    fontSize: 16,
     color: COLORS.background,
   },
   inputDistance: {
@@ -278,7 +282,7 @@ const styles = StyleSheet.create({
   },
   searchButtonText: {
     fontSize: 20,
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'ObjectFont',
     color: COLORS.background,
   },
   loaderContainer: {

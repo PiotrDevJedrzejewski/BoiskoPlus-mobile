@@ -13,7 +13,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { COLORS } from '../../../../constants/colors'
 import FormEvent from '../../../../components/FormEvent'
 import EditEventUserCard from '../../../../components/EditEventUserCard'
-import ConfirmModal from '../../../(Popup)/ConfirmModal'
+import ConfirmModal from '../../../../components/popup/ConfirmModal'
 import customFetch from '../../../../assets/utils/customFetch'
 
 const StatBadge = ({ count, label, color }) => (
@@ -72,14 +72,14 @@ const EditEvent = () => {
               '/user-stats/multiple',
               {
                 userIds,
-              }
+              },
             )
 
             // Połącz użytkowników ze statystykami
             const usersWithStats = eventUsers.map((user) => {
               const userStats = statsResponse.data.stats?.find(
                 (stat) =>
-                  stat.userID?.toString() === user.userID._id?.toString()
+                  stat.userID?.toString() === user.userID._id?.toString(),
               )
               return {
                 ...user,
@@ -127,7 +127,7 @@ const EditEvent = () => {
           })
           const usersWithStats = eventUsers.map((user) => {
             const userStats = statsResponse.data.stats?.find(
-              (stat) => stat.userID?.toString() === user.userID._id?.toString()
+              (stat) => stat.userID?.toString() === user.userID._id?.toString(),
             )
             return {
               ...user,
