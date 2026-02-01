@@ -10,8 +10,8 @@ import SettingRow from '../../../../components/settingsComponents/SettingRow'
 
 const Settings = () => {
   const router = useRouter()
-  const { userLocation } = useMap()
-  const { consents, updateConsents, clearUserLocation } = useAuth()
+  const { userLocation, setStartLocation } = useMap()
+  const { consents, updateConsents } = useAuth()
 
   // Ustawienia powiadomień
   const [chatNotifications, setChatNotifications] = useState(true)
@@ -47,12 +47,9 @@ const Settings = () => {
           text: 'Usuń',
           style: 'destructive',
           onPress: async () => {
-            const result = await clearUserLocation()
-            if (result.success) {
-              Alert.alert('Sukces', 'Lokalizacja została usunięta')
-            } else {
-              Alert.alert('Błąd', 'Nie udało się usunąć lokalizacji')
-            }
+            // Zresetuj lokalizację do domyślnej (cała Polska)
+            await setStartLocation(false)
+            Alert.alert('Sukces', 'Lokalizacja została usunięta')
           },
         },
       ]
@@ -152,19 +149,19 @@ const Settings = () => {
               </Text>
             </View>
 
+            <SettingRow
+              icon='navigate'
+              label='Zgoda na geolokalizację'
+              isSwitch
+              switchValue={consents?.locationAccepted || false}
+              onSwitchChange={handleLocationToggle}
+            />
           <SettingRow
             icon='business'
             label='Zgoda marketingowa'
             isSwitch
             switchValue={consents?.marketingAccepted || false}
             onSwitchChange={handleMarketingToggle}
-          />
-          <SettingRow
-            icon='navigate'
-            label='Zgoda na geolokalizację'
-            isSwitch
-            switchValue={consents?.locationAccepted || false}
-            onSwitchChange={handleLocationToggle}
           />
           <SettingRow
             icon='trash'

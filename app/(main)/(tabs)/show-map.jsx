@@ -21,10 +21,13 @@ import {
 } from '../../../assets/utils/citySearchUtils'
 import customFetch from '../../../assets/utils/customFetch'
 import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import { Toast } from 'toastify-react-native'
 
 const ShowMap = () => {
   const {
     flyTo,
+    flyToProvince,
     setShowMarkers,
     showMarkers,
     setIsInteractive,
@@ -32,7 +35,7 @@ const ShowMap = () => {
     userLocation,
   } = useMap()
   const { setFilteredEvents } = useDashboard()
-  const { consents } = useAuth()
+  const { consents, pendingConsents, getThrottledLocation } = useAuth()
 
   const [userInput, setUserInput] = useState({
     latitude: null,
@@ -95,6 +98,16 @@ const ShowMap = () => {
     // Użyj lokalizacji użytkownika lub fallback na userLocation
     let finalCity = cityInput.trim() || (consents.locationAccepted ? userLocation.City : '')
     let finalRegion = userInput.region || (consents.locationAccepted ? userLocation.region : '')
+    
+    // Współrzędne - użyj userLocation tylko jeśli użytkownik nie wpisał własnego miasta
+    let finalLatitude = null
+    let finalLongitude = null
+    
+    if (!cityInput.trim() && consents.locationAccepted) {
+      // Użyj współrzędnych z userLocation tylko gdy nie ma własnego miasta
+      finalLatitude = userLocation.latitude
+      finalLongitude = userLocation.longitude
+    }
 
     if (!finalCity) {
       Alert.alert('Błąd', 'Proszę wpisać miasto lub włączyć lokalizację')
@@ -120,15 +133,22 @@ const ShowMap = () => {
 
     try {
       const response = await customFetch.post('/football-events/search', {
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude,
+        latitude: finalLatitude,
+        longitude: finalLongitude,
         Country: userLocation.Country || 'Poland',
         region: finalRegion,
         City: finalCity,
-        distance: 5, // zawsze 5km
+        distance: 5,
       })
+      
+      const events = response.data.events || []
       setFilteredEvents(response.data)
-      console.log(response.data)
+      
+      // Jeśli znaleziono eventy i użytkownik wpisał miasto, wyśrodkuj mapę na województwo
+      if (events.length > 0 && finalRegion) {
+        flyToProvince(finalRegion)
+      }
+      
     } catch (err) {
       console.error('Błąd wyszukiwania:', err)
       Alert.alert('Błąd', 'Nie udało się wyszukać wydarzeń')
@@ -136,9 +156,22 @@ const ShowMap = () => {
     setLoading(false)
   }
 
-  const handleMyLocation = () => {
-    if (userLocation.latitude && userLocation.longitude) {
-      flyTo([userLocation.longitude, userLocation.latitude], 14)
+  const handleMyLocation = async () => {
+    const result = await getThrottledLocation()
+    
+    if (!result.success) {
+      if (result.throttled) {
+        Toast.info(result.error, 'top')
+      } else {
+        Toast.error(result.error, 'top')
+      }
+      return
+    }
+
+    // Wyśrodkuj mapę na aktualnej lokalizacji
+    if (result.location?.latitude && result.location?.longitude) {
+      flyTo([result.location.longitude, result.location.latitude], 14)
+      Toast.success('Lokalizacja zaktualizowana', 'top')
     }
   }
 
@@ -206,6 +239,7 @@ const ShowMap = () => {
 
         {/* Kontrolki na mapie */}
         <View style={styles.controlsContainer} pointerEvents='box-none'>
+          <Text style={styles.controlButtonTextLocation }>Znajdź</Text>
           <TouchableOpacity
             style={styles.controlButton}
             onPress={handleMyLocation}
@@ -221,10 +255,13 @@ const ShowMap = () => {
           >
             <Ionicons
               name={showMarkers ? 'eye' : 'eye-off'}
-              size={24}
+              size={28}
               color={COLORS.secondary}
+              style={styles.controlIconEye}
             />
+            <MaterialCommunityIcons name="soccer-field" size={56} color={COLORS.third} style={styles.controlIconField} />
           </TouchableOpacity>
+            <Text style={styles.controlButtonTextField }>Boiska</Text>
         </View>
       </View>
     </View>
@@ -337,5 +374,35 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    overflow: 'hidden',
+  },
+  controlIconEye: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    zIndex: 6,
+  },
+  controlIconField: {
+    opacity: 0.5,
+    position: 'absolute',
+    zIndex: 5,
+    left: -2,
+  },
+
+  controlButtonTextLocation: {
+    position: 'absolute',
+    top: -20,
+    right: 7,
+    fontSize: 10,
+    color: COLORS.secondary,
+    fontFamily: 'ObjectFont',
+  },
+  controlButtonTextField: {
+    position: 'absolute',
+    bottom: -20,
+    right: 5,
+    fontSize: 10,
+    color: COLORS.secondary,
+    fontFamily: 'ObjectFont',
   },
 })

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { View, StyleSheet, Image, Text } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import Mapbox from '@rnmapbox/maps'
 import { useDashboard } from '../context/DashboardContext'
 import { useMap } from '../context/MapContext'
@@ -9,77 +9,15 @@ import EventMarkerEventCreate from './EventMarkerEventCreate'
 // Konfiguracja Mapbox (wymaga custom buildu)
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN || '')
 
-// Komponent markera dla klastra
-const ClusterMarker = ({ cluster, onPress, isSelected }) => {
-  const isCluster = cluster.properties.cluster
-  const pointCount = cluster.properties.point_count_abbreviated
-
-  return (
-    <Mapbox.MarkerView
-      id={
-        isCluster ? `cluster-${cluster.id}` : `event-${cluster.properties._id}`
-      }
-      coordinate={cluster.geometry.coordinates}
-      anchor={{ x: 0.5, y: 1 }}
-    >
-      <View style={styles.markerContainer}>
-        {isSelected && (
-          <View style={styles.popupContainer}>
-            {/* Popup będzie renderowany osobno */}
-          </View>
-        )}
-        <View style={styles.markerButton}>
-          <Image
-            source={require('../assets/images/favicon-32x32.png')}
-            style={styles.markerIcon}
-            resizeMode='contain'
-          />
-          {isCluster && (
-            <View style={styles.clusterBadge}>
-              <Text style={styles.clusterText}>{pointCount}</Text>
-            </View>
-          )}
-        </View>
-      </View>
-    </Mapbox.MarkerView>
-  )
-}
-
-// Komponent markera dla predefiniowanych miejsc (Orliki)
-const PredefinedPlaceMarker = ({ feature, index, onPress, isSelected }) => {
-  const [longitude, latitude] = feature.geometry.coordinates
-
-  return (
-    <Mapbox.MarkerView
-      id={`predefined-place-${index}`}
-      coordinate={[longitude, latitude]}
-      anchor={{ x: 0.5, y: 0.5 }}
-    >
-      <View style={styles.predefinedMarkerContainer}>
-        {/* Soccer field icon - tutaj możesz użyć @expo/vector-icons */}
-        <View
-          style={[
-            styles.predefinedMarker,
-            isSelected && styles.predefinedMarkerSelected,
-          ]}
-        >
-          <Text style={styles.predefinedMarkerText}>⚽</Text>
-        </View>
-      </View>
-    </Mapbox.MarkerView>
-  )
-}
-
 const MapboxMobile = () => {
   const { filteredEvents, mapTheme, userLocation, geolocationAccepted } =
     useDashboard()
-  const { mapRef, camera, setCamera } = useMap()
+  const { mapRef, camera, showMarkers, setIsMapReady } = useMap()
 
   // State
   const [selectedClusterEvents, setSelectedClusterEvents] = useState(null)
   const [predefinedPlaces, setPredefinedPlaces] = useState([])
   const [selectedPlace, setSelectedPlace] = useState(null)
-  const [selectedPlaceId, setSelectedPlaceId] = useState(null)
   const shapeSourceRef = useRef(null)
 
   // Załaduj dane predefiniowanych miejsc (Orliki)
@@ -88,38 +26,15 @@ const MapboxMobile = () => {
       const orlikData = require('../assets/data/orliki_lodzkie_z_geolokalizacja.json')
       if (orlikData.features) {
         setPredefinedPlaces(orlikData.features)
+        // console.log('📍 [Orliki] Załadowano dane:', orlikData.features.length, 'miejsc')
       }
     } catch (err) {
-      console.error('Error loading predefined places:', err)
+      console.error('❌ [Orliki] Error loading predefined places:', err)
     }
   }, [])
 
-  // Ustaw początkową pozycję kamery na podstawie geolokalizacji użytkownika
-  useEffect(() => {
-    if (
-      geolocationAccepted &&
-      userLocation.latitude &&
-      userLocation.longitude
-    ) {
-      setCamera({
-        centerCoordinate: [userLocation.longitude, userLocation.latitude],
-        zoomLevel: 14,
-      })
-    }
-  }, [geolocationAccepted, userLocation])
-
-  // Aktualizuj kamerę gdy zmieni się centrum filtrowanych eventów
-  useEffect(() => {
-    if (filteredEvents.center.latitude && filteredEvents.center.longitude) {
-      setCamera({
-        centerCoordinate: [
-          filteredEvents.center.longitude,
-          filteredEvents.center.latitude,
-        ],
-        zoomLevel: camera.zoomLevel || 14,
-      })
-    }
-  }, [filteredEvents.center])
+  // Kamera jest sterowana wyłącznie przez MapContext (flyTo, setCamera)
+  // Nie ma tutaj żadnej logiki kamery - wszystko idzie przez context
 
   // Przygotuj dane GeoJSON dla eventów
   const geojson = useMemo(
@@ -163,33 +78,40 @@ const MapboxMobile = () => {
     setSelectedClusterEvents(null)
   }
 
-  const handlePredefinedPlacePress = (feature, index) => {
-    setSelectedPlace(feature)
-    setSelectedPlaceId(index)
+  // Obsługa kliknięcia w marker predefiniowanego miejsca (ShapeSource)
+  const handlePredefinedPlacePress = (event) => {
+    if (event.features && event.features[0]) {
+      const feature = event.features[0]
+      const place = predefinedPlaces.find(p => p.id === feature.properties.id)
+      if (place) {
+        setSelectedPlace(place)
+      }
+    }
   }
 
   const handleClosePlacePopup = () => {
     setSelectedPlace(null)
-    setSelectedPlaceId(null)
   }
 
-  // Filtrowane predefined places dla optymalizacji
-  const visiblePredefinedPlaces = useMemo(() => {
-    if (!predefinedPlaces.length || !camera.centerCoordinate) return []
+  // GeoJSON dla predefiniowanych miejsc - bez filtrowania, z klastrowaniem
+  const predefinedGeojson = useMemo(() => {
+    if (!predefinedPlaces.length) {
+      return { type: 'FeatureCollection', features: [] }
+    }
 
-    const [centerLng, centerLat] = camera.centerCoordinate
-    const buffer = 0.2
-
-    return predefinedPlaces.filter((feature) => {
-      const [lng, lat] = feature.geometry.coordinates
-      return (
-        lng >= centerLng - buffer &&
-        lng <= centerLng + buffer &&
-        lat >= centerLat - buffer &&
-        lat <= centerLat + buffer
-      )
-    })
-  }, [predefinedPlaces, camera.centerCoordinate])
+    return {
+      type: 'FeatureCollection',
+      features: predefinedPlaces.map((place) => ({
+        type: 'Feature',
+        id: place.id,
+        properties: {
+          id: place.id,
+          ...place.properties,
+        },
+        geometry: place.geometry,
+      })),
+    }
+  }, [predefinedPlaces, showMarkers])
 
   // Style mapy (light/dark)
   const mapStyleURL = {
@@ -206,6 +128,8 @@ const MapboxMobile = () => {
         logoEnabled={false}
         attributionEnabled={false}
         compassEnabled={false}
+        scaleBarEnabled={false}
+        onDidFinishLoadingMap={() => setIsMapReady(true)}
       >
         <Mapbox.Camera
           zoomLevel={camera.zoomLevel}
@@ -217,6 +141,8 @@ const MapboxMobile = () => {
         <Mapbox.Images
           images={{
             'event-marker': require('../assets/images/favicon-32x32.png'),
+            'event-cluster-marker': require('../assets/images/fav64Circle.png'),
+            'orlik-marker': require('../assets/images/soccerfield-testing.png'),
           }}
         />
 
@@ -234,16 +160,45 @@ const MapboxMobile = () => {
             </Mapbox.MarkerView>
           )}
 
-        {/* Predefined places markers (Orliki) */}
-        {visiblePredefinedPlaces.map((feature, index) => (
-          <PredefinedPlaceMarker
-            key={`predefined-${index}`}
-            feature={feature}
-            index={index}
-            onPress={() => handlePredefinedPlacePress(feature, index)}
-            isSelected={selectedPlaceId === index}
-          />
-        ))}
+        {/* Predefined places (Orliki) - z klastrowaniem */}
+        {showMarkers && predefinedGeojson.features.length > 0 && (
+          <Mapbox.ShapeSource
+            id='predefined-places-source'
+            shape={predefinedGeojson}
+            cluster
+            clusterRadius={30}
+            clusterMaxZoomLevel={14}
+            onPress={handlePredefinedPlacePress}
+          >
+            {/* Klastery - ikona z licznikiem */}
+            <Mapbox.SymbolLayer
+              id='predefined-places-clusters'
+              filter={['has', 'point_count']}
+              style={{
+                iconImage: 'orlik-marker',
+                iconSize: 0.2,
+                iconAllowOverlap: true,
+                textField: ['get', 'point_count_abbreviated'],
+                textSize: 12,
+                textColor: '#ffffff',
+                textFont: ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
+                textOffset: [0, -1.4],
+                textAllowOverlap: true,
+              }}
+            />
+            {/* Pojedyncze markery */}
+            <Mapbox.SymbolLayer
+              id='predefined-places-singles'
+              filter={['!', ['has', 'point_count']]}
+              style={{
+                iconImage: 'orlik-marker',
+                iconSize: 0.15,
+                iconAllowOverlap: true,
+                iconAnchor: 'center',
+              }}
+            />
+          </Mapbox.ShapeSource>
+        )}
 
         {/* Event markers with clustering using ShapeSource */}
         <Mapbox.ShapeSource
@@ -259,21 +214,32 @@ const MapboxMobile = () => {
             }
           }}
         >
+          {/* Ikona dla klastrów */}
+          <Mapbox.SymbolLayer
+            id='clusters-icon'
+            filter={['has', 'point_count']}
+            style={{
+              iconImage: 'event-cluster-marker',
+              iconSize: 1,
+              iconAllowOverlap: true,
+            }}
+          />
+          {/* Licznik na czerwonym tle */}
           <Mapbox.SymbolLayer
             id='clusters-count'
             filter={['has', 'point_count']}
             style={{
               textField: ['get', 'point_count_abbreviated'],
-              textSize: 13,
+              textSize: 15,
               textColor: '#ffffff',
               textFont: ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
-              iconImage: 'event-marker',
-              iconSize: 1,
-              iconAllowOverlap: true,
               textAllowOverlap: true,
-              textOffset: [1.5, -0.5],
+              textOffset: [1.1, -1.1],
+              textJustify: 'center',
+              textHaloBlur: 0,
             }}
           />
+          {/* Pojedyncze eventy */}
           <Mapbox.SymbolLayer
             id='single-events'
             filter={['!', ['has', 'point_count']]}
@@ -285,17 +251,6 @@ const MapboxMobile = () => {
           />
         </Mapbox.ShapeSource>
       </Mapbox.MapView>
-
-      {/* Overlay dla przyciemnienia mapy */}
-      {/* {overlayOpacity > 0 && (
-        <View
-          style={[
-            styles.overlay,
-            { backgroundColor: `rgba(0, 0, 0, ${overlayOpacity})` },
-          ]}
-          pointerEvents='none'
-        />
-      )} */}
 
       {/* Popup dla wybranych eventów */}
       {selectedClusterEvents && (
@@ -328,64 +283,6 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 1,
-  },
-  markerContainer: {
-    alignItems: 'center',
-  },
-  markerButton: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markerIcon: {
-    width: 32,
-    height: 32,
-  },
-  clusterBadge: {
-    position: 'absolute',
-    top: -10,
-    right: -5,
-    backgroundColor: '#e7153f',
-    borderRadius: 11,
-    minWidth: 22,
-    minHeight: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
-    paddingHorizontal: 4,
-  },
-  clusterText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  predefinedMarkerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  predefinedMarker: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#22c55e',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  predefinedMarkerSelected: {
-    transform: [{ scale: 1.2 }],
-  },
-  predefinedMarkerText: {
-    fontSize: 16,
-  },
   userLocationMarker: {
     width: 20,
     height: 20,
@@ -401,12 +298,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#3b82f6',
     borderWidth: 2,
     borderColor: '#fff',
-  },
-  popupContainer: {
-    position: 'absolute',
-    bottom: '100%',
-    marginBottom: 20,
-    zIndex: 10,
   },
 })
 

@@ -11,11 +11,34 @@ import { useAuth } from './AuthContext'
 
 const MapContext = createContext()
 
+// Współrzędne centrów województw Polski
+const PROVINCE_COORDINATES = {
+  'dolnośląskie': { lat: 51.1079, lon: 16.9252, zoom: 8 },
+  'kujawsko-pomorskie': { lat: 53.0138, lon: 18.0060, zoom: 8 },
+  'lubelskie': { lat: 51.2465, lon: 22.5684, zoom: 8 },
+  'lubuskie': { lat: 52.2500, lon: 15.5000, zoom: 8 },
+  'łódzkie': { lat: 51.463477, lon: 19.172697, zoom: 8 },
+  'małopolskie': { lat: 50.0647, lon: 19.9450, zoom: 8 },
+  'mazowieckie': { lat: 52.3423, lon: 21.1017, zoom: 8 },
+  'opolskie': { lat: 50.6751, lon: 17.9270, zoom: 9 },
+  'podkarpackie': { lat: 50.0413, lon: 21.9990, zoom: 8 },
+  'podlaskie': { lat: 53.1325, lon: 23.1688, zoom: 8 },
+  'pomorskie': { lat: 54.3520, lon: 18.6466, zoom: 8 },
+  'śląskie': { lat: 50.2975, lon: 19.0238, zoom: 9 },
+  'świętokrzyskie': { lat: 50.8661, lon: 20.6286, zoom: 9 },
+  'warmińsko-mazurskie': { lat: 53.7784, lon: 20.4801, zoom: 8 },
+  'wielkopolskie': { lat: 52.3337, lon: 17.2417, zoom: 8 },
+  'zachodniopomorskie': { lat: 53.4300, lon: 15.5000, zoom: 8 },
+}
+
+
+
+
 export const MapProvider = ({ children }) => {
-  const { consents, consentsLoading } = useAuth()
+  const { consents, consentsLoading, getThrottledLocation } = useAuth()
   const mapRef = useRef(null)
 
-  // Czy pokazywać markery
+  // Czy pokazywać markery dla predefiniowanych lokalizacji
   const [showMarkers, setShowMarkers] = useState(true)
 
   // Opacity overlay (dla przyciemnienia tła)
@@ -23,6 +46,9 @@ export const MapProvider = ({ children }) => {
 
   // Czy mapa jest interaktywna
   const [isInteractive, setIsInteractive] = useState(false)
+
+  // Czy mapa jest gotowa (załadowana)
+  const [isMapReady, setIsMapReady] = useState(false)
 
   // domyślne wartości dla lokalizacji - centrum Polski
   const [userLocation, setUserLocation] = useState({
@@ -43,13 +69,10 @@ export const MapProvider = ({ children }) => {
   const [mapComponent, setMapComponent] = useState(null)
 
   const flyTo = useCallback((coordinates, zoom = 14) => {
-    if (mapRef.current) {
-      mapRef.current.setCamera({
-        centerCoordinate: coordinates,
-        zoomLevel: zoom,
-        animationDuration: 1000,
-      })
-    }
+    setCamera({
+      centerCoordinate: coordinates,
+      zoomLevel: zoom,
+    })
   }, [])
 
   // Funkcja do ustawienia lokalizacji startowej
@@ -64,7 +87,7 @@ export const MapProvider = ({ children }) => {
         region: '',
       })
       setCamera({
-        centerCoordinate: [19.5, 52.0], // Polska - cały kraj
+        centerCoordinate: [19.5, 52.0],
         zoomLevel: 6,
       })
       return
@@ -82,7 +105,6 @@ export const MapProvider = ({ children }) => {
           Country: response.data.Country || 'Poland',
         }
         setUserLocation(location)
-        // Ustaw kamerę na lokalizację użytkownika
         setCamera({
           centerCoordinate: [response.data.longitude, response.data.latitude],
           zoomLevel: 12,
@@ -125,6 +147,64 @@ export const MapProvider = ({ children }) => {
     }
   }, [consentsLoading, consents, setStartLocation])
 
+  // Reaguj na zmiany zgody na lokalizację w czasie rzeczywistym
+  useEffect(() => {
+    const handleLocationConsentChange = async () => {
+      if (consentsLoading) return
+      
+      // Jeśli użytkownik włączył zgodę na lokalizację
+      if (consents?.locationAccepted) {
+        const result = await getThrottledLocation()
+        if (result.success && result.location) {
+          const location = {
+            latitude: result.location.latitude,
+            longitude: result.location.longitude,
+            City: result.location.City || '',
+            region: result.location.region || '',
+            Country: result.location.Country || 'Poland',
+          }
+          setUserLocation(location)
+          setCamera({
+            centerCoordinate: [result.location.longitude, result.location.latitude],
+            zoomLevel: 12,
+          })
+        }
+      } else {
+        // Jeśli użytkownik wyłączył zgodę - wróć do domyślnej lokalizacji
+        setUserLocation({
+          latitude: 52.0,
+          longitude: 19.5,
+          City: '',
+          Country: 'Poland',
+          region: '',
+        })
+        setCamera({
+          centerCoordinate: [19.5, 52.0],
+          zoomLevel: 6,
+        })
+      }
+    }
+    
+    handleLocationConsentChange()
+  }, [consents?.locationAccepted, consentsLoading, getThrottledLocation])
+
+  // Funkcja do pobrania współrzędnych województwa
+  const getProvinceCoordinates = useCallback((provinceName) => {
+    if (!provinceName) return null
+    const normalized = provinceName.toLowerCase().trim()
+    return PROVINCE_COORDINATES[normalized] || null
+  }, [])
+
+  // Funkcja do wyśrodkowania mapy na województwo
+  const flyToProvince = useCallback((provinceName) => {
+    const coords = getProvinceCoordinates(provinceName)
+    if (coords) {
+      flyTo([coords.lon, coords.lat], coords.zoom)
+      return true
+    }
+    return false
+  }, [flyTo, getProvinceCoordinates])
+
   return (
     <MapContext.Provider
       value={{
@@ -135,9 +215,13 @@ export const MapProvider = ({ children }) => {
         setOverlayOpacity,
         isInteractive,
         setIsInteractive,
+        isMapReady,
+        setIsMapReady,
         camera,
         setCamera,
         flyTo,
+        flyToProvince,
+        getProvinceCoordinates,
         mapComponent,
         setMapComponent,
         userLocation,

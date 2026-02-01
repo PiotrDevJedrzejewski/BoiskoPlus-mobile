@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import * as SecureStore from 'expo-secure-store'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import customFetch, {
   setAuthToken,
   removeAuthToken,
@@ -10,6 +11,9 @@ import { router } from 'expo-router'
 const AuthContext = createContext()
 
 const CONSENTS_KEY = 'bp_consents_v1'
+const LOCATION_THROTTLE_KEY = 'last_location_request_time'
+const THROTTLE_DURATION = 5 * 60 * 1000 // 5 minut w milisekundach
+
 const defaultConsents = {
   rulesAccepted: false,
   marketingAccepted: false,
@@ -335,17 +339,6 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Funkcja do usunięcia lokalizacji
-  const clearUserLocation = async () => {
-    try {
-      await customFetch.delete('/location/clear')
-      return { success: true }
-    } catch (error) {
-      console.error('Błąd podczas usuwania lokalizacji:', error)
-      return { success: false, error: error.message }
-    }
-  }
-
   const updateConsents = async (updates) => {
     const nextConsents = {
       ...(consents || defaultConsents),
@@ -403,6 +396,61 @@ export const AuthProvider = ({ children }) => {
     return await updateConsents(nextConsents)
   }
 
+  // Funkcja do pobrania lokalizacji z throttlingiem
+  const getThrottledLocation = async () => {
+    // Sprawdź zgodę na lokalizację
+    if (!pendingConsents.locationAccepted && !consents?.locationAccepted) {
+      return {
+        success: false,
+        error: 'Brak zgody na lokalizację',
+      }
+    }
+
+    // Sprawdź throttling - ostatnie użycie (raz na 5 minut)
+    try {
+      const lastRequestTime = await AsyncStorage.getItem(LOCATION_THROTTLE_KEY)
+      const now = Date.now()
+
+      if (lastRequestTime) {
+        const timeSinceLastRequest = now - parseInt(lastRequestTime, 10)
+
+        if (timeSinceLastRequest < THROTTLE_DURATION) {
+          const remainingMinutes = Math.ceil((THROTTLE_DURATION - timeSinceLastRequest) / 60000)
+          return {
+            success: false,
+            throttled: true,
+            remainingMinutes,
+            error: `Możesz odświeżyć lokalizację za ${remainingMinutes} min.`,
+          }
+        }
+      }
+
+      // Pobierz aktualną lokalizację z backendu
+      const response = await customFetch.get('/location/decrypt')
+
+      if (response.data && response.data.latitude && response.data.longitude) {
+        // Zapisz czas ostatniego żądania
+        await AsyncStorage.setItem(LOCATION_THROTTLE_KEY, now.toString())
+
+        return {
+          success: true,
+          location: response.data,
+        }
+      } else {
+        return {
+          success: false,
+          error: 'Nie udało się pobrać lokalizacji',
+        }
+      }
+    } catch (error) {
+      console.error('Błąd pobierania lokalizacji:', error)
+      return {
+        success: false,
+        error: 'Wystąpił błąd podczas pobierania lokalizacji',
+      }
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -419,7 +467,6 @@ export const AuthProvider = ({ children }) => {
         resetPassword,
         refetchUser,
         logout,
-        clearUserLocation,
         isAuthChecked,
         consents,
         consentsLoading,
@@ -431,6 +478,7 @@ export const AuthProvider = ({ children }) => {
         needsConsent,
         saveConsents,
         acceptAllConsents,
+        getThrottledLocation,
       }}
     >
       {children}
