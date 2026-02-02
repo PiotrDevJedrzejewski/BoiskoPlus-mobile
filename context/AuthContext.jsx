@@ -12,6 +12,7 @@ const AuthContext = createContext()
 
 const CONSENTS_KEY = 'bp_consents_v1'
 const LOCATION_THROTTLE_KEY = 'last_location_request_time'
+const LOCATION_STORAGE_KEY = 'bp_user_location_v1'
 const THROTTLE_DURATION = 5 * 60 * 1000 // 5 minut w milisekundach
 
 const defaultConsents = {
@@ -34,6 +35,11 @@ export const AuthProvider = ({ children }) => {
     marketingAccepted: false,
     locationAccepted: false,
   })
+ // undetermined | granted | denied
+  const [systemPermissionsGeo, setSystemPermissionsGeo] = useState({status: 'undetermined'})
+
+
+
 
   //Nowy state dla asynchronizacji pomiędzy użytkownikiem a SecureStore
   const [isAuthChecked, setIsAuthChecked] = useState(false)
@@ -397,6 +403,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   // Funkcja do pobrania lokalizacji z throttlingiem
+  // Pobiera z AsyncStorage, a jeśli brak - używa expo-location + reverse geocoding
   const getThrottledLocation = async () => {
     // Sprawdź zgodę na lokalizację
     if (!pendingConsents.locationAccepted && !consents?.locationAccepted) {
@@ -425,21 +432,23 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      // Pobierz aktualną lokalizację z backendu
-      const response = await customFetch.get('/location/decrypt')
-
-      if (response.data && response.data.latitude && response.data.longitude) {
+      // Pobierz lokalizację z AsyncStorage
+      const storedLocation = await AsyncStorage.getItem(LOCATION_STORAGE_KEY)
+      
+      if (storedLocation) {
+        const location = JSON.parse(storedLocation)
+        
         // Zapisz czas ostatniego żądania
         await AsyncStorage.setItem(LOCATION_THROTTLE_KEY, now.toString())
 
         return {
           success: true,
-          location: response.data,
+          location,
         }
       } else {
         return {
           success: false,
-          error: 'Nie udało się pobrać lokalizacji',
+          error: 'Brak zapisanej lokalizacji',
         }
       }
     } catch (error) {
@@ -447,6 +456,69 @@ export const AuthProvider = ({ children }) => {
       return {
         success: false,
         error: 'Wystąpił błąd podczas pobierania lokalizacji',
+      }
+    }
+  }
+
+  // Funkcja do zapisania lokalizacji w AsyncStorage
+  const saveLocation = async (location) => {
+    try {
+      await AsyncStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify(location))
+      return { success: true }
+    } catch (error) {
+      console.error('Błąd zapisywania lokalizacji:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Funkcja do pobrania zapisanej lokalizacji (bez throttlingu)
+  const getSavedLocation = async () => {
+    try {
+      const storedLocation = await AsyncStorage.getItem(LOCATION_STORAGE_KEY)
+      if (storedLocation) {
+        return {
+          success: true,
+          location: JSON.parse(storedLocation),
+        }
+      }
+      return {
+        success: false,
+        error: 'Brak zapisanej lokalizacji',
+      }
+    } catch (error) {
+      console.error('Błąd pobierania lokalizacji:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Funkcja do usunięcia zapisanej lokalizacji
+  const clearSavedLocation = async () => {
+    try {
+      await AsyncStorage.removeItem(LOCATION_STORAGE_KEY)
+      await AsyncStorage.removeItem(LOCATION_THROTTLE_KEY)
+      return { success: true }
+    } catch (error) {
+      console.error('Błąd usuwania lokalizacji:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Funkcja do reverse geocoding (współrzędne -> miasto/region)
+  const reverseGeocode = async (latitude, longitude) => {
+    try {
+      const response = await customFetch.post('/location-mobile/reverse-geocode', {
+        latitude,
+        longitude,
+      })
+      return {
+        success: true,
+        location: response.data,
+      }
+    } catch (error) {
+      console.error('Błąd reverse geocoding:', error)
+      return {
+        success: false,
+        error: 'Nie udało się określić lokalizacji',
       }
     }
   }
@@ -479,6 +551,12 @@ export const AuthProvider = ({ children }) => {
         saveConsents,
         acceptAllConsents,
         getThrottledLocation,
+        saveLocation,
+        getSavedLocation,
+        clearSavedLocation,
+        reverseGeocode,
+        systemPermissionsGeo, 
+        setSystemPermissionsGeo
       }}
     >
       {children}

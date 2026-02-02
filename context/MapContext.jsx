@@ -6,36 +6,36 @@ import {
   useCallback,
   useEffect,
 } from 'react'
-import customFetch from '../assets/utils/customFetch'
 import { useAuth } from './AuthContext'
+import { checkSystemLocationPermissions } from '../assets/utils/getUserLocation'
 
 const MapContext = createContext()
 
 // Współrzędne centrów województw Polski
 const PROVINCE_COORDINATES = {
-  'dolnośląskie': { lat: 51.1079, lon: 16.9252, zoom: 8 },
-  'kujawsko-pomorskie': { lat: 53.0138, lon: 18.0060, zoom: 8 },
-  'lubelskie': { lat: 51.2465, lon: 22.5684, zoom: 8 },
-  'lubuskie': { lat: 52.2500, lon: 15.5000, zoom: 8 },
-  'łódzkie': { lat: 51.463477, lon: 19.172697, zoom: 8 },
-  'małopolskie': { lat: 50.0647, lon: 19.9450, zoom: 8 },
-  'mazowieckie': { lat: 52.3423, lon: 21.1017, zoom: 8 },
-  'opolskie': { lat: 50.6751, lon: 17.9270, zoom: 9 },
-  'podkarpackie': { lat: 50.0413, lon: 21.9990, zoom: 8 },
-  'podlaskie': { lat: 53.1325, lon: 23.1688, zoom: 8 },
-  'pomorskie': { lat: 54.3520, lon: 18.6466, zoom: 8 },
-  'śląskie': { lat: 50.2975, lon: 19.0238, zoom: 9 },
-  'świętokrzyskie': { lat: 50.8661, lon: 20.6286, zoom: 9 },
-  'warmińsko-mazurskie': { lat: 53.7784, lon: 20.4801, zoom: 8 },
-  'wielkopolskie': { lat: 52.3337, lon: 17.2417, zoom: 8 },
-  'zachodniopomorskie': { lat: 53.4300, lon: 15.5000, zoom: 8 },
+  'dolnośląskie': { lat: 51.1079, lon: 16.9252, zoom: 7 },
+  'kujawsko-pomorskie': { lat: 53.0138, lon: 18.0060, zoom: 7},
+  'lubelskie': { lat: 51.2465, lon: 22.5684, zoom: 7 },
+  'lubuskie': { lat: 52.2500, lon: 15.5000, zoom: 7 },
+  'łódzkie': { lat: 51.463477, lon: 19.172697, zoom: 7 },
+  'małopolskie': { lat: 50.0647, lon: 19.9450, zoom: 7 },
+  'mazowieckie': { lat: 52.3423, lon: 21.1017, zoom: 7 },
+  'opolskie': { lat: 50.6751, lon: 17.9270, zoom: 8 },
+  'podkarpackie': { lat: 50.0413, lon: 21.9990, zoom: 7 },
+  'podlaskie': { lat: 53.1325, lon: 23.1688, zoom: 7 },
+  'pomorskie': { lat: 54.3520, lon: 18.6466, zoom: 7 },
+  'śląskie': { lat: 50.2975, lon: 19.0238, zoom: 8 },
+  'świętokrzyskie': { lat: 50.8661, lon: 20.6286, zoom: 8 },
+  'warmińsko-mazurskie': { lat: 53.7784, lon: 20.4801, zoom: 7 },
+  'wielkopolskie': { lat: 52.3337, lon: 17.2417, zoom: 7 },
+  'zachodniopomorskie': { lat: 53.4300, lon: 15.5000, zoom: 7 },
 }
 
 
 
 
 export const MapProvider = ({ children }) => {
-  const { consents, consentsLoading, getThrottledLocation } = useAuth()
+  const { consents, consentsLoading, getSavedLocation, systemPermissionsGeo, setSystemPermissionsGeo, updateConsents } = useAuth()
   const mapRef = useRef(null)
 
   // Czy pokazywać markery dla predefiniowanych lokalizacji
@@ -94,19 +94,19 @@ export const MapProvider = ({ children }) => {
     }
 
     try {
-      // Pobierz lokalizację z backendu
-      const response = await customFetch.get('/location/decrypt')
-      if (response.data && response.data.latitude && response.data.longitude) {
+      // Pobierz lokalizację z AsyncStorage (lokalnie)
+      const result = await getSavedLocation()
+      if (result.success && result.location) {
         const location = {
-          latitude: response.data.latitude,
-          longitude: response.data.longitude,
-          City: response.data.City || '',
-          region: response.data.region || '',
-          Country: response.data.Country || 'Poland',
+          latitude: result.location.latitude,
+          longitude: result.location.longitude,
+          City: result.location.City || '',
+          region: result.location.region || '',
+          Country: result.location.Country || 'Poland',
         }
         setUserLocation(location)
         setCamera({
-          centerCoordinate: [response.data.longitude, response.data.latitude],
+          centerCoordinate: [result.location.longitude, result.location.latitude],
           zoomLevel: 12,
         })
       } else {
@@ -138,7 +138,7 @@ export const MapProvider = ({ children }) => {
         zoomLevel: 6,
       })
     }
-  }, [])
+  }, [getSavedLocation])
 
   // Inicjalizacja lokalizacji startowej na podstawie zgody użytkownika
   useEffect(() => {
@@ -147,6 +147,21 @@ export const MapProvider = ({ children }) => {
     }
   }, [consentsLoading, consents, setStartLocation])
 
+  // Sprawdzanie uprawnień systemowych do geolokalizacji
+  useEffect(() => {
+    const checkPermissions = async () => {
+      await checkSystemLocationPermissions({
+        consents,
+        systemPermissionsGeo,
+        setSystemPermissionsGeo,
+        updateConsents,
+        consentsLoading,
+      })
+    }
+
+    checkPermissions()
+  }, [consentsLoading, consents?.locationAccepted, systemPermissionsGeo.status, setSystemPermissionsGeo, updateConsents])
+
   // Reaguj na zmiany zgody na lokalizację w czasie rzeczywistym
   useEffect(() => {
     const handleLocationConsentChange = async () => {
@@ -154,7 +169,7 @@ export const MapProvider = ({ children }) => {
       
       // Jeśli użytkownik włączył zgodę na lokalizację
       if (consents?.locationAccepted) {
-        const result = await getThrottledLocation()
+        const result = await getSavedLocation()
         if (result.success && result.location) {
           const location = {
             latitude: result.location.latitude,
@@ -186,7 +201,7 @@ export const MapProvider = ({ children }) => {
     }
     
     handleLocationConsentChange()
-  }, [consents?.locationAccepted, consentsLoading, getThrottledLocation])
+  }, [consents?.locationAccepted, consentsLoading, getSavedLocation])
 
   // Funkcja do pobrania współrzędnych województwa
   const getProvinceCoordinates = useCallback((provinceName) => {

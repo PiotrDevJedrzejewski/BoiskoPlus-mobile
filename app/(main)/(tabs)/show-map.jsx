@@ -23,6 +23,7 @@ import customFetch from '../../../assets/utils/customFetch'
 import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Toast } from 'toastify-react-native'
+import { getCurrentLocation } from '../../../assets/utils/getUserLocation'
 
 const ShowMap = () => {
   const {
@@ -33,9 +34,10 @@ const ShowMap = () => {
     setIsInteractive,
     setOverlayOpacity,
     userLocation,
+    setUserLocation,
   } = useMap()
   const { setFilteredEvents } = useDashboard()
-  const { consents, pendingConsents, getThrottledLocation } = useAuth()
+  const { consents, pendingConsents, getThrottledLocation, saveLocation, reverseGeocode } = useAuth()
 
   const [userInput, setUserInput] = useState({
     latitude: null,
@@ -157,21 +159,54 @@ const ShowMap = () => {
   }
 
   const handleMyLocation = async () => {
-    const result = await getThrottledLocation()
-    
-    if (!result.success) {
-      if (result.throttled) {
-        Toast.info(result.error, 'top')
-      } else {
-        Toast.error(result.error, 'top')
-      }
+    // Sprawdź zgodę na lokalizację
+    if (!pendingConsents.locationAccepted && !consents?.locationAccepted) {
+      Toast.error('Brak zgody na lokalizację. Możesz zmienić to w ustawieniach.', 'top')
       return
     }
 
-    // Wyśrodkuj mapę na aktualnej lokalizacji
-    if (result.location?.latitude && result.location?.longitude) {
-      flyTo([result.location.longitude, result.location.latitude], 14)
+    // Sprawdź throttling
+    const throttleResult = await getThrottledLocation()
+    if (throttleResult.throttled) {
+      Toast.info(throttleResult.error, 'top')
+      return
+    }
+
+    try {
+      // Pobierz aktualną lokalizację z GPS
+      const locationResult = await getCurrentLocation()
+      
+      if (!locationResult.success) {
+        Toast.error('System blokuje lokalizację', 'top')
+        return
+      }
+
+      const { latitude, longitude } = locationResult.location
+
+      // Reverse geocoding - pobierz nazwę miasta/regionu z backendu
+      const geocodeResult = await reverseGeocode(latitude, longitude)
+      
+      const newLocation = {
+        latitude,
+        longitude,
+        City: geocodeResult.success ? geocodeResult.location.City : null,
+        region: geocodeResult.success ? geocodeResult.location.region : null,
+        Country: geocodeResult.success ? geocodeResult.location.Country : 'Poland',
+      }
+
+      // Zapisz lokalizację w AsyncStorage
+      await saveLocation(newLocation)
+      
+      // Zaktualizuj state w MapContext
+      setUserLocation(newLocation)
+
+      // Wyśrodkuj mapę na aktualnej lokalizacji
+      flyTo([longitude, latitude], 14)
+      
       Toast.success('Lokalizacja zaktualizowana', 'top')
+    } catch (error) {
+      console.error('Błąd pobierania lokalizacji:', error)
+      Toast.error('Nie udało się pobrać lokalizacji', 'top')
     }
   }
 

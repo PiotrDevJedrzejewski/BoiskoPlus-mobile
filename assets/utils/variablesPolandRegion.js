@@ -1,3 +1,5 @@
+// Mapowanie angielskich nazw województw na polskie
+// Identyczne z server/utils/variablesPolandRegion.js
 export const regionMap = {
   'Łódź Voivodeship': 'łódzkie',
   'Masovian Voivodeship': 'mazowieckie',
@@ -16,3 +18,8 @@ export const regionMap = {
   'Subcarpathian Voivodeship': 'podkarpackie',
   'Świętokrzyskie Voivodeship': 'świętokrzyskie',
 }
+
+// Odwrotne mapowanie - polskie na angielskie
+export const regionMapReverse = Object.fromEntries(
+  Object.entries(regionMap).map(([en, pl]) => [pl, en])
+)

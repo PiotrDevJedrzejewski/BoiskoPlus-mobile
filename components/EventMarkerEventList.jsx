@@ -3,173 +3,301 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
-  Pressable,
+  ScrollView,
+  Modal,
 } from 'react-native'
 import { useRouter } from 'expo-router'
-import { gameTypeIcons } from '../assets/utils/gameTypeIcons'
-import { Ionicons } from '@expo/vector-icons'
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../constants/colors'
+import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
 
 const EventMarkerEventList = ({ events, onClose }) => {
   const router = useRouter()
 
+  console.log('🔵 [EventList] Renderowanie listy. Liczba eventów:', events?.length)
+  console.log('🔵 [EventList] Pierwszy event:', events?.[0])
+
   const handleEventPress = (eventId) => {
-    router.push(`/(main)/(hidden)/event/${eventId}`)
+    console.log('🔵 [EventList] Kliknięto event:', eventId)
     onClose()
+    // Nawigacja do pojedynczego eventu
+    router.push({
+      pathname: '/(main)/(tabs)/(hidden)/single-event',
+      params: { eventId }
+    })
+  }
+
+  // Mniejsza wersja ikony dla listy
+  const getSmallGameTypeIcon = (gameType) => {
+    const iconMap = {
+      football: (
+        <MaterialCommunityIcons
+          name='soccer'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      volleyball: (
+        <MaterialCommunityIcons
+          name='volleyball'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      basketball: (
+        <MaterialCommunityIcons
+          name='basketball'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      handball: (
+        <MaterialCommunityIcons
+          name='handball'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      rugby: (
+        <MaterialCommunityIcons
+          name='rugby'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      hockey: (
+        <MaterialCommunityIcons
+          name='hockey-sticks'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      tennis: (
+        <MaterialCommunityIcons
+          name='tennis'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      badminton: (
+        <MaterialCommunityIcons
+          name='badminton'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      'table tennis': (
+        <MaterialCommunityIcons
+          name='table-tennis'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      bowling: (
+        <MaterialCommunityIcons
+          name='bowling'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      cards: (
+        <MaterialCommunityIcons
+          name='cards'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+      'board games': (
+        <MaterialCommunityIcons
+          name='chess-knight'
+          size={28}
+          color={COLORS.secondary}
+        />
+      ),
+    }
+    return (
+      iconMap[gameType] || (
+        <Ionicons name='help-circle' size={28} color={COLORS.secondary} />
+      )
+    )
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.popup}>
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Text style={styles.closeButtonText}>Zamknij</Text>
-        </TouchableOpacity>
+    <Modal
+      visible={true}
+      transparent={true}
+      animationType='fade'
+      onRequestClose={onClose}
+    >
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>
+              Wydarzenia ({events?.length || 0})
+            </Text>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Ionicons name='close' size={24} color={COLORS.primary} />
+            </TouchableOpacity>
+          </View>
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={true}
-        >
-          {events.map((event) => (
-            <Pressable
-              key={event.eventId || event._id}
-              style={({ pressed }) => [
-                styles.eventItem,
-                pressed && styles.eventItemPressed,
-              ]}
-              onPress={() => handleEventPress(event._id)}
-            >
-              <View style={styles.eventHeader}>
-                <Text style={styles.gameType}>{event.gameType}</Text>
-                <View style={styles.iconContainer}>
-                  {gameTypeIcons[event.gameType] ? (
-                    React.cloneElement(gameTypeIcons[event.gameType], {
-                      size: 40,
-                    })
-                  ) : (
-                    <Ionicons
-                      name='help-circle'
-                      size={40}
-                      color={COLORS.secondary}
-                    />
-                  )}
+          {/* Lista eventów */}
+          <ScrollView
+            style={styles.listWrapper}
+            showsVerticalScrollIndicator={false}
+          >
+            {events?.map((event, index) => (
+              <TouchableOpacity
+                key={event._id || event.eventId || index}
+                style={styles.item}
+                onPress={() => handleEventPress(event._id || event.eventId)}
+                activeOpacity={0.7}
+              >
+                {/* Ikona i typ gry */}
+                <View style={styles.iconSection}>
+                  {getSmallGameTypeIcon(event.gameType)}
+                  <Text style={styles.gameType}>
+                    {event.gameType?.toUpperCase()}
+                  </Text>
                 </View>
-              </View>
 
-              <Text style={styles.eventName} numberOfLines={2}>
-                {event.eventName}
-              </Text>
+                {/* Informacje o evencie */}
+                <View style={styles.infoSection}>
+                  <Text style={styles.eventName} numberOfLines={1}>
+                    {event.eventName}
+                  </Text>
+                  <View style={styles.detailsRow}>
+                    <View style={styles.detailItem}>
+                      <MaterialCommunityIcons
+                        name='cash'
+                        size={14}
+                        color={COLORS.secondary}
+                      />
+                      <Text style={styles.detailText}>{event.price}zł</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                      <Ionicons
+                        name='time'
+                        size={14}
+                        color={COLORS.secondary}
+                      />
+                      <Text style={styles.detailText}>{event.duration}min</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                      <Ionicons
+                        name='people'
+                        size={14}
+                        color={COLORS.secondary}
+                      />
+                      <Text style={styles.detailText}>{event.playerCount}</Text>
+                    </View>
+                  </View>
+                </View>
 
-              <View style={styles.eventDetails}>
-                <Text style={styles.detailText}>Cena: {event.price} zł</Text>
-                <Text style={styles.detailText}>
-                  Czas: {event.duration} min
-                </Text>
-                <Text style={styles.detailText}>
-                  Szuka: {event.playerCount} os.
-                </Text>
-              </View>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
-    </View>
+                {/* Strzałka */}
+                <Ionicons
+                  name='chevron-forward'
+                  size={20}
+                  color={COLORS.grayLight}
+                />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </TouchableOpacity>
+    </Modal>
   )
 }
 
+export default EventMarkerEventList
+
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    bottom: 80,
-    left: 20,
-    right: 20,
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000,
+    padding: 20,
   },
-  popup: {
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    padding: 16,
-    maxHeight: 400,
-    width: '100%',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-    borderWidth: 2,
-    borderColor: COLORS.background,
-  },
-  closeButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignSelf: 'center',
-    marginBottom: 12,
-  },
-  closeButtonText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontFamily: 'ObjectFont',
-    fontWeight: '600',
-  },
-  scrollView: {
-    maxHeight: 320,
-  },
-  scrollContent: {
-    gap: 12,
-  },
-  eventItem: {
+  container: {
     backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 16,
+    width: '100%',
+    maxHeight: '70%',
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: COLORS.third,
   },
-  eventItemPressed: {
-    backgroundColor: COLORS.primary,
-    opacity: 0.8,
-  },
-  eventHeader: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.third,
+    backgroundColor: COLORS.backgroundSecondary,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.primary,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  listWrapper: {
+    padding: 12,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.backgroundSecondary,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 10,
+  },
+  iconSection: {
+    alignItems: 'center',
+    marginRight: 12,
+    minWidth: 50,
   },
   gameType: {
-    fontSize: 14,
-    fontFamily: 'ObjectFont',
+    fontSize: 8,
+    fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    fontWeight: '600',
-    textTransform: 'capitalize',
+    marginTop: 4,
+    textAlign: 'center',
   },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+  infoSection: {
+    flex: 1,
+    marginRight: 8,
   },
   eventName: {
-    fontSize: 16,
-    fontFamily: 'ObjectFont',
-    color: COLORS.white,
-    fontWeight: '700',
-    marginBottom: 8,
+    fontSize: 14,
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.primary,
+    marginBottom: 6,
   },
-  eventDetails: {
+  detailsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
   },
   detailText: {
-    fontSize: 13,
-    fontFamily: 'ObjectFont',
-    color: COLORS.textSecondary || '#aaa',
+    fontSize: 12,
+    fontFamily: 'Lato-Regular',
+    color: COLORS.primary,
+    opacity: 0.9,
   },
 })
-
-export default EventMarkerEventList

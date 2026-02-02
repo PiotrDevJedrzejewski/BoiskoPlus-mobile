@@ -19,6 +19,7 @@ const MapboxMobile = () => {
   const [predefinedPlaces, setPredefinedPlaces] = useState([])
   const [selectedPlace, setSelectedPlace] = useState(null)
   const shapeSourceRef = useRef(null)
+  const predefinedShapeSourceRef = useRef(null)
 
   // Załaduj dane predefiniowanych miejsc (Orliki)
   useEffect(() => {
@@ -57,20 +58,27 @@ const MapboxMobile = () => {
 
   // Obsługa kliknięcia w marker
   const handleMarkerPress = async (feature) => {
-    const { cluster, point_count } = feature.properties
+    try {
+      const { cluster, point_count } = feature.properties
+      console.log('🔵 [Map] Kliknięto marker eventu. Cluster:', cluster, 'Point count:', point_count)
 
-    if (cluster && shapeSourceRef.current) {
-      // To jest klaster - pobierz wszystkie eventy w klastrze
-      const collection = await shapeSourceRef.current.getClusterLeaves(
-        feature.properties.cluster_id,
-        point_count,
-        0
-      )
-      const events = collection.features.map((f) => f.properties)
-      setSelectedClusterEvents(events)
-    } else {
-      // To jest pojedynczy event
-      setSelectedClusterEvents([feature.properties])
+      if (cluster && shapeSourceRef.current) {
+        // To jest klaster - pobierz wszystkie eventy w klastrze
+        const collection = await shapeSourceRef.current.getClusterLeaves(
+          feature.properties.cluster_id,
+          point_count,
+          0
+        )
+        const events = collection.features.map((f) => f.properties)
+        console.log('🔵 [Map] Pobrano', events.length, 'eventów z klastra')
+        setSelectedClusterEvents(events)
+      } else {
+        // To jest pojedynczy event
+        console.log('🔵 [Map] Pojedynczy event:', feature.properties._id || feature.properties.eventId)
+        setSelectedClusterEvents([feature.properties])
+      }
+    } catch (error) {
+      console.error('❌ [Map] Błąd w handleMarkerPress:', error)
     }
   }
 
@@ -79,13 +87,39 @@ const MapboxMobile = () => {
   }
 
   // Obsługa kliknięcia w marker predefiniowanego miejsca (ShapeSource)
-  const handlePredefinedPlacePress = (event) => {
-    if (event.features && event.features[0]) {
-      const feature = event.features[0]
-      const place = predefinedPlaces.find(p => p.id === feature.properties.id)
-      if (place) {
-        setSelectedPlace(place)
+  const handlePredefinedPlacePress = async (event) => {
+    try {
+      console.log('🟢 [Map] Kliknięto marker orlika')
+      if (event.features && event.features[0]) {
+        const feature = event.features[0]
+        const { cluster, point_count } = feature.properties
+        console.log('🟢 [Map] Cluster:', cluster, 'Point count:', point_count)
+
+        if (cluster && predefinedShapeSourceRef.current) {
+          // To jest klaster - pobierz wszystkie miejsca w klastrze
+          const collection = await predefinedShapeSourceRef.current.getClusterLeaves(
+            feature.properties.cluster_id,
+            point_count,
+            0
+          )
+          const places = collection.features.map((f) => ({
+            id: f.properties.id,
+            properties: f.properties,
+            geometry: f.geometry,
+          }))
+          console.log('🟢 [Map] Pobrano', places.length, 'miejsc z klastra')
+          setSelectedPlace(places)
+        } else {
+          // Pojedyncze miejsce
+          const place = predefinedPlaces.find(p => p.id === feature.properties.id)
+          console.log('🟢 [Map] Pojedyncze miejsce:', place?.properties?.miasto)
+          if (place) {
+            setSelectedPlace(place)
+          }
+        }
       }
+    } catch (err) {
+      console.error('❌ [Map] Błąd w handlePredefinedPlacePress:', err)
     }
   }
 
@@ -163,6 +197,7 @@ const MapboxMobile = () => {
         {/* Predefined places (Orliki) - z klastrowaniem */}
         {showMarkers && predefinedGeojson.features.length > 0 && (
           <Mapbox.ShapeSource
+            ref={predefinedShapeSourceRef}
             id='predefined-places-source'
             shape={predefinedGeojson}
             cluster

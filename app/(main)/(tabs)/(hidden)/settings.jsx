@@ -5,13 +5,20 @@ import { useRouter } from 'expo-router'
 import { COLORS } from '../../../../constants/colors'
 import { useMap } from '../../../../context/MapContext'
 import { useAuth } from '../../../../context/AuthContext'
+import { checkSystemLocationPermissions } from '../../../../assets/utils/getUserLocation'
 import SettingSection from '../../../../components/settingsComponents/SettingSection'
 import SettingRow from '../../../../components/settingsComponents/SettingRow'
 
 const Settings = () => {
   const router = useRouter()
   const { userLocation, setStartLocation } = useMap()
-  const { consents, updateConsents } = useAuth()
+  const { 
+    consents, 
+    updateConsents, 
+    systemPermissionsGeo, 
+    setSystemPermissionsGeo, 
+    consentsLoading 
+  } = useAuth()
 
   // Ustawienia powiadomień
   const [chatNotifications, setChatNotifications] = useState(true)
@@ -91,7 +98,30 @@ const Settings = () => {
   }
 
   const handleLocationToggle = async (value) => {
-    await updateConsents({ locationAccepted: value })
+    if (value) {
+      // Użytkownik włącza zgodę - najpierw zaktualizuj naszą zgodę
+      await updateConsents({ locationAccepted: true })
+      
+      // Następnie sprawdź uprawnienia systemowe
+      const result = await checkSystemLocationPermissions({
+        consents: { ...consents, locationAccepted: true },
+        systemPermissionsGeo,
+        setSystemPermissionsGeo,
+        updateConsents,
+        consentsLoading,
+      })
+      
+      // Jeśli użytkownik odmówił systemowo, funkcja automatycznie cofa naszą zgodę
+      if (!result.success && result.reason === 'user_denied') {
+        Alert.alert(
+          'Brak uprawnień',
+          'System blokuje dostęp do lokalizacji. Zgoda została cofnięta.'
+        )
+      }
+    } else {
+      // Użytkownik wyłącza zgodę - wystarczy zaktualizować
+      await updateConsents({ locationAccepted: false })
+    }
   }
 
   return (
