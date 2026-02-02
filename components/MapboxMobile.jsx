@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { View, StyleSheet } from 'react-native'
 import Mapbox from '@rnmapbox/maps'
+import Supercluster from 'supercluster'
 import { useDashboard } from '../context/DashboardContext'
 import { useMap } from '../context/MapContext'
 import EventMarkerEventList from './EventMarkerEventList'
@@ -9,40 +10,137 @@ import EventMarkerEventCreate from './EventMarkerEventCreate'
 // Konfiguracja Mapbox (wymaga custom buildu)
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN || '')
 
+// Throttle helper - ogranicza częstotliwość wywołań funkcji
+const throttle = (func, delay) => {
+  let lastCall = 0
+  let timeoutId = null
+  
+  return (...args) => {
+    const now = Date.now()
+    const timeSinceLastCall = now - lastCall
+    
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+    
+    if (timeSinceLastCall >= delay) {
+      lastCall = now
+      func(...args)
+    } else {
+      // Zaplanuj wywołanie po upływie delay (trailing call)
+      timeoutId = setTimeout(() => {
+        lastCall = Date.now()
+        func(...args)
+      }, delay - timeSinceLastCall)
+    }
+  }
+}
+
 const MapboxMobile = () => {
   const { filteredEvents, mapTheme, userLocation, geolocationAccepted } =
     useDashboard()
   const { mapRef, camera, showMarkers, setIsMapReady } = useMap()
 
-  // State
+  // State dla wybranych elementów (musi być state bo wymaga re-renderu przy otwarciu modalu)
   const [selectedClusterEvents, setSelectedClusterEvents] = useState(null)
-  const [predefinedPlaces, setPredefinedPlaces] = useState([])
   const [selectedPlace, setSelectedPlace] = useState(null)
-  const shapeSourceRef = useRef(null)
-  const predefinedShapeSourceRef = useRef(null)
+  
+  // Dane orlików - state bo ładowane asynchronicznie i triggerują inicjalizację supercluster
+  const [predefinedPlaces, setPredefinedPlaces] = useState([])
+  
+  // Ref dla instancji Supercluster - nie wymaga re-renderu przy tworzeniu
+  const eventsSuperclusterRef = useRef(null)
+  const orlikSuperclusterRef = useRef(null)
+  
+  // Ref dla aktualnego regionu mapy - nie wymaga re-renderu przy zmianie
+  const mapRegionRef = useRef({
+    bounds: null,
+    zoom: camera.zoomLevel,
+  })
+  
+  // State dla klastrów - wymaga re-renderu bo renderujemy je na mapie
+  const [eventClusters, setEventClusters] = useState([])
+  const [orlikClusters, setOrlikClusters] = useState([])
+  
+  // Map dla szybkiego lookup klastrów po ID - O(1) zamiast O(n)
+  const eventClustersMapRef = useRef(new Map())
+  const orlikClustersMapRef = useRef(new Map())
 
-  // Załaduj dane predefiniowanych miejsc (Orliki)
+  // Funkcja aktualizująca klastry - wywoływana ręcznie, nie przez useEffect
+  const updateClusters = useCallback(() => {
+    const { bounds, zoom } = mapRegionRef.current
+    if (!bounds) return
+
+    const zoomLevel = Math.floor(zoom)
+    // Format bounds dla Supercluster: [west, south, east, north]
+    const boundsArray = [
+      bounds.sw[0], // west (min longitude)
+      bounds.sw[1], // south (min latitude)
+      bounds.ne[0], // east (max longitude)
+      bounds.ne[1], // north (max latitude)
+    ]
+
+    // Aktualizuj klastry eventów
+    if (eventsSuperclusterRef.current) {
+      const clusters = eventsSuperclusterRef.current.getClusters(boundsArray, zoomLevel)
+      
+      // Zbuduj Map dla szybkiego lookup
+      const newMap = new Map()
+      clusters.forEach((cluster, index) => {
+        const id = cluster.properties.cluster 
+          ? `cluster-${cluster.properties.cluster_id}` 
+          : `event-${cluster.properties._id}`
+        newMap.set(id, cluster)
+      })
+      eventClustersMapRef.current = newMap
+      setEventClusters(clusters)
+    }
+
+    // Aktualizuj klastry orlików
+    if (orlikSuperclusterRef.current && showMarkers) {
+      const clusters = orlikSuperclusterRef.current.getClusters(boundsArray, zoomLevel)
+      
+      // Zbuduj Map dla szybkiego lookup
+      const newMap = new Map()
+      clusters.forEach((cluster, index) => {
+        const id = cluster.properties.cluster 
+          ? `orlik-cluster-${cluster.properties.cluster_id}` 
+          : `orlik-${cluster.properties.id}`
+        newMap.set(id, cluster)
+      })
+      orlikClustersMapRef.current = newMap
+      setOrlikClusters(clusters)
+    } else if (!showMarkers) {
+      orlikClustersMapRef.current = new Map()
+      setOrlikClusters([])
+    }
+  }, [showMarkers])
+
+  // Throttled wersja updateClusters - max 1 wywołanie na 100ms
+  const throttledUpdateClusters = useMemo(
+    () => throttle(updateClusters, 100),
+    [updateClusters]
+  )
+
+  // Załaduj dane predefiniowanych miejsc (Orliki) z lokalnego pliku JSON
   useEffect(() => {
     try {
       const orlikData = require('../assets/data/orliki_lodzkie_z_geolokalizacja.json')
       if (orlikData.features) {
         setPredefinedPlaces(orlikData.features)
-        // console.log('📍 [Orliki] Załadowano dane:', orlikData.features.length, 'miejsc')
       }
     } catch (err) {
       console.error('❌ [Orliki] Error loading predefined places:', err)
     }
   }, [])
 
-  // Kamera jest sterowana wyłącznie przez MapContext (flyTo, setCamera)
-  // Nie ma tutaj żadnej logiki kamery - wszystko idzie przez context
-
-  // Przygotuj dane GeoJSON dla eventów
-  const geojson = useMemo(
+  // Przygotuj dane eventów w formacie GeoJSON dla Supercluster
+  const eventsGeojson = useMemo(
     () => ({
       type: 'FeatureCollection',
-      features: filteredEvents.events.map((event) => ({
+      features: filteredEvents.events.map((event, index) => ({
         type: 'Feature',
+        id: index,
         properties: {
           ...event,
           _id: event._id,
@@ -56,102 +154,166 @@ const MapboxMobile = () => {
     [filteredEvents.events]
   )
 
-  // Obsługa kliknięcia w marker
-  const handleMarkerPress = async (feature) => {
-    try {
-      const { cluster, point_count } = feature.properties
-      console.log('🔵 [Map] Kliknięto marker eventu. Cluster:', cluster, 'Point count:', point_count)
-
-      if (cluster && shapeSourceRef.current) {
-        // To jest klaster - pobierz wszystkie eventy w klastrze
-        const collection = await shapeSourceRef.current.getClusterLeaves(
-          feature.properties.cluster_id,
-          point_count,
-          0
-        )
-        const events = collection.features.map((f) => f.properties)
-        console.log('🔵 [Map] Pobrano', events.length, 'eventów z klastra')
-        setSelectedClusterEvents(events)
-      } else {
-        // To jest pojedynczy event
-        console.log('🔵 [Map] Pojedynczy event:', feature.properties._id || feature.properties.eventId)
-        setSelectedClusterEvents([feature.properties])
-      }
-    } catch (error) {
-      console.error('❌ [Map] Błąd w handleMarkerPress:', error)
-    }
-  }
-
-  const handleClosePopup = () => {
-    setSelectedClusterEvents(null)
-  }
-
-  // Obsługa kliknięcia w marker predefiniowanego miejsca (ShapeSource)
-  const handlePredefinedPlacePress = async (event) => {
-    try {
-      console.log('🟢 [Map] Kliknięto marker orlika')
-      if (event.features && event.features[0]) {
-        const feature = event.features[0]
-        const { cluster, point_count } = feature.properties
-        console.log('🟢 [Map] Cluster:', cluster, 'Point count:', point_count)
-
-        if (cluster && predefinedShapeSourceRef.current) {
-          // To jest klaster - pobierz wszystkie miejsca w klastrze
-          const collection = await predefinedShapeSourceRef.current.getClusterLeaves(
-            feature.properties.cluster_id,
-            point_count,
-            0
-          )
-          const places = collection.features.map((f) => ({
-            id: f.properties.id,
-            properties: f.properties,
-            geometry: f.geometry,
-          }))
-          console.log('🟢 [Map] Pobrano', places.length, 'miejsc z klastra')
-          setSelectedPlace(places)
-        } else {
-          // Pojedyncze miejsce
-          const place = predefinedPlaces.find(p => p.id === feature.properties.id)
-          console.log('🟢 [Map] Pojedyncze miejsce:', place?.properties?.miasto)
-          if (place) {
-            setSelectedPlace(place)
-          }
-        }
-      }
-    } catch (err) {
-      console.error('❌ [Map] Błąd w handlePredefinedPlacePress:', err)
-    }
-  }
-
-  const handleClosePlacePopup = () => {
-    setSelectedPlace(null)
-  }
-
-  // GeoJSON dla predefiniowanych miejsc - bez filtrowania, z klastrowaniem
-  const predefinedGeojson = useMemo(() => {
-    if (!predefinedPlaces.length) {
-      return { type: 'FeatureCollection', features: [] }
+  // Inicjalizacja Supercluster dla eventów - używamy ref zamiast state
+  useEffect(() => {
+    if (eventsGeojson.features.length === 0) {
+      eventsSuperclusterRef.current = null
+      setEventClusters([])
+      eventClustersMapRef.current = new Map()
+      return
     }
 
-    return {
-      type: 'FeatureCollection',
-      features: predefinedPlaces.map((place) => ({
-        type: 'Feature',
+    const cluster = new Supercluster({
+      radius: 30,
+      maxZoom: 14,
+    })
+    cluster.load(eventsGeojson.features)
+    eventsSuperclusterRef.current = cluster
+    
+    // Aktualizuj klastry po załadowaniu nowych danych
+    updateClusters()
+  }, [eventsGeojson, updateClusters])
+
+  // Inicjalizacja Supercluster dla orlików - używamy ref zamiast state
+  useEffect(() => {
+    if (predefinedPlaces.length === 0 || !showMarkers) {
+      orlikSuperclusterRef.current = null
+      setOrlikClusters([])
+      orlikClustersMapRef.current = new Map()
+      return
+    }
+
+    const orlikFeatures = predefinedPlaces.map((place, index) => ({
+      type: 'Feature',
+      id: index,
+      properties: {
         id: place.id,
-        properties: {
-          id: place.id,
-          ...place.properties,
+        ...place.properties,
+      },
+      geometry: place.geometry,
+    }))
+
+    const cluster = new Supercluster({
+      radius: 50,
+      maxZoom: 14,
+    })
+    cluster.load(orlikFeatures)
+    orlikSuperclusterRef.current = cluster
+    
+    // Aktualizuj klastry po załadowaniu nowych danych
+    updateClusters()
+  }, [predefinedPlaces, showMarkers, updateClusters])
+
+  // Obsługa zmiany regionu mapy - jeden ref update + throttled clusters update
+  const handleRegionChange = useCallback((feature) => {
+    const bounds = feature.properties.visibleBounds
+    const zoom = feature.properties.zoomLevel
+    
+    if (bounds && bounds.length === 2) {
+      // Aktualizuj ref (bez re-renderu)
+      mapRegionRef.current = {
+        bounds: {
+          ne: bounds[0],
+          sw: bounds[1],
         },
-        geometry: place.geometry,
-      })),
+        zoom,
+      }
+      
+      // Throttled update klastrów
+      throttledUpdateClusters()
     }
-  }, [predefinedPlaces, showMarkers])
+  }, [throttledUpdateClusters])
+
+  // Obsługa kliknięcia w marker eventu - lookup po ID z Map
+  const handleEventMarkerPress = useCallback((featureId) => {
+    const cluster = eventClustersMapRef.current.get(featureId)
+    if (!cluster) return
+
+    const { cluster: isCluster, cluster_id } = cluster.properties
+
+    if (isCluster && eventsSuperclusterRef.current) {
+      const leaves = eventsSuperclusterRef.current.getLeaves(cluster_id, Infinity)
+      const events = leaves.map((leaf) => leaf.properties)
+      setSelectedClusterEvents(events)
+    } else {
+      setSelectedClusterEvents([cluster.properties])
+    }
+  }, [])
+
+  // Obsługa kliknięcia w marker orlika - lookup po ID z Map
+  const handleOrlikMarkerPress = useCallback((featureId) => {
+    const cluster = orlikClustersMapRef.current.get(featureId)
+    if (!cluster) return
+
+    const { cluster: isCluster, cluster_id } = cluster.properties
+
+    if (isCluster && orlikSuperclusterRef.current) {
+      const leaves = orlikSuperclusterRef.current.getLeaves(cluster_id, Infinity)
+      const places = leaves.map((leaf) => ({
+        id: leaf.properties.id,
+        properties: leaf.properties,
+        geometry: leaf.geometry,
+      }))
+      setSelectedPlace(places)
+    } else {
+      const place = {
+        id: cluster.properties.id,
+        properties: cluster.properties,
+        geometry: cluster.geometry,
+      }
+      setSelectedPlace(place)
+    }
+  }, [])
+
+  const handleClosePopup = useCallback(() => {
+    setSelectedClusterEvents(null)
+  }, [])
+
+  const handleClosePlacePopup = useCallback(() => {
+    setSelectedPlace(null)
+  }, [])
+
+  // Przygotuj dane klastrów w formacie GeoJSON dla ShapeSource
+  const eventClustersGeojson = useMemo(() => ({
+    type: 'FeatureCollection',
+    features: eventClusters.map((cluster) => ({
+      ...cluster,
+      id: cluster.properties.cluster 
+        ? `cluster-${cluster.properties.cluster_id}` 
+        : `event-${cluster.properties._id}`,
+    })),
+  }), [eventClusters])
+
+  const orlikClustersGeojson = useMemo(() => ({
+    type: 'FeatureCollection',
+    features: orlikClusters.map((cluster) => ({
+      ...cluster,
+      id: cluster.properties.cluster 
+        ? `orlik-cluster-${cluster.properties.cluster_id}` 
+        : `orlik-${cluster.properties.id}`,
+    })),
+  }), [orlikClusters])
 
   // Style mapy (light/dark)
-  const mapStyleURL = {
+  const mapStyleURL = useMemo(() => ({
     light: 'mapbox://styles/jdevsky/cmhlx096g002i01sa03tt5ld1',
     dark: 'mapbox://styles/jdevsky/cmhlwzxjd002h01sa290x0rwi',
-  }
+  }), [])
+
+  // Handler dla załadowania mapy - inicjalizacja bounds
+  const handleMapLoad = useCallback(() => {
+    setIsMapReady(true)
+    // Ustaw początkowe bounds
+    mapRegionRef.current = {
+      bounds: {
+        ne: [camera.centerCoordinate[0] + 0.5, camera.centerCoordinate[1] + 0.5],
+        sw: [camera.centerCoordinate[0] - 0.5, camera.centerCoordinate[1] - 0.5],
+      },
+      zoom: camera.zoomLevel,
+    }
+    // Wywołaj update klastrów
+    updateClusters()
+  }, [camera.centerCoordinate, camera.zoomLevel, setIsMapReady, updateClusters])
 
   return (
     <View style={styles.container}>
@@ -163,15 +325,17 @@ const MapboxMobile = () => {
         attributionEnabled={false}
         compassEnabled={false}
         scaleBarEnabled={false}
-        onDidFinishLoadingMap={() => setIsMapReady(true)}
+        onDidFinishLoadingMap={handleMapLoad}
+        onRegionIsChanging={handleRegionChange}
       >
+        {/* Kamera sterowana przez MapContext */}
         <Mapbox.Camera
           zoomLevel={camera.zoomLevel}
           centerCoordinate={camera.centerCoordinate}
           animationDuration={1000}
         />
 
-        {/* Images component for markers */}
+        {/* Definicje obrazków używanych jako ikony markerów */}
         <Mapbox.Images
           images={{
             'event-marker': require('../assets/images/favicon-32x32.png'),
@@ -180,7 +344,7 @@ const MapboxMobile = () => {
           }}
         />
 
-        {/* User location marker */}
+        {/* Marker lokalizacji użytkownika */}
         {geolocationAccepted &&
           userLocation.latitude &&
           userLocation.longitude && (
@@ -194,18 +358,20 @@ const MapboxMobile = () => {
             </Mapbox.MarkerView>
           )}
 
-        {/* Predefined places (Orliki) - z klastrowaniem */}
-        {showMarkers && predefinedGeojson.features.length > 0 && (
+        {/* Markery Orlików - renderowane z Supercluster */}
+        {showMarkers && orlikClustersGeojson.features.length > 0 && (
           <Mapbox.ShapeSource
-            ref={predefinedShapeSourceRef}
             id='predefined-places-source'
-            shape={predefinedGeojson}
-            cluster
-            clusterRadius={30}
-            clusterMaxZoomLevel={14}
-            onPress={handlePredefinedPlacePress}
+            shape={orlikClustersGeojson}
+            onPress={(event) => {
+              // Lookup po ID - O(1) zamiast O(n)
+              const featureId = event.features?.[0]?.id
+              if (featureId) {
+                handleOrlikMarkerPress(featureId)
+              }
+            }}
           >
-            {/* Klastery - ikona z licznikiem */}
+            {/* Klastery orlików */}
             <Mapbox.SymbolLayer
               id='predefined-places-clusters'
               filter={['has', 'point_count']}
@@ -213,7 +379,7 @@ const MapboxMobile = () => {
                 iconImage: 'orlik-marker',
                 iconSize: 0.2,
                 iconAllowOverlap: true,
-                textField: ['get', 'point_count_abbreviated'],
+                textField: ['get', 'point_count'],
                 textSize: 12,
                 textColor: '#ffffff',
                 textFont: ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
@@ -221,7 +387,7 @@ const MapboxMobile = () => {
                 textAllowOverlap: true,
               }}
             />
-            {/* Pojedyncze markery */}
+            {/* Pojedyncze orliki */}
             <Mapbox.SymbolLayer
               id='predefined-places-singles'
               filter={['!', ['has', 'point_count']]}
@@ -235,59 +401,59 @@ const MapboxMobile = () => {
           </Mapbox.ShapeSource>
         )}
 
-        {/* Event markers with clustering using ShapeSource */}
-        <Mapbox.ShapeSource
-          ref={shapeSourceRef}
-          id='events-source'
-          shape={geojson}
-          cluster
-          clusterRadius={50}
-          clusterMaxZoomLevel={16}
-          onPress={(event) => {
-            if (event.features && event.features[0]) {
-              handleMarkerPress(event.features[0])
-            }
-          }}
-        >
-          {/* Ikona dla klastrów */}
-          <Mapbox.SymbolLayer
-            id='clusters-icon'
-            filter={['has', 'point_count']}
-            style={{
-              iconImage: 'event-cluster-marker',
-              iconSize: 1,
-              iconAllowOverlap: true,
+        {/* Markery Eventów - renderowane z Supercluster */}
+        {eventClustersGeojson.features.length > 0 && (
+          <Mapbox.ShapeSource
+            id='events-source'
+            shape={eventClustersGeojson}
+            onPress={(event) => {
+              // Lookup po ID - O(1) zamiast O(n)
+              const featureId = event.features?.[0]?.id
+              if (featureId) {
+                handleEventMarkerPress(featureId)
+              }
             }}
-          />
-          {/* Licznik na czerwonym tle */}
-          <Mapbox.SymbolLayer
-            id='clusters-count'
-            filter={['has', 'point_count']}
-            style={{
-              textField: ['get', 'point_count_abbreviated'],
-              textSize: 15,
-              textColor: '#ffffff',
-              textFont: ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
-              textAllowOverlap: true,
-              textOffset: [1.1, -1.1],
-              textJustify: 'center',
-              textHaloBlur: 0,
-            }}
-          />
-          {/* Pojedyncze eventy */}
-          <Mapbox.SymbolLayer
-            id='single-events'
-            filter={['!', ['has', 'point_count']]}
-            style={{
-              iconImage: 'event-marker',
-              iconSize: 1,
-              iconAllowOverlap: true,
-            }}
-          />
-        </Mapbox.ShapeSource>
+          >
+            {/* Klastery eventów */}
+            <Mapbox.SymbolLayer
+              id='clusters-icon'
+              filter={['has', 'point_count']}
+              style={{
+                iconImage: 'event-cluster-marker',
+                iconSize: 1,
+                iconAllowOverlap: true,
+              }}
+            />
+            {/* Licznik w klastrze */}
+            <Mapbox.SymbolLayer
+              id='clusters-count'
+              filter={['has', 'point_count']}
+              style={{
+                textField: ['get', 'point_count'],
+                textSize: 15,
+                textColor: '#ffffff',
+                textFont: ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
+                textAllowOverlap: true,
+                textOffset: [1.1, -1.1],
+                textJustify: 'center',
+                textHaloBlur: 0,
+              }}
+            />
+            {/* Pojedyncze eventy */}
+            <Mapbox.SymbolLayer
+              id='single-events'
+              filter={['!', ['has', 'point_count']]}
+              style={{
+                iconImage: 'event-marker',
+                iconSize: 1,
+                iconAllowOverlap: true,
+              }}
+            />
+          </Mapbox.ShapeSource>
+        )}
       </Mapbox.MapView>
 
-      {/* Popup dla wybranych eventów */}
+      {/* Modal z listą eventów */}
       {selectedClusterEvents && (
         <EventMarkerEventList
           events={selectedClusterEvents}
@@ -295,7 +461,7 @@ const MapboxMobile = () => {
         />
       )}
 
-      {/* Popup dla wybranego miejsca */}
+      {/* Modal z listą orlików */}
       {selectedPlace && (
         <EventMarkerEventCreate
           orlikData={selectedPlace}

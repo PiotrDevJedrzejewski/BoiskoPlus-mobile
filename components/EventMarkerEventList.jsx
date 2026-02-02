@@ -15,11 +15,7 @@ import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
 const EventMarkerEventList = ({ events, onClose }) => {
   const router = useRouter()
 
-  console.log('🔵 [EventList] Renderowanie listy. Liczba eventów:', events?.length)
-  console.log('🔵 [EventList] Pierwszy event:', events?.[0])
-
   const handleEventPress = (eventId) => {
-    console.log('🔵 [EventList] Kliknięto event:', eventId)
     onClose()
     // Nawigacja do pojedynczego eventu
     router.push({

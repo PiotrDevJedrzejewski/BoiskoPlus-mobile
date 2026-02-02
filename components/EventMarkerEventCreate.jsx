@@ -14,15 +14,11 @@ import { COLORS } from '../constants/colors'
 const EventMarkerEventCreate = ({ orlikData, onClose }) => {
   const router = useRouter()
 
-  console.log('🟢 [OrlikList] Renderowanie listy. Typ danych:', Array.isArray(orlikData) ? 'array' : 'object')
-  console.log('🟢 [OrlikList] Dane:', orlikData)
-
   // Obsługa pojedynczego miejsca lub listy miejsc (z klastra)
   const places = Array.isArray(orlikData) ? orlikData : [orlikData]
   const isList = places.length > 1
 
   const handleCreateEvent = (place) => {
-    console.log('🟢 [OrlikList] Kliknięto Stwórz dla:', place.properties?.miasto, place.properties?.adres)
     onClose()
     // Przekazanie danych predefiniowanego miejsca do formularza przez params
     router.push({
