@@ -2,12 +2,11 @@ import { StyleSheet, Text, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../../../constants/colors'
 import FormEvent from '../../../../components/FormEvent'
+import { useLocalSearchParams } from 'expo-router'
 
 const AddEvent = () => {
-  const handleSubmit = async (eventData) => {
-    // W przyszłości: API call
-    console.log('Add event:', eventData)
-  }
+  const params = useLocalSearchParams()
+  const predefinedPlace = params.predefinedPlace ? JSON.parse(params.predefinedPlace) : null
 
   return (
     <View style={styles.container} pointerEvents='box-none'>
@@ -18,7 +17,7 @@ const AddEvent = () => {
       </View>
 
       {/* Formularz */}
-      <FormEvent mode='add' onSubmit={handleSubmit} />
+      <FormEvent mode='add' predefinedPlace={predefinedPlace} />
     </View>
   )
 }

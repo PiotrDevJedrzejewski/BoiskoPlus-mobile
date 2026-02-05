@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -11,6 +11,9 @@ import {
 } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
 import { COLORS } from '../constants/colors'
+import customFetch from '../assets/utils/customFetch'
+import { Toast } from 'toastify-react-native'
+import { useRouter } from 'expo-router'
 
 const GAME_TYPES = [
   { label: 'Wybierz typ gry', value: '' },
@@ -70,9 +73,72 @@ const defaultEventData = {
   isRecurring: false,
 }
 
-const FormEvent = ({ mode = 'add', initialData = null, onSubmit }) => {
+// Funkcja parsująca dane z predefined place (orlika)
+const parsePredefinedPlace = (predefinedPlace) => {
+  if (!predefinedPlace) return null
+
+  const city = predefinedPlace.properties?.miasto || ''
+  const address = predefinedPlace.properties?.adres || ''
+  const geolocation_source = predefinedPlace.properties?.geolocation_source || ''
+
+  // Wyciągnij kod pocztowy z geolocation_source (przedostatnie pole)
+  const geoParts = geolocation_source.split(',').map((s) => s.trim())
+  const postalCode = geoParts[geoParts.length - 2] || ''
+
+  // Parsuj adres z pola "adres"
+  let street = ''
+  let addressNumber = ''
+
+  if (address) {
+    // Usuń prefix typu "ul.", "al.", "os." itp.
+    const addressWithoutPrefix = address.replace(/^(ul\.|al\.|os\.)\s*/i, '')
+
+    // Podziel na części
+    const parts = addressWithoutPrefix.split(/\s+/)
+
+    // Ostatnia część może zawierać numer (może być z literą typu "112A" lub "22/26")
+    const lastPart = parts[parts.length - 1]
+
+    // Sprawdź czy ostatnia część zawiera cyfrę
+    if (/\d/.test(lastPart)) {
+      addressNumber = lastPart
+      street = parts.slice(0, -1).join(' ')
+    } else {
+      street = addressWithoutPrefix
+    }
+  }
+
+  return {
+    city: city || '',
+    street: street || '',
+    addressNumber: addressNumber || '',
+    postalCode: postalCode || '',
+  }
+}
+
+const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, onSubmit, eventId = null }) => {
   const [eventData, setEventData] = useState(initialData || defaultEventData)
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  // Wypełnij formularz danymi z predefined place (orlika)
+  useEffect(() => {
+    if (predefinedPlace && mode === 'add') {
+      const parsedAddress = parsePredefinedPlace(predefinedPlace)
+      
+      if (parsedAddress) {
+        setEventData((prev) => ({
+          ...prev,
+          address: {
+            city: parsedAddress.city,
+            street: parsedAddress.street,
+            addressNumber: parsedAddress.addressNumber,
+            postalCode: parsedAddress.postalCode,
+          },
+        }))
+      }
+    }
+  }, [predefinedPlace, mode])
 
   const handleChange = (name, value) => {
     if (name.includes('.')) {
@@ -136,7 +202,7 @@ const FormEvent = ({ mode = 'add', initialData = null, onSubmit }) => {
         startDateTime.getTime() + parseInt(eventData.duration) * 60000
       )
 
-      const dataToSend = {
+      let dataToSend = {
         ...eventData,
         duration: parseInt(eventData.duration),
         playerCount: parseInt(eventData.playerCount),
@@ -150,21 +216,31 @@ const FormEvent = ({ mode = 'add', initialData = null, onSubmit }) => {
         dataToSend.paymentMethod = ''
       }
 
-      if (onSubmit) {
-        await onSubmit(dataToSend)
-      } else {
-        // Mock - w przyszłości API call
-        console.log('Submit event:', dataToSend)
-        Alert.alert(
-          'Sukces',
-          mode === 'add'
-            ? 'Wydarzenie zostało dodane!'
-            : 'Wydarzenie zostało zaktualizowane!'
-        )
+      if (mode === 'add') {
+        await customFetch.post('/football-events', dataToSend)
+        Toast.success('Wydarzenie zostało dodane pomyślnie!', 'top')
+        setEventData(defaultEventData)
+        // Nawigacja powrót po dodaniu
+        setTimeout(() => {
+          router.replace('/(main)/(tabs)/(hidden)/my-events')
+        }, 1000)
+      } else if (mode === 'edit' && eventId) {
+        await customFetch.patch(`/football-events/${eventId}`, dataToSend)
+        Toast.success('Wydarzenie zostało zaktualizowane!', 'top')
+        // Nawigacja powrót po edycji
+        setTimeout(() => {
+          router.back()
+        }, 1000)
       }
     } catch (error) {
-      console.error('Błąd:', error)
-      Alert.alert('Błąd', 'Wystąpił błąd podczas zapisywania wydarzenia')
+      console.error('Błąd podczas zapisywania wydarzenia:', error)
+      Toast.error('Błąd podczas zapisywania wydarzenia!', 'top')
+      if (error.response?.data?.msg) {
+        const messages = error.response.data.msg.split(',')
+        messages.forEach((msg) => {
+          Toast.error(msg.trim(), 'top')
+        })
+      }
     } finally {
       setLoading(false)
     }

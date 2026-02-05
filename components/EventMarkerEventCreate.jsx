@@ -20,15 +20,11 @@ const EventMarkerEventCreate = ({ orlikData, onClose }) => {
 
   const handleCreateEvent = (place) => {
     onClose()
-    // Przekazanie danych predefiniowanego miejsca do formularza przez params
+    // Przekazanie całego obiektu orlika jako JSON string
     router.push({
       pathname: '/(main)/(tabs)/(hidden)/add-event',
       params: {
-        predefinedCity: place.properties?.miasto || '',
-        predefinedAddress: place.properties?.adres || '',
-        predefinedGeolocationSource: place.properties?.geolocation_source || '',
-        predefinedLongitude: place.geometry?.coordinates?.[0] || '',
-        predefinedLatitude: place.geometry?.coordinates?.[1] || '',
+        predefinedPlace: JSON.stringify(place),
       },
     })
   }

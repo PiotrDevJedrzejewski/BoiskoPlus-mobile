@@ -146,9 +146,32 @@ const ShowMap = () => {
       const events = response.data.events || []
       setFilteredEvents(response.data)
       
-      // Jeśli znaleziono eventy i użytkownik wpisał miasto, wyśrodkuj mapę na województwo
-      if (events.length > 0 && finalRegion) {
-        flyToProvince(finalRegion)
+      // Logika centrowania mapy w zależności od liczby znalezionych eventów
+      if (events.length === 0) {
+        // Brak eventów - wyśrodkuj na województwie jeśli istnieje
+        if (finalRegion) {
+          flyToProvince(finalRegion)
+          Toast.info('Nie znaleziono wydarzeń w tym mieście.', 'top')
+        }
+      } else if (events.length === 1) {
+        // Jeden event - wyśrodkuj na nim
+        const event = events[0]
+        if (event.geolocation?.coordinates) {
+          const [longitude, latitude] = event.geolocation.coordinates
+          flyTo([longitude, latitude], 14)
+        }
+      } else {
+        // Wiele eventów - wyśrodkuj na średniej z max 4 pierwszych
+        const eventsToCenter = events.slice(0, 4)
+        const validCoords = eventsToCenter
+          .filter(event => event.geolocation?.coordinates)
+          .map(event => event.geolocation.coordinates)
+        
+        if (validCoords.length > 0) {
+          const avgLongitude = validCoords.reduce((sum, coords) => sum + coords[0], 0) / validCoords.length
+          const avgLatitude = validCoords.reduce((sum, coords) => sum + coords[1], 0) / validCoords.length
+          flyTo([avgLongitude, avgLatitude], 12)
+        }
       }
       
     } catch (err) {

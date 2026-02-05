@@ -10,7 +10,7 @@ import {
 import { useRouter } from 'expo-router'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../constants/colors'
-import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
+// import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
 
 const EventMarkerEventList = ({ events, onClose }) => {
   const router = useRouter()
@@ -22,6 +22,7 @@ const EventMarkerEventList = ({ events, onClose }) => {
       pathname: '/(main)/(tabs)/(hidden)/single-event',
       params: { eventId }
     })
+    console.log("Nawigacja do eventu o ID:", eventId);
   }
 
   // Mniejsza wersja ikony dla listy
