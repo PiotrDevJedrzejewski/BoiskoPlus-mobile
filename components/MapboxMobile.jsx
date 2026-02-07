@@ -330,8 +330,10 @@ const MapboxMobile = () => {
       >
         {/* Kamera sterowana przez MapContext */}
         <Mapbox.Camera
+          key={camera._key}
           zoomLevel={camera.zoomLevel}
           centerCoordinate={camera.centerCoordinate}
+          animationMode='flyTo'
           animationDuration={1000}
         />
 

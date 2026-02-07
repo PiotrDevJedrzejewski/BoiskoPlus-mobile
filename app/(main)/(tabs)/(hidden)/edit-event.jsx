@@ -180,17 +180,6 @@ const EditEvent = () => {
     }
   }
 
-  const handleFormSubmit = async (formData) => {
-    try {
-      await customFetch.patch(`/football-events/${id}`, formData)
-      setEvent({ ...event, ...formData })
-      setShowEditForm(false)
-      Alert.alert('Sukces', 'Wydarzenie zostało zaktualizowane')
-    } catch (error) {
-      console.error('Błąd aktualizacji wydarzenia:', error)
-      Alert.alert('Błąd', 'Nie udało się zaktualizować wydarzenia')
-    }
-  }
 
   const handleGoBack = () => {
     router.back()
@@ -293,7 +282,7 @@ const EditEvent = () => {
             <FormEvent
               mode='edit'
               initialData={event}
-              onSubmit={handleFormSubmit}
+              eventId={id}
             />
           </View>
         ) : (

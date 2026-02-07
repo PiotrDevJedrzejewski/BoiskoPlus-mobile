@@ -16,13 +16,11 @@ const EventMarkerEventList = ({ events, onClose }) => {
   const router = useRouter()
 
   const handleEventPress = (eventId) => {
-    onClose()
-    // Nawigacja do pojedynczego eventu
-    router.push({
-      pathname: '/(main)/(tabs)/(hidden)/single-event',
-      params: { eventId }
-    })
-    console.log("Nawigacja do eventu o ID:", eventId);
+    onClose();
+    // hack - w modalu pushowanie jest w innym stacku, a replace powoduje błąd w single-event, timeout pozwala na zamknięcie modala przed nawigacją
+    setTimeout(() => {
+      router.push(`/(main)/(tabs)/(hidden)/single-event?id=${eventId}`);
+    }, 100);
   }
 
   // Mniejsza wersja ikony dla listy

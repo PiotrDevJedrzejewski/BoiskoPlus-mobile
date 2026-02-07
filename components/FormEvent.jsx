@@ -116,7 +116,7 @@ const parsePredefinedPlace = (predefinedPlace) => {
   }
 }
 
-const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, onSubmit, eventId = null }) => {
+const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, eventId = null }) => {
   const [eventData, setEventData] = useState(initialData || defaultEventData)
   const [loading, setLoading] = useState(false)
   const router = useRouter()

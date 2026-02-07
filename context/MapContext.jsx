@@ -37,6 +37,7 @@ const PROVINCE_COORDINATES = {
 export const MapProvider = ({ children }) => {
   const { consents, consentsLoading, getSavedLocation, systemPermissionsGeo, setSystemPermissionsGeo, updateConsents } = useAuth()
   const mapRef = useRef(null)
+  const hasInitializedRef = useRef(false)
 
   // Czy pokazywać markery dla predefiniowanych lokalizacji
   const [showMarkers, setShowMarkers] = useState(true)
@@ -63,6 +64,9 @@ export const MapProvider = ({ children }) => {
   const [camera, setCamera] = useState({
     centerCoordinate: [19.5, 52.0], // Polska - cały kraj
     zoomLevel: 6,
+    // date to force re-render of Camera when coordinates change (Mapbox bug workaround) 
+    //Te same współrzędne = brak re-renderu, więc dodajemy unikalny klucz przy każdej zmianie, aby wymusić aktualizację kamery
+    _key: Date.now(),
   })
 
   // Komponent mapy do współdzielenia między ekranami
@@ -72,6 +76,9 @@ export const MapProvider = ({ children }) => {
     setCamera({
       centerCoordinate: coordinates,
       zoomLevel: zoom,
+      // date to force re-render of Camera when coordinates change (Mapbox bug workaround) 
+      //Te same współrzędne = brak re-renderu, więc dodajemy unikalny klucz przy każdej zmianie, aby wymusić aktualizację kamery
+      _key: Date.now(),
     })
   }, [])
 
@@ -86,10 +93,7 @@ export const MapProvider = ({ children }) => {
         Country: 'Poland',
         region: '',
       })
-      setCamera({
-        centerCoordinate: [19.5, 52.0],
-        zoomLevel: 6,
-      })
+      flyTo([19.5, 52.0], 6)
       return
     }
 
@@ -105,10 +109,7 @@ export const MapProvider = ({ children }) => {
           Country: result.location.Country || 'Poland',
         }
         setUserLocation(location)
-        setCamera({
-          centerCoordinate: [result.location.longitude, result.location.latitude],
-          zoomLevel: 12,
-        })
+        flyTo([result.location.longitude, result.location.latitude], 12)
       } else {
         // Brak danych lokalizacji - domyślna
         setUserLocation({
@@ -118,10 +119,7 @@ export const MapProvider = ({ children }) => {
           region: '',
           Country: 'Poland',
         })
-        setCamera({
-          centerCoordinate: [19.5, 52.0],
-          zoomLevel: 6,
-        })
+        flyTo([19.5, 52.0], 6)
       }
     } catch (error) {
       console.error('Błąd pobierania lokalizacji:', error)
@@ -133,16 +131,14 @@ export const MapProvider = ({ children }) => {
         region: '',
         Country: 'Poland',
       })
-      setCamera({
-        centerCoordinate: [19.5, 52.0],
-        zoomLevel: 6,
-      })
+      flyTo([19.5, 52.0], 6)
     }
-  }, [getSavedLocation])
+  }, [getSavedLocation, flyTo])
 
-  // Inicjalizacja lokalizacji startowej na podstawie zgody użytkownika
+  // Inicjalizacja lokalizacji startowej - tylko raz przy pierwszym załadowaniu
   useEffect(() => {
-    if (!consentsLoading && consents) {
+    if (!consentsLoading && consents && !hasInitializedRef.current) {
+      hasInitializedRef.current = true
       setStartLocation(consents.locationAccepted)
     }
   }, [consentsLoading, consents, setStartLocation])
@@ -162,12 +158,15 @@ export const MapProvider = ({ children }) => {
     checkPermissions()
   }, [consentsLoading, consents?.locationAccepted, systemPermissionsGeo.status, setSystemPermissionsGeo, updateConsents])
 
-  // Reaguj na zmiany zgody na lokalizację w czasie rzeczywistym
+  // Reaguj na zmiany zgody na lokalizację - tylko po inicjalizacji (zmiana w ustawieniach)
+  const prevLocationAccepted = useRef(consents?.locationAccepted)
   useEffect(() => {
+    if (consentsLoading || !hasInitializedRef.current) return
+    // Reaguj tylko na faktyczną zmianę zgody (nie na initial mount)
+    if (prevLocationAccepted.current === consents?.locationAccepted) return
+    prevLocationAccepted.current = consents?.locationAccepted
+
     const handleLocationConsentChange = async () => {
-      if (consentsLoading) return
-      
-      // Jeśli użytkownik włączył zgodę na lokalizację
       if (consents?.locationAccepted) {
         const result = await getSavedLocation()
         if (result.success && result.location) {
@@ -179,13 +178,9 @@ export const MapProvider = ({ children }) => {
             Country: result.location.Country || 'Poland',
           }
           setUserLocation(location)
-          setCamera({
-            centerCoordinate: [result.location.longitude, result.location.latitude],
-            zoomLevel: 12,
-          })
+          flyTo([result.location.longitude, result.location.latitude], 12)
         }
       } else {
-        // Jeśli użytkownik wyłączył zgodę - wróć do domyślnej lokalizacji
         setUserLocation({
           latitude: 52.0,
           longitude: 19.5,
@@ -193,15 +188,12 @@ export const MapProvider = ({ children }) => {
           Country: 'Poland',
           region: '',
         })
-        setCamera({
-          centerCoordinate: [19.5, 52.0],
-          zoomLevel: 6,
-        })
+        flyTo([19.5, 52.0], 6)
       }
     }
     
     handleLocationConsentChange()
-  }, [consents?.locationAccepted, consentsLoading, getSavedLocation])
+  }, [consents?.locationAccepted, consentsLoading, getSavedLocation, flyTo])
 
   // Funkcja do pobrania współrzędnych województwa
   const getProvinceCoordinates = useCallback((provinceName) => {
