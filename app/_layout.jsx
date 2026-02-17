@@ -46,9 +46,9 @@ const Layout = () => {
 
   return (
     <AuthProvider>
-      <NotificationProvider>
+          <NotificationProvider>
         <SocketIoProvider>
-          <DashboardProvider>
+            <DashboardProvider>
             <Stack
               screenOptions={{
                 headerStyle: { backgroundColor: COLORS.background },
@@ -78,8 +78,8 @@ const Layout = () => {
             </Stack>
             <ToastManager />
           </DashboardProvider>
-        </SocketIoProvider>
-      </NotificationProvider>
+      </SocketIoProvider>
+        </NotificationProvider>
     </AuthProvider>
   )
 }

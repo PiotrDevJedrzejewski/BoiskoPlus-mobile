@@ -14,11 +14,16 @@ const defaultPreferences = {
   mutedEvents: [],
 }
 
+
+/////////////////////////////////////////////////////////////
+////  Preferencje, Context wrapper i funkcje pomocnicze  ////
+/////////////////////////////////////////////////////////////
+
+
 export const NotificationProvider = ({ children }) => {
   const { user, isAuthChecked } = useAuth()
   const [preferences, setPreferences] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [unreadCount, setUnreadCount] = useState(0)
 
   // Pobierz preferencje powiadomień przy starcie
   useEffect(() => {
@@ -67,28 +72,6 @@ export const NotificationProvider = ({ children }) => {
     fetchPreferences()
   }, [isAuthChecked])
 
-  // Pobierz nieprzeczytane powiadomienia
-  useEffect(() => {
-    const fetchUnreadCount = async () => {
-      // Nie wykonuj zapytania jeśli user nie jest zalogowany
-      if (!isAuthChecked || !user?.userID) {
-        setUnreadCount(0)
-        return
-      }
-
-      try {
-        const response = await customFetch.get('/notifications/unread')
-        setUnreadCount(response.data.unreadNotifications.length)
-      } catch (error) {
-        console.error('Błąd pobierania nieprzeczytanych powiadomień:', error)
-        setUnreadCount(0)
-      }
-    }
-
-    if (!loading && preferences) {
-      fetchUnreadCount()
-    }
-  }, [loading, preferences, isAuthChecked])
 
   // Cache preferencje w AsyncStorage
   useEffect(() => {
@@ -216,33 +199,19 @@ export const NotificationProvider = ({ children }) => {
     }
   }
 
-  // Oznacz powiadomienie jako przeczytane
-  const markAsRead = async (eventId) => {
-    try {
-      await customFetch.patch(`/notifications/mark-read/${eventId}`)
-      setUnreadCount((prev) => Math.max(0, prev - 1))
-      return { success: true }
-    } catch (error) {
-      console.error('Błąd oznaczania jako przeczytane:', error)
-      return { success: false, error: error.message }
-    }
-  }
-
+ 
   return (
     <NotificationContext.Provider
       value={{
         preferences,
         setPreferences,
         loading,
-        unreadCount,
-        setUnreadCount,
         shouldShowNotification,
         updatePreferences,
         muteChatRoom,
         unmuteChatRoom,
         muteEvent,
         unmuteEvent,
-        markAsRead,
       }}
     >
       {children}

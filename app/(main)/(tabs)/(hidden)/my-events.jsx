@@ -37,9 +37,8 @@ const FilterButton = ({ icon, label, isActive, onPress, color }) => (
 
 const MyEvents = () => {
   const router = useRouter()
-  // V2: używamy notificationSocket do nasłuchiwania statusUpdate
-  const { notificationSocket, notificationConnectionState, ConnectionState } =
-    useSocketIo()
+  // Używamy lastStatusUpdate z SocketIoContext do reagowania na zmiany statusu
+  const { lastStatusUpdate } = useSocketIo()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [myEventsOwner, setMyEventsOwner] = useState([])
@@ -77,17 +76,12 @@ const MyEvents = () => {
     fetchAllEvents()
   }, [])
 
-  // Nasłuchiwanie socketów do odświeżania danych eventów
-  // V2: używamy notificationSocket zamiast socket
+  // Reaguj na zmiany statusu - gdy lastStatusUpdate się zmieni, odśwież dane
   useEffect(() => {
-    if (
-      !notificationSocket ||
-      notificationConnectionState !== ConnectionState.CONNECTED
-    )
-      return
+    if (!lastStatusUpdate) return
 
-    const handleStatusUpdate = async () => {
-      // Odśwież dane użytkownika gdy otrzymamy powiadomienie o zmianie statusu
+    // Odśwież dane użytkownika gdy status się zmieni
+    const refreshUserEvents = async () => {
       try {
         const participantResponse = await customFetch.get('/status/my-events')
         setMyEventsUser(participantResponse.data.userEvents || [])
@@ -96,12 +90,8 @@ const MyEvents = () => {
       }
     }
 
-    notificationSocket.on('statusUpdate', handleStatusUpdate)
-
-    return () => {
-      notificationSocket.off('statusUpdate', handleStatusUpdate)
-    }
-  }, [notificationSocket, notificationConnectionState, ConnectionState])
+    refreshUserEvents()
+  }, [lastStatusUpdate])
 
   // Obsługa kliknięcia w wydarzenie
   const handleEventPress = (event, status) => {

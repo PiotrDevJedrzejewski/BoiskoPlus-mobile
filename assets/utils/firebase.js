@@ -1,8 +1,9 @@
 // Firebase configuration for React Native
 // Używa react-native-firebase lub expo-firebase
 import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { initializeAuth, getReactNativePersistence } from 'firebase/auth'
 import { getStorage } from 'firebase/storage'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import Constants from 'expo-constants'
 
 const firebaseConfig = {
@@ -41,7 +42,9 @@ const isConfigValid = () => {
 if (isConfigValid()) {
   try {
     app = initializeApp(firebaseConfig)
-    auth = getAuth(app)
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    })
     storage = getStorage(app)
   } catch (error) {
     console.error('Firebase initialization error:', error)

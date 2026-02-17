@@ -34,6 +34,12 @@ yarn-error.*
 .env
 .env*.local
 
+# Google OAuth credentials (SECURITY - DO NOT COMMIT)
+client_*.plist
+client_secret_*.json
+google-services.json
+GoogleService-Info.plist
+
 # typescript
 *.tsbuildinfo
 

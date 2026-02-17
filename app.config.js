@@ -22,6 +22,7 @@ export default {
         NSLocationWhenInUseUsageDescription:
           'Aplikacja potrzebuje jednorazowego dostępu do lokalizacji, aby wskazać Twoje położenie na mapie.',
       },
+      googleServicesFile: './GoogleService-Info.plist',
     },
     android: {
       adaptiveIcon: {
@@ -32,6 +33,7 @@ export default {
       predictiveBackGestureEnabled: false,
       package: 'com.boiskoplusmobile.app',
       permissions: ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION'],
+      googleServicesFile: './google-services.json',
     },
     web: {
       bundler: 'metro',

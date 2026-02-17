@@ -145,6 +145,9 @@ export const SocketIoProvider = ({ children }) => {
   const [unreadEventsCount, setUnreadEventsCount] = useState(0)
   const [unreadEventsList, setUnreadEventsList] = useState([])
 
+  // Ostatnia aktualizacja statusu - używane do triggerowania re-renderów w komponentach
+  const [lastStatusUpdate, setLastStatusUpdate] = useState(null)
+
   // Online users - śledzenie kto jest online
   const [onlineUsers, setOnlineUsers] = useState(new Set())
 
@@ -407,23 +410,27 @@ export const SocketIoProvider = ({ children }) => {
   }, [chatSocket, notificationSocket])
 
   // ═════════════════════════════════════════════════
-  // EFFECT: Pobierz pokoje i dołącz (BATCH)
+  // EFFECT: Pobierz pokoje i dołącz (BATCH) - via WebSocket
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
     if (!chatSocket || chatConnectionState !== ConnectionState.CONNECTED) return
     if (!user?.userID) return
 
-    const fetchAndJoinRooms = async () => {
-      try {
-        /**
-         * OPTYMALIZACJA #1:
-         * Pobieramy pokoje + unread counts w jednym zapytaniu HTTP
-         */
-        const response = await customFetch.get(
-          '/chat/rooms?includeUnreadCounts=true'
-        )
-        const rooms = response.data.chatRooms || []
+    const fetchAndJoinRooms = () => {
+      /**
+       * OPTYMALIZACJA: Używamy WebSocket zamiast HTTP
+       * Jedno zapytanie TCP pobiera pokoje + unread counts + ostatnie wiadomości
+       */
+      chatSocket.emit('getRoomsWithUnreadCounts', (result) => {
+        if (!result.success) {
+          console.error('[Chat] getRoomsWithUnreadCounts failed:', result.error)
+          safeSetState(() => setRoomsState([]))
+          return
+        }
+
+        const rooms = result.chatRooms || []
+        console.log(`[Chat] Fetched ${rooms.length} rooms via WebSocket`)
 
         if (rooms.length === 0) {
           safeSetState(() => setRoomsState([]))
@@ -431,68 +438,25 @@ export const SocketIoProvider = ({ children }) => {
         }
 
         /**
-         * OPTYMALIZACJA #2:
-         * Używamy joinRoomsBatch zamiast N osobnych joinRoom
+         * Dołącz do wszystkich pokoi w batch
          */
         const roomIds = rooms.map((room) => room.roomId)
 
-        chatSocket.emit('joinRoomsBatch', roomIds, (result) => {
-          if (result.success) {
-            console.log(`[Chat] Joined ${result.joined.length} rooms in batch`)
-            result.joined.forEach((roomId) =>
+        chatSocket.emit('joinRoomsBatch', roomIds, (joinResult) => {
+          if (joinResult.success) {
+            console.log(`[Chat] Joined ${joinResult.joined.length} rooms in batch`)
+            joinResult.joined.forEach((roomId) =>
               joinedRoomsRef.current.add(roomId)
             )
 
-            if (result.failed.length > 0) {
-              console.warn('[Chat] Failed to join some rooms:', result.failed)
+            if (joinResult.failed.length > 0) {
+              console.warn('[Chat] Failed to join some rooms:', joinResult.failed)
             }
           }
         })
 
-        /**
-         * Jeśli serwer nie obsługuje includeUnreadCounts,
-         * pobierz je osobno (fallback)
-         */
-        let roomsWithUnread = rooms
-
-        if (!rooms[0]?.hasOwnProperty('unreadCount')) {
-          // Fallback: pobierz unread counts dla wszystkich pokoi w jednym zapytaniu
-          try {
-            const unreadResponse = await customFetch.post(
-              '/chat/messages/unreaded/batch',
-              { roomIds }
-            )
-
-            const unreadMap = new Map(
-              (unreadResponse.data.counts || []).map((c) => [c.roomId, c.count])
-            )
-
-            roomsWithUnread = rooms.map((room) => ({
-              ...room,
-              unreadCount: unreadMap.get(room.roomId) || 0,
-            }))
-          } catch (batchError) {
-            // Fallback do starego sposobu (N zapytań)
-            console.warn('[Chat] Batch unread not available, using fallback')
-            const unreadPromises = rooms.map(async (room) => {
-              try {
-                const res = await customFetch.get(
-                  `/chat/messages/unreaded/count?roomId=${room.roomId}`
-                )
-                return { ...room, unreadCount: res.data.unreadCount || 0 }
-              } catch {
-                return { ...room, unreadCount: 0 }
-              }
-            })
-            roomsWithUnread = await Promise.all(unreadPromises)
-          }
-        }
-
-        safeSetState(() => setRoomsState(roomsWithUnread))
-      } catch (error) {
-        console.error('[Chat] Error fetching rooms:', error)
-        safeSetState(() => setRoomsState([]))
-      }
+        safeSetState(() => setRoomsState(rooms))
+      })
     }
 
     fetchAndJoinRooms()
@@ -668,8 +632,17 @@ export const SocketIoProvider = ({ children }) => {
     if (!notificationSocket) return
 
     const handleStatusUpdate = (data) => {
-      // Sprawdź czy dla aktualnego użytkownika
-      if (data.userId !== user?._id) return
+      // Socket emituje do pokoju user:${userId}, więc powiadomienie jest już adresowane do nas
+      // Nie ma potrzeby sprawdzać userId - jeśli dostaliśmy event, to jest dla nas
+
+      // Zawsze aktualizuj lastStatusUpdate - pozwala komponentom reagować na zmiany
+      safeSetState(() => {
+        setLastStatusUpdate({
+          timestamp: Date.now(),
+          eventId: data.eventId,
+          newStatus: data.newStatus,
+        })
+      })
 
       const shouldNotify = shouldShowNotification(
         'eventStatusUpdates',
@@ -718,7 +691,6 @@ export const SocketIoProvider = ({ children }) => {
     }
   }, [
     notificationSocket,
-    user?._id,
     shouldShowNotification,
     playNotificationSound,
     addNotificationListener,
@@ -1091,6 +1063,7 @@ export const SocketIoProvider = ({ children }) => {
       markAllEventsAsRead,
       resetUnreadEvents,
       hasUnreadNotifications,
+      lastStatusUpdate,
 
       // Subskrypcje eventów
       subscribeToEvent,
@@ -1126,6 +1099,7 @@ export const SocketIoProvider = ({ children }) => {
       markAllEventsAsRead,
       resetUnreadEvents,
       hasUnreadNotifications,
+      lastStatusUpdate,
       subscribeToEvent,
       unsubscribeFromEvent,
       onlineUsers,
