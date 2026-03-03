@@ -44,6 +44,7 @@ export default {
       'expo-router',
       'expo-secure-store',
       'expo-audio',
+      '@react-native-google-signin/google-signin',
       [
         '@rnmapbox/maps',
         {

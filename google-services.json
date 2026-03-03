@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "995067049325",
+    "project_id": "boiskoplus",
+    "storage_bucket": "boiskoplus.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:995067049325:android:539a9e26b23cb21cd91664",
+        "android_client_info": {
+          "package_name": "com.boiskoplusmobile.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "995067049325-m055ecgsi8btuud4l4m5sk36hfo21hn7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.boiskoplusmobile.app",
+            "certificate_hash": "dcb1562b9de02de5cf4fee77cc78fe2198a3ccde"
+          }
+        },
+        {
+          "client_id": "995067049325-sm1sqg2ktaia2gdvop16decfn2jg3lie.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.boiskoplusmobile.app",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "995067049325-vud61qkh4mtl7fveoqkhunhbr1fo09rb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvxPC_tAWVuLaZgdiqHAgEgwjzmh26aEU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "995067049325-vud61qkh4mtl7fveoqkhunhbr1fo09rb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "995067049325-j5jifpr17nbcpq3d50skfqm9ple2hr1i.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.boiskoplusmobile.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

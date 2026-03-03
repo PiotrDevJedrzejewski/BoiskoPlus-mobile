@@ -55,7 +55,7 @@ const getSocketUrl = () => {
 
 // Konfiguracja reconnect z exponential backoff
 const getSocketOptions = (authToken) => ({
-  transports: ['websocket', 'polling'], // Preferuj WebSocket
+  transports: ['polling', 'websocket'], // W React Native polling działa lepiej na start
   upgrade: true,
   auth: {
     token: authToken,
@@ -70,6 +70,12 @@ const getSocketOptions = (authToken) => ({
 
   // TIMEOUT CONFIG
   timeout: 20000, // 20s timeout na połączenie
+
+  // Wyłącz automatyczne łączenie (łączymy ręcznie)
+  autoConnect: true,
+
+  // Dla HTTPS używaj secure connection
+  secure: true,
 })
 
 // =====================================================
@@ -289,6 +295,9 @@ export const SocketIoProvider = ({ children }) => {
       const socketUrl = getSocketUrl()
       const socketOptions = getSocketOptions(authToken)
 
+      console.log('[Socket] Initializing with URL:', socketUrl)
+      console.log('[Socket] Auth token present:', !!authToken)
+
       // ─────────────────────────────────────────────────
       // Utwórz socket dla namespace /chat
       // ─────────────────────────────────────────────────
@@ -317,6 +326,11 @@ export const SocketIoProvider = ({ children }) => {
 
       newChatSocket.on('connect_error', (error) => {
         console.error('[Chat] Connection error:', error.message)
+        console.error('[Chat] Error details:', {
+          type: error.type,
+          description: error.description,
+          context: error.context,
+        })
         safeSetState(() => setChatConnectionState(ConnectionState.ERROR))
       })
 
@@ -362,6 +376,11 @@ export const SocketIoProvider = ({ children }) => {
 
       newNotificationSocket.on('connect_error', (error) => {
         console.error('[Notifications] Connection error:', error.message)
+        console.error('[Notifications] Error details:', {
+          type: error.type,
+          description: error.description,
+          context: error.context,
+        })
         safeSetState(() =>
           setNotificationConnectionState(ConnectionState.ERROR)
         )

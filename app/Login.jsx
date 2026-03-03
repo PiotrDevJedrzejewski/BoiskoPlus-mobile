@@ -18,12 +18,8 @@ import LottieView from 'lottie-react-native'
 
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
 import { auth } from '../assets/utils/firebase'
-import * as Google from 'expo-auth-session/providers/google'
-import * as WebBrowser from 'expo-web-browser'
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
 import Constants from 'expo-constants'
-
-// Wymagane dla Google Auth
-WebBrowser.maybeCompleteAuthSession()
 
 const Login = () => {
   const router = useRouter()
@@ -36,66 +32,73 @@ const Login = () => {
     password: '',
   })
 
-
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: Constants.expoConfig?.extra?.googleExpoClientId,
-    iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
-    androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId,
-    webClientId: Constants.expoConfig?.extra?.googleWebClientId,
-  })
-
   useEffect(() => {
-    if (response?.type === 'success') {
-      handleGoogleSignIn(response.authentication)
-    }
-  }, [response])
+    GoogleSignin.configure({
+      webClientId: Constants.expoConfig?.extra?.googleWebClientId,
+      iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
+    })
+  }, [])
 
   // Funkcja logowania przez Google
-  const handleGoogleSignIn = async (authentication) => {
-    if (!authentication?.idToken) {
-      Alert.alert('Błąd', 'Nie udało się uzyskać tokena Google')
-      return
-    }
-
+  const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      // Utwórz credential i zaloguj do Firebase
-      const credential = GoogleAuthProvider.credential(
-        authentication.idToken,
-        authentication.accessToken
-      )
+      await GoogleSignin.hasPlayServices()
+      const userInfo = await GoogleSignin.signIn()
+      const idToken = userInfo.data?.idToken
+
+      if (!idToken) {
+        Alert.alert('Błąd', 'Nie udało się uzyskać tokena Google')
+        return
+      }
+
+      console.log('[Google Sign-in] Creating Firebase credential...')
+      const credential = GoogleAuthProvider.credential(idToken)
       const userCredential = await signInWithCredential(auth, credential)
       const user = userCredential.user
-      const idToken = await user.getIdToken()
+      console.log('[Google Sign-in] Firebase auth successful, email:', user.email)
 
-      // Wyślij token do backendu
-      const result = await loginWithGoogle(user.email, idToken)
+      const firebaseToken = await user.getIdToken()
+      console.log('[Google Sign-in] Got Firebase token, sending to backend...')
+
+      const result = await loginWithGoogle(user.email, firebaseToken)
+      console.log('[Google Sign-in] Backend response:', result)
 
       if (result.success) {
+        console.log('[Google Sign-in] Login successful, redirecting...')
         router.replace('/(main)/(tabs)/dashboard-home')
       } else {
-        // Jeśli użytkownik nie istnieje, przekieruj do dokończenia rejestracji
         if (
           result.error?.includes('nie istnieje') ||
           result.error?.includes('complete')
         ) {
+          console.log('[Google Sign-in] User needs to complete registration')
           router.push({
             pathname: '/register-with-oauth',
             params: {
               email: user.email,
               name: user.displayName?.split(' ')[0] || '',
               surname: user.displayName?.split(' ').slice(1).join(' ') || '',
-              googleIdToken: idToken,
+              googleIdToken: firebaseToken,
               avatarUrl: user.photoURL || '',
             },
           })
         } else {
+          console.error('[Google Sign-in] Backend error:', result.error)
           Alert.alert('Błąd logowania', result.error)
         }
       }
     } catch (error) {
-      console.error('Google Sign-in error:', error)
-      Alert.alert('Błąd', 'Wystąpił błąd podczas logowania przez Google')
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log('[Google Sign-in] User cancelled')
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log('[Google Sign-in] Sign in already in progress')
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        Alert.alert('Błąd', 'Google Play Services niedostępne')
+      } else {
+        console.error('[Google Sign-in] Exception:', error)
+        Alert.alert('Błąd', 'Wystąpił błąd podczas logowania przez Google')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -228,8 +231,8 @@ const Login = () => {
           {/* TODO: Google Auth - do implementacji później */}
           <Pressable
             style={styles.authFormAlternateIcon}
-            onPress={() => promptAsync()}
-            disabled={!request || isLoading}
+            onPress={handleGoogleSignIn}
+            disabled={isLoading}
           >
             <Image
               source={require('../assets/images/google-icon.png')}

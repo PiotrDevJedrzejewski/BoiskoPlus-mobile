@@ -39,8 +39,6 @@ export const AuthProvider = ({ children }) => {
   const [systemPermissionsGeo, setSystemPermissionsGeo] = useState({status: 'undetermined'})
 
 
-
-
   //Nowy state dla asynchronizacji pomiędzy użytkownikiem a SecureStore
   const [isAuthChecked, setIsAuthChecked] = useState(false)
 

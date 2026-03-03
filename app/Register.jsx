@@ -23,15 +23,19 @@ import spinner from '../assets/utils/spinner.json'
 import { Toast } from 'toastify-react-native'
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
 import { auth } from '../assets/utils/firebase'
-import * as Google from 'expo-auth-session/providers/google'
-import * as WebBrowser from 'expo-web-browser'
-
-WebBrowser.maybeCompleteAuthSession()
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
 
 const Register = () => {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState([false, false])
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: Constants.expoConfig?.extra?.googleWebClientId,
+      iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
+    })
+  }, [])
   
   const [formData, setFormData] = useState({
     nickName: '',
@@ -44,64 +48,49 @@ const Register = () => {
   })
 
   // Google OAuth configuration
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: Constants.expoConfig?.extra?.googleExpoClientId || process.env.EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID,
-    iosClientId: Constants.expoConfig?.extra?.googleIosClientId || process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-    androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId || process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    webClientId: Constants.expoConfig?.extra?.googleWebClientId || process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  })
 
   // Handle Google Sign In response
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.params
-      handleGoogleAuthSuccess(id_token)
-    } else if (response?.type === 'error') {
-      Toast.error('Błąd autoryzacji Google: ' + response.error?.message)
-    }
-  }, [response])
 
-  const handleGoogleAuthSuccess = async (idToken) => {
+  const handleGoogleAuthSuccess = async (idToken, user) => {
     setIsLoading(true)
     try {
-      const credential = GoogleAuthProvider.credential(idToken)
-      const result = await signInWithCredential(auth, credential)
-      const user = result.user
+      const firebaseToken = await user.getIdToken()
 
       // Sprawdź czy użytkownik już istnieje w bazie
       try {
-        const loginResponse = await customFetch.post('/auth-mobile/login-oauth', {
+        console.log('[Google Auth] Checking if user exists in backend...')
+        await customFetch.post('/auth-mobile/login-oauth', {
           email: user.email,
-          googleIdToken: idToken,
+          googleIdToken: firebaseToken,
         })
 
-        // Użytkownik już istnieje - zaloguj go
+        console.log('[Google Auth] User exists, logging in...')
         Toast.success('Zalogowano pomyślnie przez Google!')
-        
-        // Zapisz token i dane (tutaj możesz użyć SecureStore)
-        // await SecureStore.setItemAsync('token', loginResponse.data.token)
-        
-        router.replace('/(main)/(tabs)/(dashboard)/dashboard')
+        router.replace('/(main)/(tabs)/dashboard-home')
       } catch (loginError) {
-        // Użytkownik nie istnieje - przekieruj do uzupełnienia danych
-        if (loginError.response?.status === 401) {
-          Toast.info('Uzupełnij dane, aby dokończyć rejestrację')
-          
-          // Zapisz tymczasowo dane Google do użycia w register-with-oauth
-          // await SecureStore.setItemAsync('googleUser', JSON.stringify({
-          //   email: user.email,
-          //   name: user.displayName || '',
-          //   photoURL: user.photoURL,
-          //   idToken: idToken
-          // }))
-          
-          router.replace('/register-with-oauth')
+        if (loginError.response?.status === 401 || loginError.response?.status === 404) {
+          console.log('[Google Auth] User not found, redirecting to complete registration')
+          router.push({
+            pathname: '/register-with-oauth',
+            params: {
+              email: user.email,
+              name: user.displayName?.split(' ')[0] || '',
+              surname: user.displayName?.split(' ').slice(1).join(' ') || '',
+              googleIdToken: firebaseToken,
+              avatarUrl: user.photoURL || '',
+            },
+          })
         } else {
           throw loginError
         }
       }
     } catch (error) {
-      console.error('Google auth error:', error)
+      console.error('[Google Auth] Exception:', error)
+      console.error('[Google Auth] Error details:', {
+        message: error.message,
+        code: error.code,
+        response: error.response?.data,
+      })
       
       if (error.response?.data?.msg) {
         Toast.error(error.response.data.msg)
@@ -260,11 +249,34 @@ const Register = () => {
   }
 
   const handleGoogleSignIn = async () => {
+    setIsLoading(true)
     try {
-      await promptAsync()
+      console.log('[Google OAuth] Starting sign in flow')
+      await GoogleSignin.hasPlayServices()
+      const userInfo = await GoogleSignin.signIn()
+      const idToken = userInfo.data?.idToken
+
+      if (!idToken) {
+        Toast.error('Nie udało się uzyskać tokena Google')
+        return
+      }
+
+      const credential = GoogleAuthProvider.credential(idToken)
+      const result = await signInWithCredential(auth, credential)
+      await handleGoogleAuthSuccess(idToken, result.user)
     } catch (error) {
-      console.error('Google Sign In error:', error)
-      Toast.error('Nie udało się uruchomić logowania Google')
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log('[Google Sign-in] User cancelled')
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log('[Google Sign-in] Already in progress')
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        Toast.error('Google Play Services niedostępne')
+      } else {
+        console.error('[Google Sign-in] Exception:', error)
+        Toast.error('Błąd podczas logowania przez Google')
+      }
+    } finally {
+      setIsLoading(false)
     }
   }
 
