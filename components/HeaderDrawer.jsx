@@ -5,11 +5,13 @@ import { DrawerActions } from '@react-navigation/native'
 import LogoBoiskoPlus from '../assets/images/LogoBoiskoPlus.png'
 import { COLORS } from '../constants/colors'
 import { Ionicons } from '@expo/vector-icons'
+import { useSocketIo } from '../context/SocketIoContext'
 
 const HeaderDrawer = () => {
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
   const router = useRouter()
+  const { unreadEventsCount } = useSocketIo()
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer())
@@ -17,7 +19,7 @@ const HeaderDrawer = () => {
 
   const openNotifications = () => {
     // TODO: Nawiguj do ekranu powiadomień
-    router.push('/(main)/(tabs)/(hidden)/notifications')
+    router.push('/(main)/(tabs)/(hidden)/my-events')
   }
 
   return (
@@ -65,10 +67,14 @@ const HeaderDrawer = () => {
         >
           <View>
             <Ionicons name='notifications' size={26} color={COLORS.secondary} />
-            {/* Badge dla nieprzeczytanych powiadomień */}
-            {/* <View style={styles.notificationBadge}>
-              <Text style={styles.badgeText}>3</Text>
-            </View> */}
+            {/* Badge dla nieprzeczytanych zmian wydarzeń */}
+            {unreadEventsCount > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.badgeText}>
+                  {unreadEventsCount > 9 ? '9+' : unreadEventsCount}
+                </Text>
+              </View>
+            )}
           </View>
         </Pressable>
       </View>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import * as SecureStore from 'expo-secure-store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import customFetch, {
   setAuthToken,
   removeAuthToken,
@@ -334,6 +335,17 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Błąd podczas wylogowania na serwerze:', error)
     } finally {
+      // Wyloguj z Google jeśli sesja jest aktywna
+      try {
+        const isSignedIn = await GoogleSignin.getCurrentUser()
+        if (isSignedIn) {
+          await GoogleSignin.signOut()
+          console.log('Wylogowano z Google')
+        }
+      } catch (googleError) {
+        console.error('Błąd podczas wylogowania z Google:', googleError)
+      }
+
       // Zawsze wyczyść lokalny stan
       await removeAuthToken()
       setUser(null)

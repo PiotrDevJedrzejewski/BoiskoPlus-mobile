@@ -4,7 +4,7 @@ export default {
   expo: {
     name: 'BoiskoPlus-mobile',
     slug: 'boiskoplus',
-    version: '1.0.0',
+    version: '1.0.1',
     orientation: 'portrait',
     icon: './assets/images/BoiskoPlusKonceptArt.jpg',
     scheme: 'boiskoplusmobile',
@@ -43,7 +43,10 @@ export default {
     plugins: [
       'expo-router',
       'expo-secure-store',
+      'expo-asset',
       'expo-audio',
+      'expo-font',
+      'expo-web-browser',
       '@react-native-google-signin/google-signin',
       [
         '@rnmapbox/maps',

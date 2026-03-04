@@ -71,6 +71,14 @@ const Chat = () => {
 
   const scrollViewRef = useRef(null)
 
+  // Ref do selectedRoom - używany w socket handlerach aby uniknąć stale closure
+  // WZORZEC: Ref synchronizowany ze stanem eliminuje stale closures w socket handlerach.
+  // Użyj tego wzorca dla każdej wartości stanu, która jest używana w długożyjących event listenerach.
+  const selectedRoomRef = useRef(null)
+  useEffect(() => {
+    selectedRoomRef.current = selectedRoom
+  }, [selectedRoom])
+
   // Pobierz pokoje czatu przy załadowaniu
   useEffect(() => {
     const fetchChatRooms = async () => {
@@ -114,9 +122,11 @@ const Chat = () => {
     if (!chatSocket) return
 
     const handleNewMessage = (msg) => {
+      const currentRoom = selectedRoomRef.current
+
       // Dodaj wiadomość tylko jeśli jesteśmy w tym pokoju
       setMessages((prev) => {
-        if (selectedRoom && selectedRoom.roomId === msg.roomId) {
+        if (currentRoom && currentRoom.roomId === msg.roomId) {
           return [...prev, msg]
         }
         return prev
@@ -131,10 +141,12 @@ const Chat = () => {
     }
 
     chatSocket.on('newMessage', handleNewMessage)
+
     return () => {
       chatSocket.off('newMessage', handleNewMessage)
     }
-  }, [chatSocket, selectedRoom, user?._id])
+    // selectedRoom jest w ref - nie powoduje re-subscribe
+  }, [chatSocket])
 
   // Obsługa nowych pokojów z socket
   useEffect(() => {
@@ -171,7 +183,8 @@ const Chat = () => {
           prevRooms.filter((room) => room.roomId !== data.roomId)
         )
 
-        if (selectedRoom && selectedRoom.roomId === data.roomId) {
+        const currentRoom = selectedRoomRef.current
+        if (currentRoom && currentRoom.roomId === data.roomId) {
           setSelectedRoom(null)
           setMessages([])
           setActiveRoomId(null)
@@ -186,25 +199,26 @@ const Chat = () => {
     return () => {
       chatSocket.off('removedFromChatRoom', handleRemovedFromChatRoom)
     }
-  }, [chatSocket, user?._id, selectedRoom, setActiveRoomId, leaveRoom])
+  }, [chatSocket, user?._id, setActiveRoomId, leaveRoom])
 
-  // Obsługa typing indicator
+  // Obsługa typing indicator (ref-based - bez re-subscribe)
   useEffect(() => {
     if (!chatSocket) return
 
     const handleUserTyping = (data) => {
       const roomId = data.roomId
       const userId = data.userId || data.userID || data.user_id
+      const currentRoom = selectedRoomRef.current
 
       if (
-        selectedRoom &&
-        selectedRoom.roomId === roomId &&
+        currentRoom &&
+        currentRoom.roomId === roomId &&
         userId !== user?._id
       ) {
         // Znajdź użytkownika w liście uczestników pokoju
         let nickName = 'Użytkownik'
-        if (selectedRoom.participants && selectedRoom.participants.length > 0) {
-          const typingUser = selectedRoom.participants.find(
+        if (currentRoom.participants && currentRoom.participants.length > 0) {
+          const typingUser = currentRoom.participants.find(
             (p) => String(p._id) === String(userId)
           )
           if (typingUser) {
@@ -238,8 +252,9 @@ const Chat = () => {
     const handleUserStoppedTyping = (data) => {
       const roomId = data.roomId
       const userId = data.userId || data.userID || data.user_id
+      const currentRoom = selectedRoomRef.current
 
-      if (selectedRoom && selectedRoom.roomId === roomId) {
+      if (currentRoom && currentRoom.roomId === roomId) {
         if (typingTimeoutRef.current[userId]) {
           clearTimeout(typingTimeoutRef.current[userId])
           delete typingTimeoutRef.current[userId]
@@ -262,7 +277,7 @@ const Chat = () => {
       Object.values(typingTimeoutRef.current).forEach(clearTimeout)
       typingTimeoutRef.current = {}
     }
-  }, [chatSocket, selectedRoom, user?._id])
+  }, [chatSocket, user?._id])
 
   // Reset activeRoomId przy odmontowaniu
   useEffect(() => {

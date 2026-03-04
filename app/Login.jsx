@@ -58,15 +58,16 @@ const Login = () => {
       const user = userCredential.user
       console.log('[Google Sign-in] Firebase auth successful, email:', user.email)
 
-      const firebaseToken = await user.getIdToken()
-      console.log('[Google Sign-in] Got Firebase token, sending to backend...')
+      // Send the original Google ID token to backend (not Firebase token)
+      // Backend uses OAuth2Client.verifyIdToken() which expects a Google ID token
+      console.log('[Google Sign-in] Sending Google ID token to backend...')
 
-      const result = await loginWithGoogle(user.email, firebaseToken)
+      const result = await loginWithGoogle(user.email, idToken)
       console.log('[Google Sign-in] Backend response:', result)
 
       if (result.success) {
         console.log('[Google Sign-in] Login successful, redirecting...')
-        router.replace('/(main)/(tabs)/dashboard-home')
+        // Redirect is handled inside loginWithGoogle → authorized() in AuthContext
       } else {
         if (
           result.error?.includes('nie istnieje') ||
@@ -79,7 +80,7 @@ const Login = () => {
               email: user.email,
               name: user.displayName?.split(' ')[0] || '',
               surname: user.displayName?.split(' ').slice(1).join(' ') || '',
-              googleIdToken: firebaseToken,
+              googleIdToken: idToken,
               avatarUrl: user.photoURL || '',
             },
           })

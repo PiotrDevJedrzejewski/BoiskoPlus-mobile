@@ -54,14 +54,13 @@ const Register = () => {
   const handleGoogleAuthSuccess = async (idToken, user) => {
     setIsLoading(true)
     try {
-      const firebaseToken = await user.getIdToken()
-
-      // Sprawdź czy użytkownik już istnieje w bazie
+      // Use the original Google ID token (not Firebase token)
+      // Backend uses OAuth2Client.verifyIdToken() which expects a Google ID token
       try {
         console.log('[Google Auth] Checking if user exists in backend...')
         await customFetch.post('/auth-mobile/login-oauth', {
           email: user.email,
-          googleIdToken: firebaseToken,
+          googleIdToken: idToken,
         })
 
         console.log('[Google Auth] User exists, logging in...')
@@ -76,7 +75,7 @@ const Register = () => {
               email: user.email,
               name: user.displayName?.split(' ')[0] || '',
               surname: user.displayName?.split(' ').slice(1).join(' ') || '',
-              googleIdToken: firebaseToken,
+              googleIdToken: idToken,
               avatarUrl: user.photoURL || '',
             },
           })

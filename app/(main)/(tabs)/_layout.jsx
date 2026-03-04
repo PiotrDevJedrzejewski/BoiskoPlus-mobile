@@ -4,6 +4,7 @@ import { View, StyleSheet, TouchableOpacity, Text } from 'react-native'
 import { COLORS } from '../../../constants/colors'
 import { useMap } from '../../../context/MapContext'
 import MapboxMobile from '../../../components/MapboxMobile'
+import { useSocketIo } from '../../../context/SocketIoContext'
 
 // Komponent tła mapy
 function MapBackground() {
@@ -29,18 +30,19 @@ function MapBackground() {
   )
 }
 
-// Definicja tabów
+// Definicja tabów (badge jest dynamicznie ustawiane w CustomTabBar)
 const TABS = [
   { name: 'Start', path: 'dashboard-home', icon: 'home' },
   { name: 'Mapa', path: 'show-map', icon: 'map' },
   { name: 'Szukaj', path: 'find-event', icon: 'search' },
-  { name: 'Chat', path: 'chat', icon: 'chatbubbles', badge: 3 },
+  { name: 'Chat', path: 'chat', icon: 'chatbubbles', hasDynamicBadge: true },
 ]
 
 // Własny komponent paska nawigacji
 function CustomTabBar() {
   const router = useRouter()
   const pathname = usePathname()
+  const { totalUnreadMessages } = useSocketIo()
 
   const handlePress = (path) => {
     router.push(`/(main)/(tabs)/${path}`)
@@ -69,9 +71,11 @@ function CustomTabBar() {
                 size={24}
                 color={active ? COLORS.secondary : COLORS.primary}
               />
-              {tab.badge && (
+              {tab.hasDynamicBadge && totalUnreadMessages > 0 && (
                 <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{tab.badge}</Text>
+                  <Text style={styles.badgeText}>
+                    {totalUnreadMessages > 9 ? '9+' : totalUnreadMessages}
+                  </Text>
                 </View>
               )}
             </View>

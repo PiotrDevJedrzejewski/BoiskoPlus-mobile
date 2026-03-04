@@ -147,6 +147,12 @@ export const SocketIoProvider = ({ children }) => {
   const [roomsState, setRoomsState] = useState([])
   const [activeRoomId, setActiveRoomId] = useState(null)
 
+  // Ref do activeRoomId - używany w handlerach socket aby uniknąć stale closure
+  const activeRoomIdRef = useRef(null)
+  useEffect(() => {
+    activeRoomIdRef.current = activeRoomId
+  }, [activeRoomId])
+
   // Powiadomienia o eventach
   const [unreadEventsCount, setUnreadEventsCount] = useState(0)
   const [unreadEventsList, setUnreadEventsList] = useState([])
@@ -228,7 +234,6 @@ export const SocketIoProvider = ({ children }) => {
     const initSockets = async () => {
       // Czekaj na zakończenie sprawdzania auth
       if (!isAuthChecked) {
-        console.log('[Socket] Waiting for auth check...')
         return
       }
 
@@ -236,8 +241,6 @@ export const SocketIoProvider = ({ children }) => {
       const isAuthenticated = user && user.userID && user.userID !== null
 
       if (!isAuthenticated) {
-        console.log('[Socket] User not authenticated, cleaning up sockets...')
-
         // User wylogowany - rozłącz sockety
         if (chatSocket) {
           for (const [event, handler] of chatListenersRef.current.entries()) {
@@ -273,9 +276,6 @@ export const SocketIoProvider = ({ children }) => {
 
       // Jeśli sockety już istnieją i są połączone, nie twórz nowych
       if (chatSocket?.connected && notificationSocket?.connected) {
-        console.log(
-          '[Socket] Sockets already connected, skipping initialization'
-        )
         return
       }
 
@@ -295,26 +295,19 @@ export const SocketIoProvider = ({ children }) => {
       const socketUrl = getSocketUrl()
       const socketOptions = getSocketOptions(authToken)
 
-      console.log('[Socket] Initializing with URL:', socketUrl)
-      console.log('[Socket] Auth token present:', !!authToken)
-
       // ─────────────────────────────────────────────────
       // Utwórz socket dla namespace /chat
       // ─────────────────────────────────────────────────
-
-      console.log('[Chat] Connecting to namespace /chat for user:', user.userID)
       setChatConnectionState(ConnectionState.CONNECTING)
 
       const newChatSocket = io(`${socketUrl}/chat`, socketOptions)
 
       // Connection event handlers
       newChatSocket.on('connect', () => {
-        console.log('[Chat] Connected:', newChatSocket.id)
         safeSetState(() => setChatConnectionState(ConnectionState.CONNECTED))
       })
 
       newChatSocket.on('disconnect', (reason) => {
-        console.log('[Chat] Disconnected:', reason)
         safeSetState(() => {
           if (reason === 'io server disconnect') {
             setChatConnectionState(ConnectionState.DISCONNECTED)
@@ -336,9 +329,9 @@ export const SocketIoProvider = ({ children }) => {
 
       /**
        * ROOMS RESTORED - serwer automatycznie przywrócił pokoje po reconnect
+       * Serwer śledzi które pokoje user miał dołączone i przywraca je po reconnect.
        */
       newChatSocket.on('roomsRestored', (rooms) => {
-        console.log('[Chat] Rooms restored after reconnect:', rooms.length)
         rooms.forEach((roomId) => joinedRoomsRef.current.add(roomId))
       })
 
@@ -347,8 +340,6 @@ export const SocketIoProvider = ({ children }) => {
       // ─────────────────────────────────────────────────
       // Utwórz socket dla namespace /notifications
       // ─────────────────────────────────────────────────
-
-      console.log('[Notifications] Connecting to namespace /notifications...')
       setNotificationConnectionState(ConnectionState.CONNECTING)
 
       const newNotificationSocket = io(
@@ -357,14 +348,12 @@ export const SocketIoProvider = ({ children }) => {
       )
 
       newNotificationSocket.on('connect', () => {
-        console.log('[Notifications] Connected:', newNotificationSocket.id)
         safeSetState(() =>
           setNotificationConnectionState(ConnectionState.CONNECTED)
         )
       })
 
       newNotificationSocket.on('disconnect', (reason) => {
-        console.log('[Notifications] Disconnected:', reason)
         safeSetState(() => {
           if (reason === 'io server disconnect') {
             setNotificationConnectionState(ConnectionState.DISCONNECTED)
@@ -397,8 +386,6 @@ export const SocketIoProvider = ({ children }) => {
 
     return () => {
       isMountedRef.current = false
-      console.log('[Socket] Cleanup: disconnecting sockets')
-
       // Cleanup jest obsługiwany w initSockets przy zmianie usera
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -429,56 +416,93 @@ export const SocketIoProvider = ({ children }) => {
   }, [chatSocket, notificationSocket])
 
   // ═════════════════════════════════════════════════
-  // EFFECT: Pobierz pokoje i dołącz (BATCH) - via WebSocket
+  // EFFECT: Pobierz pokoje i dołącz (BATCH)
+  // WebSocket-first z HTTP fallback
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
     if (!chatSocket || chatConnectionState !== ConnectionState.CONNECTED) return
     if (!user?.userID) return
 
-    const fetchAndJoinRooms = () => {
-      /**
-       * OPTYMALIZACJA: Używamy WebSocket zamiast HTTP
-       * Jedno zapytanie TCP pobiera pokoje + unread counts + ostatnie wiadomości
-       */
-      chatSocket.emit('getRoomsWithUnreadCounts', (result) => {
-        if (!result.success) {
-          console.error('[Chat] getRoomsWithUnreadCounts failed:', result.error)
-          safeSetState(() => setRoomsState([]))
-          return
+    let cancelled = false
+    let timeoutId = null
+
+    // ── Funkcja do dołączania do pokoi (wspólna dla WebSocket i HTTP) ──
+    const joinAndSetRooms = (rooms) => {
+      if (cancelled) return
+
+      if (rooms.length === 0) {
+        safeSetState(() => setRoomsState([]))
+        return
+      }
+
+      const roomIds = rooms.map((room) => room.roomId)
+
+      // joinRoomsBatch - serwerowe dołączenie do Socket.IO rooms dla newMessage eventów
+      chatSocket.emit('joinRoomsBatch', roomIds, (joinResult) => {
+        if (joinResult?.success) {
+          joinResult.joined.forEach((roomId) =>
+            joinedRoomsRef.current.add(roomId)
+          )
         }
-
-        const rooms = result.chatRooms || []
-        console.log(`[Chat] Fetched ${rooms.length} rooms via WebSocket`)
-
-        if (rooms.length === 0) {
-          safeSetState(() => setRoomsState([]))
-          return
-        }
-
-        /**
-         * Dołącz do wszystkich pokoi w batch
-         */
-        const roomIds = rooms.map((room) => room.roomId)
-
-        chatSocket.emit('joinRoomsBatch', roomIds, (joinResult) => {
-          if (joinResult.success) {
-            console.log(`[Chat] Joined ${joinResult.joined.length} rooms in batch`)
-            joinResult.joined.forEach((roomId) =>
-              joinedRoomsRef.current.add(roomId)
-            )
-
-            if (joinResult.failed.length > 0) {
-              console.warn('[Chat] Failed to join some rooms:', joinResult.failed)
-            }
-          }
-        })
-
-        safeSetState(() => setRoomsState(rooms))
       })
+
+      safeSetState(() => setRoomsState(rooms))
     }
 
-    fetchAndJoinRooms()
+    // ── HTTP fallback (używany gdy WebSocket handler getRoomsWithUnreadCounts nie odpowiada) ──
+    // UWAGA: Na Render free tier ten WebSocket handler może timeout'ować przez heavy DB queries.
+    // HTTP endpoint jest lżejszy i bardziej niezawodny jako fallback.
+    const fetchRoomsHTTP = async () => {
+      if (cancelled) return
+      try {
+        const response = await customFetch.get('/chat/rooms')
+        const rooms = response.data.chatRooms || []
+
+        // HTTP może nie zwracać unreadCount - socket aktualizuje je na bieżąco przez newMessage
+        const roomsWithUnread = rooms.map((room) => ({
+          ...room,
+          unreadCount: room.unreadCount || 0,
+        }))
+
+        joinAndSetRooms(roomsWithUnread)
+      } catch (error) {
+        console.error('[fetchAndJoinRooms] HTTP fallback failed:', error.message)
+        if (!cancelled) {
+          safeSetState(() => setRoomsState([]))
+        }
+      }
+    }
+
+    // ── WebSocket-first z 8s timeout i HTTP fallback ──
+    // Preferujemy WebSocket bo zwraca unreadCount z DB.
+    // Jeśli serwer nie odpowie w 8s (np. Render free tier timeout), fallback na HTTP.
+    let webSocketResolved = false
+
+    timeoutId = setTimeout(() => {
+      if (!webSocketResolved && !cancelled) {
+        fetchRoomsHTTP()
+      }
+    }, 8000)
+
+    chatSocket.emit('getRoomsWithUnreadCounts', (result) => {
+      webSocketResolved = true
+      if (timeoutId) clearTimeout(timeoutId)
+      if (cancelled) return
+
+      if (!result?.success) {
+        fetchRoomsHTTP()
+        return
+      }
+
+      const rooms = result.chatRooms || []
+      joinAndSetRooms(rooms)
+    })
+
+    return () => {
+      cancelled = true
+      if (timeoutId) clearTimeout(timeoutId)
+    }
   }, [chatSocket, chatConnectionState, user?.userID, safeSetState])
 
   // ═════════════════════════════════════════════════
@@ -498,7 +522,7 @@ export const SocketIoProvider = ({ children }) => {
         notificationSocket &&
         notificationConnectionState === ConnectionState.CONNECTED
       ) {
-        console.log('[Notifications] Fetching unread via WebSocket')
+        // Preferuj WebSocket - brak dodatkowego HTTP request
         notificationSocket.emit('getUnreadNotifications', (result) => {
           if (result.success) {
             safeSetState(() => {
@@ -518,10 +542,9 @@ export const SocketIoProvider = ({ children }) => {
       }
     }
 
-    // Fallback HTTP
+    // Fallback HTTP - gdy socket nie jest połączony
     const fetchUnreadEventsHTTP = async () => {
       try {
-        console.log('[Notifications] Fetching unread via HTTP (fallback)')
         const response = await customFetch.get('/notifications/unread')
         const unreadEvents = response.data.unreadNotifications || []
 
@@ -550,32 +573,46 @@ export const SocketIoProvider = ({ children }) => {
   // EFFECT: Listener dla nowych wiadomości
   // ═════════════════════════════════════════════════
 
+  // Ref do shouldShowNotification - unikamy re-subscribe przy każdym renderze NotificationContext
+  const shouldShowNotificationRef = useRef(shouldShowNotification)
+  useEffect(() => {
+    shouldShowNotificationRef.current = shouldShowNotification
+  }, [shouldShowNotification])
+
+  // Ref do user._id - stabilna referencja
+  const userIdRef = useRef(user?._id)
+  useEffect(() => {
+    userIdRef.current = user?._id
+  }, [user?._id])
+
   useEffect(() => {
     if (!chatSocket) return
 
     const handleNewMessage = (msg) => {
-      // Ignoruj własne wiadomości
-      if (msg.sender?._id === user?._id) return
+      // Ignoruj własne wiadomości (używamy ref - zawsze aktualna wartość)
+      if (msg.sender?._id === userIdRef.current) return
 
-      // Ignoruj jeśli to aktywny pokój
-      if (msg.roomId === activeRoomId) return
+      // Ignoruj jeśli to aktywny pokój (ref - brak stale closure)
+      // WZORZEC: activeRoomIdRef zamiast activeRoomId w zależnościach eliminuje
+      // niepotrzebne re-subscribe przy każdej zmianie aktywnego pokoju.
+      if (msg.roomId === activeRoomIdRef.current) return
 
-      // Sprawdź preferencje powiadomień
-      const shouldNotify = shouldShowNotification('chatMessages', msg.roomId)
+      // ZAWSZE zwiększ licznik nieprzeczytanych (niezależnie od preferencji powiadomień)
+      // Badge musi reagować nawet gdy powiadomienia są wyciszone.
+      safeSetState(() => {
+        setRoomsState((prev) =>
+          prev.map((room) =>
+            room.roomId === msg.roomId
+              ? { ...room, unreadCount: (room.unreadCount || 0) + 1 }
+              : room
+          )
+        )
+      })
 
+      // Dźwięk i powiadomienie push tylko jeśli preferencje na to pozwalają
+      const shouldNotify = shouldShowNotificationRef.current('chatMessages', msg.roomId)
       if (shouldNotify) {
         playNotificationSound()
-
-        // Zwiększ licznik nieprzeczytanych
-        safeSetState(() => {
-          setRoomsState((prev) =>
-            prev.map((room) =>
-              room.roomId === msg.roomId
-                ? { ...room, unreadCount: (room.unreadCount || 0) + 1 }
-                : room
-            )
-          )
-        })
       }
     }
 
@@ -585,15 +622,9 @@ export const SocketIoProvider = ({ children }) => {
       chatSocket.off('newMessage', handleNewMessage)
       chatListenersRef.current.delete('newMessage')
     }
-  }, [
-    chatSocket,
-    user?._id,
-    activeRoomId,
-    shouldShowNotification,
-    playNotificationSound,
-    addChatListener,
-    safeSetState,
-  ])
+    // Zredukowane zależności - activeRoomId, shouldShowNotification i user._id
+    // są w refach, więc nie powodują re-subscribe przy każdej zmianie tych wartości.
+  }, [chatSocket, addChatListener, safeSetState, playNotificationSound])
 
   // ═════════════════════════════════════════════════
   // EFFECT: Online users tracking
@@ -605,7 +636,6 @@ export const SocketIoProvider = ({ children }) => {
     // Pobierz aktualną listę online users przy połączeniu
     chatSocket.emit('getOnlineUsers', (result) => {
       if (result.success) {
-        console.log('[Chat] Online users loaded:', result.onlineUsers.length)
         safeSetState(() => {
           setOnlineUsers(new Set(result.onlineUsers))
         })
@@ -614,7 +644,6 @@ export const SocketIoProvider = ({ children }) => {
 
     // Nasłuchuj na nowych online users
     const handleUserOnline = ({ userId }) => {
-      console.log('[Chat] User came online:', userId)
       safeSetState(() => {
         setOnlineUsers((prev) => new Set(prev).add(userId))
       })
@@ -622,7 +651,6 @@ export const SocketIoProvider = ({ children }) => {
 
     // Nasłuchuj na offline users
     const handleUserOffline = ({ userId }) => {
-      console.log('[Chat] User went offline:', userId)
       safeSetState(() => {
         setOnlineUsers((prev) => {
           const next = new Set(prev)
@@ -883,9 +911,6 @@ export const SocketIoProvider = ({ children }) => {
         ) {
           notificationSocket.emit('markAsRead', { eventId }, (result) => {
             if (result.success) {
-              console.log(
-                `[Notifications] Marked ${eventId} as read via WebSocket`
-              )
               resolve(result)
             } else {
               console.error(
@@ -900,7 +925,6 @@ export const SocketIoProvider = ({ children }) => {
           customFetch
             .patch(`/status/events/${eventId}/mark-read`)
             .then(() => {
-              console.log(`[Notifications] Marked ${eventId} as read via HTTP`)
               resolve({ success: true })
             })
             .catch((error) => {
@@ -946,9 +970,6 @@ export const SocketIoProvider = ({ children }) => {
             { eventIds: eventIds || [] },
             (result) => {
               if (result.success) {
-                console.log(
-                  `[Notifications] Marked ${result.markedCount} events as read`
-                )
                 resolve(result)
               } else {
                 reject(new Error(result.error))
