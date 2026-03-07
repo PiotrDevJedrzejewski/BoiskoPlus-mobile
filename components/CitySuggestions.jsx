@@ -1,34 +1,77 @@
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native'
+import { memo, useMemo } from 'react'
+import { StyleSheet, FlatList, View, Text, TouchableOpacity } from 'react-native'
 import { COLORS } from '../constants/colors'
 
 const CitySuggestions = ({ suggestions, onSuggestionClick }) => {
+  const flatItems = useMemo(() => {
+    if (!suggestions || suggestions.length === 0) {
+      return []
+    }
+
+    const items = []
+    suggestions.forEach(({ province, cities }) => {
+      if (!cities || cities.length === 0) {
+        return
+      }
+
+      items.push({
+        type: 'header',
+        key: `header-${province}`,
+        province,
+      })
+
+      cities.forEach((city) => {
+        items.push({
+          type: 'city',
+          key: `city-${province}-${city}`,
+          province,
+          city,
+        })
+      })
+    })
+
+    return items
+  }, [suggestions])
+
   if (!suggestions || suggestions.length === 0) {
     return null
   }
 
-  return (
-    <ScrollView style={styles.suggestionsContainer}>
-      {suggestions.map(({ province, cities }) => (
-        <View key={province}>
-          <View style={styles.provinceHeader}>
-            <Text style={styles.provinceText}>{province}</Text>
-          </View>
-          {cities.map((city) => (
-            <TouchableOpacity
-              key={city}
-              style={styles.suggestionItem}
-              onPress={() => onSuggestionClick(city, province)}
-            >
-              <Text style={styles.suggestionCity}>{city}</Text>
-            </TouchableOpacity>
-          ))}
+  const renderItem = ({ item }) => {
+    if (item.type === 'header') {
+      return (
+        <View style={styles.provinceHeader}>
+          <Text style={styles.provinceText}>{item.province}</Text>
         </View>
-      ))}
-    </ScrollView>
+      )
+    }
+
+    return (
+      <TouchableOpacity
+        style={styles.suggestionItem}
+        onPress={() => onSuggestionClick(item.city, item.province)}
+      >
+        <Text style={styles.suggestionCity}>{item.city}</Text>
+      </TouchableOpacity>
+    )
+  }
+
+  return (
+    <FlatList
+      style={styles.suggestionsContainer}
+      data={flatItems}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.key}
+      keyboardShouldPersistTaps='handled'
+      initialNumToRender={12}
+      maxToRenderPerBatch={16}
+      windowSize={5}
+      removeClippedSubviews
+    />
   )
 }
 
-export default CitySuggestions
+export default memo(CitySuggestions)
 
 const styles = StyleSheet.create({
   suggestionsContainer: {

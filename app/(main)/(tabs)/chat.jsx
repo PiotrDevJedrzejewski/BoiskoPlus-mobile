@@ -6,7 +6,7 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ActivityIndicator,
   Alert,
@@ -23,6 +23,7 @@ import LottieView from 'lottie-react-native'
 import { useFonts } from 'expo-font'
 
 const typing = require('../../../assets/utils/typing.json')
+const CUSTOM_TAB_BAR_HEIGHT = 60
 
 const Chat = () => {
   const { user } = useAuth()
@@ -36,8 +37,6 @@ const Chat = () => {
     setActiveRoomId,
     roomsState,
     isConnected,
-    chatConnectionState,
-    ConnectionState,
     sendTyping,
     sendStopTyping,
     isUserOnline,
@@ -63,6 +62,7 @@ const Chat = () => {
   const [isNearBottom, setIsNearBottom] = useState(true)
   const [isInitialLoad, setIsInitialLoad] = useState(false)
   const [typingUsers, setTypingUsers] = useState({})
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
   const typingTimeoutRef = useRef({})
 
   const [fontsLoaded] = useFonts({
@@ -285,6 +285,29 @@ const Chat = () => {
       setActiveRoomId(null)
     }
   }, [setActiveRoomId])
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
+
+    const onKeyboardShow = (event) => {
+      setKeyboardHeight(event?.endCoordinates?.height || 0)
+    }
+
+    const onKeyboardHide = () => {
+      setKeyboardHeight(0)
+    }
+
+    const showSubscription = Keyboard.addListener(showEvent, onKeyboardShow)
+    const hideSubscription = Keyboard.addListener(hideEvent, onKeyboardHide)
+
+    return () => {
+      showSubscription.remove()
+      hideSubscription.remove()
+    }
+  }, [])
 
   // Scroll do końca przy nowych wiadomościach
   useEffect(() => {
@@ -554,6 +577,7 @@ const Chat = () => {
   }
 
   const typingText = getTypingText()
+  const inputBottomOffset = Math.max(0, keyboardHeight - CUSTOM_TAB_BAR_HEIGHT)
 
   // Loading screen dla czcionek
   if (!fontsLoaded) {
@@ -693,12 +717,7 @@ const Chat = () => {
 
   // Widok wiadomości
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      pointerEvents='box-none'
-    >
+    <View style={styles.container}>
       {/* Header z powrotem */}
       <View style={styles.messageHeader}>
         <TouchableOpacity onPress={handleBackToList} style={styles.backButton}>
@@ -774,7 +793,10 @@ const Chat = () => {
         <ScrollView
           ref={scrollViewRef}
           style={styles.messagesContainer}
-          contentContainerStyle={styles.messagesContent}
+          contentContainerStyle={[
+            styles.messagesContent,
+            { paddingBottom: 96 + (typingText ? 20 : 0) },
+          ]}
           showsVerticalScrollIndicator={false}
           onScroll={({ nativeEvent }) => {
             const { contentOffset, contentSize, layoutMeasurement } =
@@ -841,7 +863,7 @@ const Chat = () => {
       )}
 
       {/* Input */}
-      <View style={styles.inputContainer}>
+      <View style={[styles.inputContainer, { bottom: inputBottomOffset }]}>
         {/* Typing indicator */}
         {typingText && (
           <View style={styles.typingIndicator}>
@@ -887,7 +909,7 @@ const Chat = () => {
           />
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   )
 }
 
@@ -1047,7 +1069,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderTopWidth: 1,
     borderTopColor: COLORS.third,
-    position: 'relative',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
   },
   typingIndicator: {
     position: 'absolute',

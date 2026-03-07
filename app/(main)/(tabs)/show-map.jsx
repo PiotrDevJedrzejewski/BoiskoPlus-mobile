@@ -3,7 +3,6 @@ import {
   View,
   TouchableOpacity,
   TextInput,
-  ScrollView,
   Text,
   ActivityIndicator,
   Alert,
@@ -11,7 +10,7 @@ import {
 import { COLORS } from '../../../constants/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect } from 'expo-router'
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import { useMap } from '../../../context/MapContext'
 import { useDashboard } from '../../../context/DashboardContext'
 import { useAuth } from '../../../context/AuthContext'
@@ -25,6 +24,9 @@ import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Toast } from 'toastify-react-native'
 import { getCurrentLocation } from '../../../assets/utils/getUserLocation'
+
+const SUGGESTIONS_DEBOUNCE_MS = 80
+const SUGGESTIONS_LIMIT = 30
 
 const ShowMap = () => {
   const {
@@ -52,6 +54,21 @@ const ShowMap = () => {
   const [suggestions, setSuggestions] = useState([])
   const [suggestionSelected, setSuggestionSelected] = useState(false)
   const [loading, setLoading] = useState(false)
+  const isMountedRef = useRef(true)
+  const suggestionsDebounceRef = useRef(null)
+  const searchAbortControllerRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+      if (suggestionsDebounceRef.current) {
+        clearTimeout(suggestionsDebounceRef.current)
+      }
+      if (searchAbortControllerRef.current) {
+        searchAbortControllerRef.current.abort()
+      }
+    }
+  }, [])
 
   // Włącz interaktywność mapy gdy ekran jest aktywny
   useFocusEffect(
@@ -68,18 +85,43 @@ const ShowMap = () => {
 
   // Aktualizuj podpowiedzi - tylko gdy użytkownik aktywnie wpisuje
   useEffect(() => {
+    if (suggestionsDebounceRef.current) {
+      clearTimeout(suggestionsDebounceRef.current)
+    }
+
     if (suggestionSelected) {
       setSuggestions([])
       return
     }
+
+    const normalizedInput = cityInput?.trim()
+
     // Pokaż sugestie tylko gdy użytkownik aktywnie wpisuje
-    if (!cityInput || cityInput.trim().length === 0) {
+    if (!normalizedInput) {
       setSuggestions([])
       return
     }
-    const filteredSuggestions = filterCitySuggestions(cityInput, placesData)
-    // Zachowaj strukturę { province, cities } zamiast spłaszczać
-    setSuggestions(filteredSuggestions)
+
+    suggestionsDebounceRef.current = setTimeout(() => {
+      if (!isMountedRef.current) {
+        return
+      }
+
+      const filteredSuggestions = filterCitySuggestions(
+        normalizedInput,
+        placesData,
+        2,
+        SUGGESTIONS_LIMIT,
+      )
+      // Zachowaj strukturę { province, cities } zamiast spłaszczać
+      setSuggestions(filteredSuggestions)
+    }, SUGGESTIONS_DEBOUNCE_MS)
+
+    return () => {
+      if (suggestionsDebounceRef.current) {
+        clearTimeout(suggestionsDebounceRef.current)
+      }
+    }
   }, [cityInput, suggestionSelected])
 
   const handleInputChange = (text) => {
@@ -98,6 +140,13 @@ const ShowMap = () => {
   const handleSearch = async () => {
     setLoading(true)
 
+    if (searchAbortControllerRef.current) {
+      searchAbortControllerRef.current.abort()
+    }
+
+    const abortController = new AbortController()
+    searchAbortControllerRef.current = abortController
+
     // Użyj lokalizacji użytkownika lub fallback na userLocation
     let finalCity = cityInput.trim() || (consents.locationAccepted ? userLocation.City : '')
     let finalRegion = userInput.region || (consents.locationAccepted ? userLocation.region : '')
@@ -114,7 +163,9 @@ const ShowMap = () => {
 
     if (!finalCity) {
       Alert.alert('Błąd', 'Proszę wpisać miasto lub włączyć lokalizację')
-      setLoading(false)
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
       return
     }
 
@@ -124,7 +175,9 @@ const ShowMap = () => {
 
       if (!validation.isValid) {
         Alert.alert('Błąd', validation.error)
-        setLoading(false)
+        if (isMountedRef.current) {
+          setLoading(false)
+        }
         return
       }
 
@@ -142,9 +195,15 @@ const ShowMap = () => {
         region: finalRegion,
         City: finalCity,
         distance: 5,
+      }, {
+        signal: abortController.signal,
       })
       
       const events = response.data.events || []
+      if (!isMountedRef.current) {
+        return
+      }
+
       setFilteredEvents(response.data)
       
       // Logika centrowania mapy w zależności od liczby znalezionych eventów
@@ -176,10 +235,20 @@ const ShowMap = () => {
       }
       
     } catch (err) {
+      if (err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') {
+        return
+      }
+
       console.error('Błąd wyszukiwania:', err)
       Alert.alert('Błąd', 'Nie udało się wyszukać wydarzeń')
+    } finally {
+      if (searchAbortControllerRef.current === abortController) {
+        searchAbortControllerRef.current = null
+      }
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
     }
-    setLoading(false)
   }
 
   const handleMyLocation = async () => {

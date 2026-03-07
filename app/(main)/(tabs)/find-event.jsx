@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   StyleSheet,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Pressable,
   ActivityIndicator,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
@@ -42,6 +43,9 @@ const GAME_TYPES = [
   { label: 'Inne', value: 'other' },
 ]
 
+const SUGGESTIONS_DEBOUNCE_MS = 80
+const SUGGESTIONS_LIMIT = 30
+
 const FindEvent = () => {
   const router = useRouter()
   const { setIsInteractive, setOverlayOpacity, userLocation, flyTo, flyToProvince } = useMap()
@@ -62,6 +66,24 @@ const FindEvent = () => {
   const [filteredByGameType, setFilteredByGameType] = useState(filteredEvents)
   const [suggestions, setSuggestions] = useState([])
   const [suggestionSelected, setSuggestionSelected] = useState(false)
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
+  const isMountedRef = useRef(true)
+  const suggestionsDebounceRef = useRef(null)
+  const searchAbortControllerRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+      if (suggestionsDebounceRef.current) {
+        clearTimeout(suggestionsDebounceRef.current)
+      }
+      if (searchAbortControllerRef.current) {
+        searchAbortControllerRef.current.abort()
+      }
+      setIsInteractive(false)
+      setOverlayOpacity(0.3)
+    }
+  }, [])
 
   // Ustaw początkową lokalizację z userLocation
   useEffect(() => {
@@ -79,22 +101,48 @@ const FindEvent = () => {
 
   // Aktualizuj podpowiedzi - tylko gdy użytkownik aktywnie wpisuje
   useEffect(() => {
+    if (suggestionsDebounceRef.current) {
+      clearTimeout(suggestionsDebounceRef.current)
+    }
+
     if (suggestionSelected) {
       setSuggestions([])
       return
     }
+
+    const cityInput = userInput.City?.trim()
+
     // Pokaż sugestie tylko gdy użytkownik aktywnie wpisuje
-    if (!userInput.City || userInput.City.trim().length === 0) {
+    if (!cityInput) {
       setSuggestions([])
       return
     }
+
     // Jeśli miasto pochodzi z userLocation, nie pokazuj podpowiedzi
-    if (consents.locationAccepted && userLocation.City && userInput.City === userLocation.City) {
+    if (consents.locationAccepted && userLocation.City && cityInput === userLocation.City) {
       setSuggestions([])
       return
     }
-    const filteredSuggestions = filterCitySuggestions(userInput.City, placesData)
-    setSuggestions(filteredSuggestions)
+
+    suggestionsDebounceRef.current = setTimeout(() => {
+      if (!isMountedRef.current) {
+        return
+      }
+
+      const filteredSuggestions = filterCitySuggestions(
+        cityInput,
+        placesData,
+        2,
+        SUGGESTIONS_LIMIT,
+      )
+      setSuggestions(filteredSuggestions)
+    }, SUGGESTIONS_DEBOUNCE_MS)
+
+    return () => {
+      if (suggestionsDebounceRef.current) {
+        clearTimeout(suggestionsDebounceRef.current)
+      }
+    }
   }, [userInput.City, suggestionSelected, consents.locationAccepted, userLocation.City])
 
   // Aktualizuj UI gdy filteredEvents zmieni się z innego ekranu
@@ -137,6 +185,13 @@ const FindEvent = () => {
     setLoading(true)
     setHasSearched(true)
 
+    if (searchAbortControllerRef.current) {
+      searchAbortControllerRef.current.abort()
+    }
+
+    const abortController = new AbortController()
+    searchAbortControllerRef.current = abortController
+
     // Użyj lokalizacji użytkownika lub fallback na userLocation
     let finalCity = userInput.City.trim() || (consents.locationAccepted ? userLocation.City : '')
     let finalRegion = userInput.region || (consents.locationAccepted ? userLocation.region : '')
@@ -152,7 +207,9 @@ const FindEvent = () => {
 
     if (!finalCity) {
       Toast.error('Proszę wpisać miasto lub włączyć lokalizację w ustawieniach', 'top')
-      setLoading(false)
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
       return
     }
 
@@ -162,7 +219,9 @@ const FindEvent = () => {
 
       if (!validation.isValid) {
         Toast.error(validation.error, 'top')
-        setLoading(false)
+        if (isMountedRef.current) {
+          setLoading(false)
+        }
         return
       }
 
@@ -179,9 +238,15 @@ const FindEvent = () => {
         region: finalRegion,
         City: finalCity,
         distance: userInput.distance,
+      }, {
+        signal: abortController.signal,
       })
       
       const events = response.data.events || []
+      if (!isMountedRef.current) {
+        return
+      }
+
       setFilteredEvents(response.data)
       
       // Logika centrowania mapy w zależności od liczby znalezionych eventów
@@ -213,10 +278,20 @@ const FindEvent = () => {
       }
       
     } catch (err) {
+      if (err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') {
+        return
+      }
+
       console.error('Błąd wyszukiwania:', err)
       Toast.error('Nie udało się wyszukać wydarzeń', 'top')
+    } finally {
+      if (searchAbortControllerRef.current === abortController) {
+        searchAbortControllerRef.current = null
+      }
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
     }
-    setLoading(false)
   }
 
   const toggleView = () => {
@@ -230,7 +305,7 @@ const FindEvent = () => {
   }
 
   const handleCityInputChange = (text) => {
-    setUserInput({ ...userInput, City: text })
+    setUserInput((prev) => ({ ...prev, City: text }))
     setSuggestionSelected(false)
   }
 
@@ -243,7 +318,7 @@ const FindEvent = () => {
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.titleWrapper} pointerEvents='auto'>
-        <Ionicons name='location' size={26} color={COLORS.secondary} />
+        <Ionicons name='location-sharp' size={26} color={COLORS.secondary} />
         <Text style={styles.titleText}>Znajdź Wydarzenie</Text>
       </View>
 
@@ -267,18 +342,21 @@ const FindEvent = () => {
         </View>
 
         {/* Podpowiedzi */}
+        <View style={styles.suggestionsContainer}>
         <CitySuggestions
           suggestions={suggestions}
           onSuggestionClick={handleSuggestionClick}
         />
+        </View>
 
-        {/* Typ gry i dystans */}
+        {/* Typ gry i dystans i wiecej */}
+        {showAdvancedSearch && (
         <View style={styles.inputRowSecond}>
           <View style={styles.pickerWrapper}>
             <Picker
               selectedValue={userInput.gameType}
               onValueChange={(value) =>
-                setUserInput({ ...userInput, gameType: value })
+                setUserInput((prev) => ({ ...prev, gameType: value }))
               }
               style={styles.picker}
               dropdownIconColor={COLORS.background}
@@ -293,7 +371,7 @@ const FindEvent = () => {
               ))}
             </Picker>
           </View>
-
+              
           <TextInput
             style={styles.inputDistance}
             placeholder='km'
@@ -304,12 +382,19 @@ const FindEvent = () => {
               let value = parseInt(text) || 1
               if (value < 1) value = 1
               if (value > 50) value = 50
-              setUserInput({ ...userInput, distance: value })
+              setUserInput((prev) => ({ ...prev, distance: value }))
             }}
           />
         </View>
+        )}
 
-        {/* Przycisk szukaj */}
+        {/* Przyciski */}
+        <View style={styles.actionRow}>
+        <Pressable style={styles.controlSearchButton} onPress={() => setShowAdvancedSearch((prev) => !prev)}>
+          {showAdvancedSearch ?(<Ionicons name='arrow-up' size={26} color={COLORS.background} />): (
+            <Ionicons name='settings-sharp' size={26} color={COLORS.background} />
+          )}
+        </Pressable>
         <TouchableOpacity
           style={styles.searchButton}
           onPress={handleSubmit}
@@ -322,6 +407,7 @@ const FindEvent = () => {
             <Text style={styles.searchButtonText}>Szukaj</Text>
           )}
         </TouchableOpacity>
+        </View>
       </View>
 
       {/* Lista wydarzeń - pokazywana gdy showList === true */}
@@ -402,9 +488,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingVertical: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   titleText: {
     fontSize: 24,
@@ -413,9 +498,10 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   searchContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingHorizontal: 18,
+    paddingTop: 6,
+    paddingBottom: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   inputRow: {
     marginBottom: 12,
@@ -427,7 +513,7 @@ const styles = StyleSheet.create({
   inputLocation: {
     backgroundColor: COLORS.white,
     borderRadius: 16,
-    height: 50,
+    height: 40,
     paddingHorizontal: 20,
     fontSize: 16,
     fontFamily: 'Lato-Regular',
@@ -437,7 +523,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
     borderRadius: 16,
-    height: 50,
+    height: 40,
     marginRight: 12,
     justifyContent: 'center',
     overflow: 'hidden',
@@ -453,7 +539,7 @@ const styles = StyleSheet.create({
   inputDistance: {
     backgroundColor: COLORS.white,
     borderRadius: 16,
-    height: 50,
+    height: 40,
     width: 70,
     paddingHorizontal: 10,
     fontSize: 16,
@@ -464,8 +550,23 @@ const styles = StyleSheet.create({
   searchButton: {
     backgroundColor: COLORS.secondary,
     borderRadius: 16,
-    height: 50,
+    height: 40,
+    marginLeft: 12,
+    flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  controlSearchButton: {
+    width: 80,
+    height: 40,
+    borderRadius: 16,
+    backgroundColor: COLORS.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+
+  },
+  actionRow: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   searchButtonText: {
@@ -538,4 +639,13 @@ const styles = StyleSheet.create({
     fontFamily: 'ObjectFont',
     marginTop: 4,
   },
+
+
+  suggestionsContainer: {
+    position: 'absolute',
+    top: 42,
+    left: 20,
+    width: '100%',
+    zIndex: 10,
+  }
 })

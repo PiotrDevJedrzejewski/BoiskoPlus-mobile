@@ -3,28 +3,73 @@
  * Adapted for React Native from web version
  */
 
+const normalizedPlacesCache = new WeakMap()
+
+const getNormalizedPlaces = (places) => {
+  if (!places || typeof places !== 'object') {
+    return []
+  }
+
+  const cached = normalizedPlacesCache.get(places)
+  if (cached) {
+    return cached
+  }
+
+  const normalized = Object.entries(places).map(([province, cities]) => ({
+    province,
+    cities,
+    citiesLower: cities.map((city) => city.toLowerCase()),
+  }))
+
+  normalizedPlacesCache.set(places, normalized)
+  return normalized
+}
+
 /**
  * Filtruje podpowiedzi miast na podstawie wpisanego tekstu
  * @param {string} input - Wpisany tekst przez użytkownika
  * @param {Object} places - Obiekt z miejscowościami pogrupowanymi według województw
  * @param {number} minLength - Minimalna długość tekstu do uruchomienia podpowiedzi
+ * @param {number} maxResults - Maksymalna liczba zwracanych miast
  * @returns {Array} - Tablica obiektów z województwami i pasującymi miastami
  */
-export const filterCitySuggestions = (input, places, minLength = 2) => {
-  if (!places || !input || input.length < minLength) {
+export const filterCitySuggestions = (
+  input,
+  places,
+  minLength = 2,
+  maxResults = 30,
+) => {
+  const normalizedInput = input?.trim().toLowerCase()
+  if (!normalizedInput || normalizedInput.length < minLength) {
     return []
   }
 
-  const inputLower = input.toLowerCase()
-  const result = Object.entries(places).reduce((acc, [province, cities]) => {
-    const filtered = cities.filter((city) =>
-      city.toLowerCase().startsWith(inputLower)
-    )
-    if (filtered.length > 0) {
-      return [...acc, { province, cities: filtered }]
+  const normalizedPlaces = getNormalizedPlaces(places)
+  const result = []
+  let totalMatches = 0
+
+  for (const { province, cities, citiesLower } of normalizedPlaces) {
+    if (totalMatches >= maxResults) {
+      break
     }
-    return acc
-  }, [])
+
+    const provinceMatches = []
+
+    for (let i = 0; i < citiesLower.length; i += 1) {
+      if (citiesLower[i].startsWith(normalizedInput)) {
+        provinceMatches.push(cities[i])
+        totalMatches += 1
+
+        if (totalMatches >= maxResults) {
+          break
+        }
+      }
+    }
+
+    if (provinceMatches.length > 0) {
+      result.push({ province, cities: provinceMatches })
+    }
+  }
 
   return result
 }
@@ -41,12 +86,13 @@ export const validateCityInput = (cityInput, regionInput, places) => {
     return { isValid: true, region: null, error: null }
   }
 
+  const normalizedInput = cityInput.trim().toLowerCase()
+  const normalizedPlaces = getNormalizedPlaces(places)
+
   // Znajdź wszystkie pasujące województwa
-  const matches = Object.entries(places)
-    .filter(([, cities]) =>
-      cities.some((city) => city.toLowerCase() === cityInput.toLowerCase())
-    )
-    .map(([province]) => province)
+  const matches = normalizedPlaces
+    .filter(({ citiesLower }) => citiesLower.includes(normalizedInput))
+    .map(({ province }) => province)
 
   if (matches.length === 0) {
     return {
@@ -81,14 +127,19 @@ export const validateCityInput = (cityInput, regionInput, places) => {
  * @returns {Array} - Flat lista obiektów { city, province }
  */
 export const flattenSuggestions = (suggestions) => {
-  return suggestions.reduce((acc, { province, cities }) => {
-    const items = cities.map((city) => ({
+  const flattened = []
+
+  suggestions.forEach(({ province, cities }) => {
+    cities.forEach((city) => {
+      flattened.push({
       city,
       province,
       key: `${city}-${province}`,
-    }))
-    return [...acc, ...items]
-  }, [])
+      })
+    })
+  })
+
+  return flattened
 }
 
 /**

@@ -328,6 +328,37 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const updateProfile = async (updates) => {
+    try {
+      const response = await customFetch.patch(
+        '/users/current-user/update-user',
+        updates
+      )
+
+      if (response?.data?.user) {
+        const updatedUser = {
+          ...response.data.user,
+          userID: response.data.user.userID || response.data.user._id,
+        }
+        setUser(updatedUser)
+      }
+
+      return {
+        success: true,
+        user: response?.data?.user || null,
+        message: response?.data?.msg || 'Profil został zaktualizowany',
+      }
+    } catch (error) {
+      console.error('Błąd podczas aktualizacji profilu:', error)
+      return {
+        success: false,
+        error:
+          error.response?.data?.msg ||
+          'Wystąpił błąd podczas aktualizacji profilu',
+      }
+    }
+  }
+
   // Funkcja wylogowania
   const logout = async () => {
     try {
@@ -547,6 +578,7 @@ export const AuthProvider = ({ children }) => {
         register,
         forgotPassword,
         resetPassword,
+        updateProfile,
         refetchUser,
         logout,
         isAuthChecked,

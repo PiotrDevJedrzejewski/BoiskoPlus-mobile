@@ -7,12 +7,9 @@ import {
   TextInput,
   ScrollView,
   Pressable,
-  Modal,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
-import { Picker } from '@react-native-picker/picker'
 import { useRouter } from 'expo-router'
 import LottieView from 'lottie-react-native'
 import Constants from 'expo-constants'
@@ -24,6 +21,33 @@ import { Toast } from 'toastify-react-native'
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
 import { auth } from '../assets/utils/firebase'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
+import DatePicker from '../components/DatePicker'
+
+const parseIsoDate = (value) => {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return null
+  }
+
+  const [yearStr, monthStr, dayStr] = value.split('-')
+  const year = Number(yearStr)
+  const month = Number(monthStr)
+  const day = Number(dayStr)
+
+  if (!year || !month || !day) {
+    return null
+  }
+
+  const parsed = new Date(year, month - 1, day)
+  if (
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() + 1 !== month ||
+    parsed.getDate() !== day
+  ) {
+    return null
+  }
+
+  return parsed
+}
 
 const Register = () => {
   const router = useRouter()
@@ -103,62 +127,10 @@ const Register = () => {
     }
   }
 
-  // Date picker state
-  const [birthDate, setBirthDate] = useState(null)
-  const [showDatePicker, setShowDatePicker] = useState(false)
-  const [tempDay, setTempDay] = useState(1)
-  const [tempMonth, setTempMonth] = useState(1)
-  const [tempYear, setTempYear] = useState(2000)
-
-  const currentYear = new Date().getFullYear()
-  const days = Array.from({ length: 31 }, (_, i) => i + 1)
-  const months = [
-    { value: 1, label: 'Styczeń' },
-    { value: 2, label: 'Luty' },
-    { value: 3, label: 'Marzec' },
-    { value: 4, label: 'Kwiecień' },
-    { value: 5, label: 'Maj' },
-    { value: 6, label: 'Czerwiec' },
-    { value: 7, label: 'Lipiec' },
-    { value: 8, label: 'Sierpień' },
-    { value: 9, label: 'Wrzesień' },
-    { value: 10, label: 'Październik' },
-    { value: 11, label: 'Listopad' },
-    { value: 12, label: 'Grudzień' },
-  ]
-  const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i)
+  const [birthDate, setBirthDate] = useState('')
 
   const handleChange = (name, value) => {
     setFormData({ ...formData, [name]: value })
-  }
-
-  const openDatePicker = () => {
-    if (birthDate) {
-      setTempDay(birthDate.getDate())
-      setTempMonth(birthDate.getMonth() + 1)
-      setTempYear(birthDate.getFullYear())
-    }
-    setShowDatePicker(true)
-  }
-
-  const confirmDate = () => {
-    setBirthDate(new Date(tempYear, tempMonth - 1, tempDay))
-    setShowDatePicker(false)
-  }
-
-  const formatDay = (date) => {
-    if (!date) return 'DD'
-    return date.getDate().toString().padStart(2, '0')
-  }
-
-  const formatMonth = (date) => {
-    if (!date) return 'MM'
-    return (date.getMonth() + 1).toString().padStart(2, '0')
-  }
-
-  const formatYear = (date) => {
-    if (!date) return 'RRRR'
-    return date.getFullYear().toString()
   }
 
   const getMaxBirthDate = () => {
@@ -200,7 +172,13 @@ const Register = () => {
       return
     }
 
-    if (birthDate > getMaxBirthDate()) {
+    const parsedBirthDate = parseIsoDate(birthDate)
+    if (!parsedBirthDate) {
+      Toast.error('Podaj prawidlowa date urodzenia')
+      return
+    }
+
+    if (parsedBirthDate > getMaxBirthDate()) {
       Toast.error('Musisz mieć co najmniej 7 lat')
       return
     }
@@ -220,7 +198,7 @@ const Register = () => {
     try {
       const submitData = {
         ...formData,
-        age: birthDate.toISOString().split('T')[0], // Format YYYY-MM-DD
+        age: birthDate,
       }
 
       await customFetch.post('/auth/register', submitData)
@@ -377,104 +355,12 @@ const Register = () => {
             {/* Birth Date Input */}
             <View style={styles.authFormGroup}>
               <Text style={styles.label}>Data urodzenia</Text>
-              <Pressable
-                style={styles.datePickerContainer}
-                onPress={openDatePicker}
-              >
-                <View style={styles.dateBox}>
-                  <Text style={[styles.dateText, !birthDate && styles.datePlaceholder]}>
-                    {formatDay(birthDate)}
-                  </Text>
-                  <Text style={styles.dateLabel}>Dzień</Text>
-                </View>
-                <View style={styles.dateSeparator}>
-                  <Text style={styles.dateSeparatorText}>/</Text>
-                </View>
-                <View style={styles.dateBox}>
-                  <Text style={[styles.dateText, !birthDate && styles.datePlaceholder]}>
-                    {formatMonth(birthDate)}
-                  </Text>
-                  <Text style={styles.dateLabel}>Miesiąc</Text>
-                </View>
-                <View style={styles.dateSeparator}>
-                  <Text style={styles.dateSeparatorText}>/</Text>
-                </View>
-                <View style={styles.dateBox}>
-                  <Text style={[styles.dateText, !birthDate && styles.datePlaceholder]}>
-                    {formatYear(birthDate)}
-                  </Text>
-                  <Text style={styles.dateLabel}>Rok</Text>
-                </View>
-              </Pressable>
-
-              {/* Date Picker Modal */}
-              <Modal
-                visible={showDatePicker}
-                transparent={true}
-                animationType="slide"
-              >
-                <View style={styles.modalOverlay}>
-                  <View style={styles.modalContent}>
-                    <Text style={styles.modalTitle}>Wybierz datę urodzenia</Text>
-                    
-                    <View style={styles.pickersContainer}>
-                      <View style={styles.pickerWrapper}>
-                        <Text style={styles.pickerLabel}>Dzień</Text>
-                        <Picker
-                          selectedValue={tempDay}
-                          onValueChange={setTempDay}
-                          style={styles.picker}
-                        >
-                          {days.map((day) => (
-                            <Picker.Item key={day} label={day.toString()} value={day} />
-                          ))}
-                        </Picker>
-                      </View>
-
-                      <View style={styles.pickerWrapper}>
-                        <Text style={styles.pickerLabel}>Miesiąc</Text>
-                        <Picker
-                          selectedValue={tempMonth}
-                          onValueChange={setTempMonth}
-                          style={styles.picker}
-                        >
-                          {months.map((month) => (
-                            <Picker.Item key={month.value} label={month.label} value={month.value} />
-                          ))}
-                        </Picker>
-                      </View>
-
-                      <View style={styles.pickerWrapper}>
-                        <Text style={styles.pickerLabel}>Rok</Text>
-                        <Picker
-                          selectedValue={tempYear}
-                          onValueChange={setTempYear}
-                          style={styles.picker}
-                        >
-                          {years.map((year) => (
-                            <Picker.Item key={year} label={year.toString()} value={year} />
-                          ))}
-                        </Picker>
-                      </View>
-                    </View>
-
-                    <View style={styles.modalButtons}>
-                      <Pressable
-                        style={[styles.modalButton, styles.cancelButton]}
-                        onPress={() => setShowDatePicker(false)}
-                      >
-                        <Text style={styles.cancelButtonText}>Anuluj</Text>
-                      </Pressable>
-                      <Pressable
-                        style={[styles.modalButton, styles.confirmButton]}
-                        onPress={confirmDate}
-                      >
-                        <Text style={styles.confirmButtonText}>Potwierdź</Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                </View>
-              </Modal>
+              <DatePicker
+                value={birthDate}
+                onChange={setBirthDate}
+                minimumDate={new Date(1900, 0, 1)}
+                maximumDate={getMaxBirthDate()}
+              />
             </View>
 
             {/* Password Input */}
@@ -631,104 +517,6 @@ const styles = StyleSheet.create({
     color: COLORS.background,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-  },
-  datePickerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  dateBox: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 10,
-    padding: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  dateText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.background,
-  },
-  datePlaceholder: {
-    color: '#999',
-  },
-  dateLabel: {
-    fontSize: 10,
-    color: '#666',
-    marginTop: 4,
-  },
-  dateSeparator: {
-    paddingHorizontal: 2,
-  },
-  dateSeparatorText: {
-    fontSize: 25,
-    color: '#999',
-    fontWeight: '300',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    paddingBottom: 30,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: "#333",
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  pickersContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  pickerWrapper: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  pickerLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 5,
-  },
-  picker: {
-    width: '100%',
-    height: 150,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-    gap: 10,
-  },
-  modalButton: {
-    flex: 1,
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#f5f5f5',
-  },
-  cancelButtonText: {
-    color: '#666',
-    fontWeight: '600',
-  },
-  confirmButton: {
-    backgroundColor: "#4CAF50",
-  },
-  confirmButtonText: {
-    color: '#fff',
-    fontWeight: '600',
   },
   authFormShow: {
     padding: 5,
