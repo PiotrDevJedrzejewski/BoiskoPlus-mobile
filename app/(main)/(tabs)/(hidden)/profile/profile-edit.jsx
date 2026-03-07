@@ -13,9 +13,9 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../constants/colors'
-import { useAuth } from '../../../../context/AuthContext'
-import DatePicker from '../../../../components/DatePicker'
+import { COLORS } from '../../../../../constants/colors'
+import { useAuth } from '../../../../../context/AuthContext'
+import DatePicker from '../../../../../components/DatePicker'
 
 const FORBIDDEN_WORDS = [
   'admin',

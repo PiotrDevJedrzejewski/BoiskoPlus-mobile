@@ -11,11 +11,11 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { COLORS } from '../../../../constants/colors'
+import { COLORS } from '../../../../../constants/colors'
 
-const defaultAvatar = require('../../../../assets/images/defaultAvatar.png')
+const defaultAvatar = require('../../../../../assets/images/defaultAvatar.png')
 
-// router.push(`/(main)/(tabs)/(hidden)/profile-user?id=${userId}`)
+// router.push(`/(main)/(tabs)/(hidden)/profile/profile-user?id=${userId}`)
 // Mock data - inny użytkownik
 const MOCK_USERS = {
   user1: {

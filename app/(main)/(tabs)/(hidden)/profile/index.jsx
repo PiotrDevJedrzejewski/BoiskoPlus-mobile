@@ -11,10 +11,11 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../constants/colors'
-import { useAuth } from '../../../../context/AuthContext'
+import { COLORS } from '../../../../../constants/colors'
+import { useAuth } from '../../../../../context/AuthContext'
+import ConfirmModal from '../../../../../components/popup/ConfirmModal'
 
-const defaultAvatar = require('../../../../assets/images/defaultAvatar.png')
+const defaultAvatar = require('../../../../../assets/images/defaultAvatar.png')
 
 const StatItem = ({ label, value }) => (
   <View style={styles.statItem}>
@@ -26,9 +27,17 @@ const StatItem = ({ label, value }) => (
 const Profile = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const { user, userStats } = useAuth()
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const { user, userStats, deleteAccount } = useAuth()
 
-  const avatar = user.avatarUrl ? { uri: user.avatarUrl } : defaultAvatar
+  const avatar = user?.avatarUrl ? { uri: user.avatarUrl } : defaultAvatar
+  const stats = userStats || {
+    gamesPlayed: 0,
+    eventsOrganized: 0,
+    totalLikes: 0,
+    points: 0,
+  }
 
   const handleChangeAvatar = () => {
     // W przyszłości: image picker
@@ -36,33 +45,36 @@ const Profile = () => {
   }
 
   const handleEditProfile = () => {
-    router.push('/(main)/(tabs)/(hidden)/profile-edit')
+    router.push('/(main)/(tabs)/(hidden)/profile/profile-edit')
   }
 
   const handleChangePassword = () => {
-    // router.push('/forget-password')
-    Alert.alert('Zmień hasło', 'Funkcja w przygotowaniu')
+    router.push('/(main)/(tabs)/(hidden)/profile/profile-password')
   }
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      'Usuń konto',
-      'Czy na pewno chcesz usunąć swoje konto? Ta akcja jest nieodwracalna!',
-      [
-        { text: 'Anuluj', style: 'cancel' },
-        {
-          text: 'Usuń',
-          style: 'destructive',
-          onPress: () => {
-            // W przyszłości: API call
-            console.log('Delete account')
-          },
-        },
-      ]
-    )
+    setShowDeleteModal(true)
   }
 
-  if (loading) {
+  const handleConfirmDelete = async () => {
+    if (deleteLoading) {
+      return
+    }
+
+    setDeleteLoading(true)
+    try {
+      const result = await deleteAccount()
+
+      if (!result.success) {
+        Alert.alert('Błąd usuwania konta', result.error || 'Spróbuj ponownie')
+      }
+    } finally {
+      setDeleteLoading(false)
+      setShowDeleteModal(false)
+    }
+  }
+
+  if (loading || !user) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size='large' color={COLORS.secondary} />
@@ -99,21 +111,21 @@ const Profile = () => {
         </View>
 
         {/* Username */}
-        <Text style={styles.username}>{user.nickName}</Text>
+        <Text style={styles.username}>{user.nickName || 'Gracz'}</Text>
 
         {/* Informacje */}
         <View style={styles.infoSection}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Imię:</Text>
-            <Text style={styles.infoValue}>{user.name}</Text>
+            <Text style={styles.infoValue}>{user.name || '-'}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Nazwisko:</Text>
-            <Text style={styles.infoValue}>{user.surname}</Text>
+            <Text style={styles.infoValue}>{user.surname || '-'}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Email:</Text>
-            <Text style={styles.infoValue}>{user.email}</Text>
+            <Text style={styles.infoValue}>{user.email || '-'}</Text>
           </View>
         </View>
 
@@ -121,10 +133,10 @@ const Profile = () => {
         <View style={styles.statsSection}>
           <Text style={styles.sectionTitle}>Statystyki</Text>
           <View style={styles.statsGrid}>
-            <StatItem label='Rozegrane gry' value={userStats.gamesPlayed} />
-            <StatItem label='Utworzone gry' value={userStats.eventsOrganized} />
-            <StatItem label='Polubienia' value={userStats.totalLikes} />
-            <StatItem label='Punkty' value={userStats.points} />
+            <StatItem label='Rozegrane gry' value={stats.gamesPlayed} />
+            <StatItem label='Utworzone gry' value={stats.eventsOrganized} />
+            <StatItem label='Polubienia' value={stats.totalLikes} />
+            <StatItem label='Punkty' value={stats.points} />
           </View>
         </View>
 
@@ -160,6 +172,22 @@ const Profile = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <ConfirmModal
+        visible={showDeleteModal}
+        onClose={() => {
+          if (!deleteLoading) {
+            setShowDeleteModal(false)
+          }
+        }}
+        onConfirm={handleConfirmDelete}
+        title='Czy na pewno chcesz usunąć swoje konto? Ta akcja jest nieodwracalna.'
+        actionText='USUŃ KONTO'
+        actionType='danger'
+        confirmButtonText='USUŃ'
+        cancelButtonText='ANULUJ'
+        loading={deleteLoading}
+      />
     </View>
   )
 }

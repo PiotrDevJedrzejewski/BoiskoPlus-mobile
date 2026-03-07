@@ -43,6 +43,24 @@ export const AuthProvider = ({ children }) => {
   //Nowy state dla asynchronizacji pomiędzy użytkownikiem a SecureStore
   const [isAuthChecked, setIsAuthChecked] = useState(false)
 
+  const clearLocalStorageAndState = async () => {
+    // Usuń lokalną sesję i dane cache aplikacji po wylogowaniu/usunięciu konta.
+    await removeAuthToken()
+    await SecureStore.deleteItemAsync(CONSENTS_KEY)
+    await AsyncStorage.clear()
+
+    setUser(null)
+    setUserStats(null)
+    setIsAuthChecked(false)
+    setConsents({ ...defaultConsents })
+    setPendingConsents({
+      rulesAccepted: false,
+      marketingAccepted: false,
+      locationAccepted: false,
+    })
+    setSystemPermissionsGeo({ status: 'undetermined' })
+  }
+
   const authorized = async () => {
     setLoading(true)
     try {
@@ -308,6 +326,54 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  // Funkcja do zmiany hasła dla zalogowanego użytkownika
+  const changePassword = async ({ oldPassword, newPassword }) => {
+    if (!user?.email) {
+      return {
+        success: false,
+        error: 'Brak danych użytkownika. Zaloguj się ponownie.',
+      }
+    }
+
+    if (!oldPassword || !newPassword) {
+      return {
+        success: false,
+        error: 'Uzupełnij wszystkie wymagane pola hasła',
+      }
+    }
+
+    if (newPassword.length < 6 || newPassword.length > 20) {
+      return {
+        success: false,
+        error: 'Nowe hasło musi mieć od 6 do 20 znaków',
+      }
+    }
+
+    try {
+      const response = await customFetch.patch('/auth-mobile/change-password', {
+        email: user.email,
+        oldPassword,
+        newPassword,
+      })
+
+      // Token po zmianie hasła może zostać zrotowany przez backend.
+      if (response.data?.token) {
+        await setAuthToken(response.data.token)
+      }
+
+      return {
+        success: true,
+        message: response.data?.msg || 'Hasło zostało zmienione',
+      }
+    } catch (error) {
+      console.error('Błąd zmiany hasła:', error)
+      return {
+        success: false,
+        error: error.response?.data?.msg || 'Wystąpił błąd podczas zmiany hasła',
+      }
+    }
+  }
+
   // Funkcja do odświeżenia danych użytkownika
   const refetchUser = async () => {
     try {
@@ -378,11 +444,46 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Zawsze wyczyść lokalny stan
-      await removeAuthToken()
-      setUser(null)
-      setUserStats(null)
-      setIsAuthChecked(false)
+      await clearLocalStorageAndState()
       router.replace('/')
+    }
+  }
+
+  const deleteAccount = async () => {
+    try {
+      const response = await customFetch.delete('/users/current-user/delete')
+
+      if (response.status === 200) {
+        // Konto zostało usunięte po stronie backendu, czyścimy lokalne dane i sesję Google.
+        try {
+          const isSignedIn = await GoogleSignin.getCurrentUser()
+          if (isSignedIn) {
+            await GoogleSignin.signOut()
+          }
+        } catch (googleError) {
+          console.error('Błąd podczas wylogowania z Google:', googleError)
+        }
+
+        await clearLocalStorageAndState()
+        router.replace('/')
+
+        return {
+          success: true,
+          message:
+            response.data?.msg || 'Konto użytkownika zostało usunięte',
+        }
+      }
+
+      return {
+        success: false,
+        error: 'Nie udało się usunąć konta użytkownika',
+      }
+    } catch (error) {
+      console.error('Błąd podczas usuwania konta:', error)
+      return {
+        success: false,
+        error: error.response?.data?.msg || 'Wystąpił błąd podczas usuwania konta',
+      }
     }
   }
 
@@ -578,9 +679,11 @@ export const AuthProvider = ({ children }) => {
         register,
         forgotPassword,
         resetPassword,
+        changePassword,
         updateProfile,
         refetchUser,
         logout,
+        deleteAccount,
         isAuthChecked,
         consents,
         consentsLoading,
