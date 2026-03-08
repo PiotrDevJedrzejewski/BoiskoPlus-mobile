@@ -4,7 +4,6 @@ import {
   Text,
   View,
   ScrollView,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -14,8 +13,7 @@ import { useRouter } from 'expo-router'
 import { COLORS } from '../../../../../constants/colors'
 import { useAuth } from '../../../../../context/AuthContext'
 import ConfirmModal from '../../../../../components/popup/ConfirmModal'
-
-const defaultAvatar = require('../../../../../assets/images/defaultAvatar.png')
+import ProfileAvatarSection from '../../../../../components/profile/ProfileAvatarSection'
 
 const StatItem = ({ label, value }) => (
   <View style={styles.statItem}>
@@ -26,22 +24,22 @@ const StatItem = ({ label, value }) => (
 
 const Profile = () => {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
-  const { user, userStats, deleteAccount } = useAuth()
+  const {
+    user,
+    userStats,
+    deleteAccount,
+    updateProfile,
+    refetchUser,
+    loading: authLoading,
+  } = useAuth()
 
-  const avatar = user?.avatarUrl ? { uri: user.avatarUrl } : defaultAvatar
   const stats = userStats || {
     gamesPlayed: 0,
     eventsOrganized: 0,
     totalLikes: 0,
     points: 0,
-  }
-
-  const handleChangeAvatar = () => {
-    // W przyszłości: image picker
-    Alert.alert('Zmień avatar', 'Funkcja w przygotowaniu')
   }
 
   const handleEditProfile = () => {
@@ -74,7 +72,7 @@ const Profile = () => {
     }
   }
 
-  if (loading || !user) {
+  if (authLoading || !user) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size='large' color={COLORS.secondary} />
@@ -96,19 +94,12 @@ const Profile = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Avatar */}
-        <View style={styles.avatarSection}>
-          <Image source={avatar} style={styles.avatar} />
-          <Text style={styles.avatarHint}>200x200</Text>
-          <TouchableOpacity
-            style={styles.changeAvatarButton}
-            onPress={handleChangeAvatar}
-            activeOpacity={0.8}
-          >
-            <Ionicons name='camera' size={18} color={COLORS.background} />
-            <Text style={styles.changeAvatarText}>Zmień Avatar</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Avatar Section */}
+        <ProfileAvatarSection
+          user={user}
+          updateProfile={updateProfile}
+          refetchUser={refetchUser}
+        />
 
         {/* Username */}
         <Text style={styles.username}>{user.nickName || 'Gracz'}</Text>
@@ -231,38 +222,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
     alignItems: 'center',
-  },
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  avatar: {
-    width: 150,
-    height: 150,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-  },
-  avatarHint: {
-    fontSize: 10,
-    fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    marginTop: 4,
-  },
-  changeAvatarButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.secondary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginTop: 12,
-  },
-  changeAvatarText: {
-    fontSize: 14,
-    fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
-    marginLeft: 8,
   },
   username: {
     fontSize: 28,

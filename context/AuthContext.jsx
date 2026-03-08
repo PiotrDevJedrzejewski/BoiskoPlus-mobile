@@ -8,6 +8,9 @@ import customFetch, {
   hasAuthToken,
 } from '../assets/utils/customFetch'
 import { router } from 'expo-router'
+import { storage } from '../assets/utils/firebase'
+import { deleteObject } from 'firebase/storage'
+import { getStorageRefFromUrlOrPath } from '../assets/utils/firebaseStorage'
 
 const AuthContext = createContext()
 
@@ -401,7 +404,30 @@ export const AuthProvider = ({ children }) => {
         updates
       )
 
-      if (response?.data?.user) {
+      const requestedAvatarUrl = updates?.avatarUrl
+      if (requestedAvatarUrl) {
+        const verifyRes = await customFetch.get('/users/current-user')
+        const verifiedUser = verifyRes?.data?.user
+        const persistedAvatarUrl = verifiedUser?.avatarUrl
+
+        if (persistedAvatarUrl !== requestedAvatarUrl) {
+          console.error('Avatar URL mismatch after update', {
+            requestedAvatarUrl,
+            persistedAvatarUrl,
+          })
+
+          return {
+            success: false,
+            error: 'Backend nie zapisał avatarUrl w bazie danych',
+          }
+        }
+
+        const normalizedVerifiedUser = {
+          ...verifiedUser,
+          userID: verifiedUser?.userID || verifiedUser?._id,
+        }
+        setUser(normalizedVerifiedUser)
+      } else if (response?.data?.user) {
         const updatedUser = {
           ...response.data.user,
           userID: response.data.user.userID || response.data.user._id,
@@ -452,6 +478,25 @@ export const AuthProvider = ({ children }) => {
   const deleteAccount = async () => {
     try {
       const response = await customFetch.delete('/users/current-user/delete')
+
+      if (
+        response?.data?.avatarUrlToDelete &&
+        user?.avatarUrl === response.data.avatarUrlToDelete &&
+        storage
+      ) {
+        try {
+          const avatarRef = getStorageRefFromUrlOrPath(
+            storage,
+            response.data.avatarUrlToDelete
+          )
+          if (avatarRef) {
+            await deleteObject(avatarRef)
+          }
+        } catch (firebaseError) {
+          // Konto jest już usunięte w backendzie, więc nie blokujemy flow przez błąd storage.
+          console.error('Błąd usuwania avatara z Firebase Storage:', firebaseError)
+        }
+      }
 
       if (response.status === 200) {
         // Konto zostało usunięte po stronie backendu, czyścimy lokalne dane i sesję Google.
