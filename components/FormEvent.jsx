@@ -222,7 +222,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         setEventData(defaultEventData)
         // Nawigacja powrót po dodaniu
         setTimeout(() => {
-          router.replace('/(main)/(tabs)/(hidden)/my-events')
+          router.replace('/(main)/(tabs)/(hidden)/events-managment/events-owner')
         }, 1000)
       } else if (mode === 'edit' && eventId) {
         await customFetch.patch(`/football-events/${eventId}`, dataToSend)

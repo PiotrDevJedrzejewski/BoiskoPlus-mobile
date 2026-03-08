@@ -68,7 +68,9 @@ const DashboardHome = () => {
                 title='Moje Gry'
                 desc='Zarządzaj swoimi grami i sprawdzaj statystyki'
                 onPress={() =>
-                  handleCardPress('/(main)/(tabs)/(hidden)/my-events')
+                  handleCardPress(
+                    '/(main)/(tabs)/(hidden)/events-managment/events-dashboard'
+                  )
                 }
               />
               <CardDashboard

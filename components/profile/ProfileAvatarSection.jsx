@@ -32,13 +32,7 @@ const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
     }
 
     try {
-      console.info('[Avatar] Start avatar update flow', {
-        userId: normalizedUserId,
-        hasCurrentAvatar: !!user?.avatarUrl,
-      })
-
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
-      console.info('[Avatar] Media permission status:', permission.status)
       if (permission.status !== 'granted') {
         Alert.alert(
           'Brak uprawnień',
@@ -55,14 +49,12 @@ const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
       })
 
       if (result.canceled || !result.assets?.length) {
-        console.info('[Avatar] Image picker canceled by user')
         return
       }
 
       setAvatarUploading(true)
 
       const sourceUri = result.assets[0].uri
-      console.info('[Avatar] Picked source URI:', sourceUri)
 
       // Keep final output aligned with web version: fixed 200x200 jpg.
       const manipulationContext = ImageManipulator.ImageManipulator.manipulate(
@@ -74,7 +66,6 @@ const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
         compress: 0.8,
         format: ImageManipulator.SaveFormat.JPEG,
       })
-      console.info('[Avatar] Manipulated image URI:', manipulatedImage.uri)
 
       const imageResponse = await fetch(manipulatedImage.uri)
       const imageBlob = await imageResponse.blob()
@@ -87,28 +78,17 @@ const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
 
       const fileName = `avatar_${Date.now()}.jpg`
       const storageRef = ref(storage, `avatars/${normalizedUserId}/${fileName}`)
-      console.info('[Avatar] Upload path:', `avatars/${normalizedUserId}/${fileName}`)
 
       await uploadBytes(storageRef, imageBlob, {
         contentType: 'image/jpeg',
       })
-      console.info('[Avatar] Upload finished')
 
       const avatarUrl = await getDownloadURL(storageRef)
-      console.info('[Avatar] Download URL received:', avatarUrl)
       const updateResult = await updateProfile({ avatarUrl })
-      console.info('[Avatar] updateProfile result:', {
-        success: updateResult?.success,
-        hasUserPayload: !!updateResult?.user,
-        message: updateResult?.message,
-        error: updateResult?.error,
-        returnedAvatarUrl: updateResult?.user?.avatarUrl,
-      })
 
       if (!updateResult.success) {
         try {
           await deleteObject(storageRef)
-          console.info('[Avatar] Rolled back uploaded file after API failure')
         } catch (cleanupError) {
           console.warn('Nie udało się usunąć nowego avatara po błędzie API:', cleanupError)
         }
@@ -117,7 +97,6 @@ const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
       }
 
       if (!updateResult.user && refetchUser) {
-        console.info('[Avatar] updateProfile response has no user payload, refetching user')
         await refetchUser()
       }
 
@@ -125,16 +104,13 @@ const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
         try {
           const oldAvatarRef = getStorageRefFromUrlOrPath(storage, user.avatarUrl)
           if (oldAvatarRef) {
-            console.info('[Avatar] Deleting old avatar from storage')
             await deleteObject(oldAvatarRef)
-            console.info('[Avatar] Old avatar deleted successfully')
           }
         } catch (deleteError) {
           console.warn('Nie udało się usunąć poprzedniego avatara:', deleteError)
         }
       }
 
-      console.info('[Avatar] Avatar update flow completed successfully')
       Alert.alert('Sukces', 'Avatar został zaktualizowany')
     } catch (error) {
       console.error('Błąd podczas zmiany avatara:', error)

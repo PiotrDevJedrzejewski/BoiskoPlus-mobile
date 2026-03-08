@@ -70,7 +70,9 @@ export default function CustomDrawerContent(props) {
         <DrawerItem
           icon='calendar'
           label='Moje Wydarzenia'
-          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/my-events')}
+          onPress={() =>
+            navigateTo('/(main)/(tabs)/(hidden)/events-managment/events-dashboard')
+          }
         />
 
         {/* Ekrany ukryte w Tabs (tylko w sidebar) */}

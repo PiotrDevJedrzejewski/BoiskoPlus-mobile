@@ -20,10 +20,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.backgroundSecondary,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
     padding: 16,
     marginBottom: 16,
     marginHorizontal: 10,
+    borderRadius: 16,
+    position: 'relative',
   },
   iconContainer: {
     marginRight: 16,

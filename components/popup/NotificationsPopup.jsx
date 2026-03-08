@@ -26,7 +26,7 @@ const NotificationsModal = ({
 
   const handleNavigateToEvents = () => {
     onClose()
-    router.push('/(main)/(tabs)/(hidden)/my-events')
+    router.push('/(main)/(tabs)/(hidden)/events-managment/events-allEvents')
   }
 
   return (
