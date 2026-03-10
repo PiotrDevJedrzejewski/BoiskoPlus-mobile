@@ -168,7 +168,7 @@ const EditEvent = () => {
   const handleFinishEvent = async () => {
     setActionLoading(true)
     try {
-      await customFetch.patch(`/football-events/${id}/finish`)
+      await customFetch.patch(`/status/events/${id}/finish`)
       setShowFinishModal(false)
       Alert.alert('Sukces', 'Wydarzenie zostało zakończone')
       router.back()

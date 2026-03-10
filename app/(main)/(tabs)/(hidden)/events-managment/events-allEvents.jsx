@@ -93,7 +93,7 @@ const EventsAllEvents = () => {
           <Ionicons name='arrow-back' size={28} color={COLORS.primary} />
         </TouchableOpacity>
         <Ionicons name='calendar' size={26} color={COLORS.secondary} />
-        <Text style={styles.headerText}>Wszystkie Eventy</Text>
+        <Text style={styles.headerText}>Wydarzenia</Text>
       </View>
 
       <ScrollView
@@ -192,7 +192,7 @@ const EventsAllEvents = () => {
         >
           {showOwnerEvents && filteredOwnerEvents.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Eventy właściciela</Text>
+              <Text style={styles.sectionTitle}>Twoje Wydarzenia</Text>
               {filteredOwnerEvents.map((event) => (
                 <MyEventCard
                   key={event._id}
@@ -321,12 +321,14 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 24,
+    
   },
   sectionTitle: {
     fontSize: 14,
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
     marginBottom: 12,
+    textAlign: 'center',
   },
   emptyState: {
     flex: 1,
