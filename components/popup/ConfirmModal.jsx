@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 // <ConfirmModal
 //   visible={showDelete}
@@ -30,6 +31,9 @@ const ConfirmModal = ({
   cancelButtonText = 'NIE',
   loading = false,
 }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
   const getActionColor = () => {
     switch (actionType) {
       case 'danger':
@@ -70,7 +74,7 @@ const ConfirmModal = ({
               {/* Icon */}
               <Ionicons
                 name={getActionIcon()}
-                size={48}
+                size={ui.moderateScale(48, 0.35)}
                 color={getActionColor()}
                 style={styles.icon}
               />
@@ -125,20 +129,20 @@ const ConfirmModal = ({
 
 export default ConfirmModal
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: ui.spacing(20, 0.45),
   },
   container: {
     width: '100%',
     maxWidth: 350,
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: ui.moderateScale(16, 0.35),
+    padding: ui.spacing(24, 0.45),
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: COLORS.secondary,
@@ -149,30 +153,30 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   icon: {
-    marginBottom: 16,
+    marginBottom: ui.verticalScale(16),
   },
   title: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: ui.verticalScale(12),
   },
   actionText: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: ui.verticalScale(24),
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 16,
+    gap: ui.spacing(16),
     width: '100%',
   },
   button: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: ui.verticalScale(14),
+    borderRadius: ui.moderateScale(10, 0.35),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -180,7 +184,7 @@ const styles = StyleSheet.create({
     // backgroundColor set dynamically
   },
   confirmButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },
@@ -190,7 +194,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
   },
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },

@@ -1,13 +1,17 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../../../../constants/colors'
+import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
 
 const Premium = () => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
   return (
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name='diamond' size={26} color={COLORS.secondary} />
+        <Ionicons name='diamond' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
         <Text style={styles.headerText}>Premium</Text>
       </View>
 
@@ -21,7 +25,7 @@ const Premium = () => {
 
           <MaterialCommunityIcons
             name='tools'
-            size={120}
+            size={ui.moderateScale(120, 0.35)}
             color={COLORS.gray}
             style={styles.toolsIcon}
           />
@@ -37,12 +41,12 @@ const Premium = () => {
             <Text style={styles.featuresTitle}>Planowane funkcje:</Text>
 
             <View style={styles.featureItem}>
-              <Ionicons name='star' size={20} color={COLORS.secondary} />
+              <Ionicons name='star' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
               <Text style={styles.featureText}>Brak reklam</Text>
             </View>
 
             <View style={styles.featureItem}>
-              <Ionicons name='infinite' size={20} color={COLORS.secondary} />
+              <Ionicons name='infinite' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
               <Text style={styles.featureText}>
                 Nieograniczona liczba wydarzeń
               </Text>
@@ -51,19 +55,19 @@ const Premium = () => {
             <View style={styles.featureItem}>
               <Ionicons
                 name='color-palette'
-                size={20}
+                size={ui.moderateScale(20, 0.35)}
                 color={COLORS.secondary}
               />
               <Text style={styles.featureText}>Ekskluzywne motywy</Text>
             </View>
 
             <View style={styles.featureItem}>
-              <Ionicons name='trophy' size={20} color={COLORS.secondary} />
+              <Ionicons name='trophy' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
               <Text style={styles.featureText}>Odznaka Premium w rankingu</Text>
             </View>
 
             <View style={styles.featureItem}>
-              <Ionicons name='analytics' size={20} color={COLORS.secondary} />
+              <Ionicons name='analytics' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
               <Text style={styles.featureText}>Zaawansowane statystyki</Text>
             </View>
           </View>
@@ -75,7 +79,7 @@ const Premium = () => {
 
 export default Premium
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -84,68 +88,68 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: ui.verticalScale(20),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   headerText: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
   },
   comingSoonContainer: {
     alignItems: 'center',
   },
   comingSoonTitle: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginBottom: 24,
+    marginBottom: ui.verticalScale(24),
     textAlign: 'center',
   },
   toolsIcon: {
-    marginBottom: 24,
+    marginBottom: ui.verticalScale(24),
   },
   comingSoonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
-    paddingHorizontal: 10,
+    lineHeight: ui.verticalScale(24),
+    marginBottom: ui.verticalScale(32),
+    paddingHorizontal: ui.spacing(10, 0.35),
   },
   featuresPreview: {
     width: '100%',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: ui.moderateScale(16, 0.35),
+    padding: ui.spacing(20, 0.45),
   },
   featuresTitle: {
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginBottom: 16,
+    marginBottom: ui.verticalScale(16),
     textAlign: 'center',
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: ui.verticalScale(12),
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   featureText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
 })

@@ -2,13 +2,14 @@ import {
   StyleSheet,
   Text,
   View,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native'
 import { COLORS } from '../constants/colors'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const ChatMessageBox = ({ message, isOwn, senderName, time }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
   return (
     <View style={[styles.messageBox, isOwn && styles.messageBoxOwn]}>
       <Text style={styles.senderName}>{senderName}</Text>
@@ -20,13 +21,13 @@ const ChatMessageBox = ({ message, isOwn, senderName, time }) => {
 
 export default ChatMessageBox
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   messageBox: {
     maxWidth: '75%',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 10,
+    borderRadius: ui.moderateScale(16, 0.35),
+    padding: ui.spacing(12, 0.35),
+    marginBottom: ui.verticalScale(10),
     alignSelf: 'flex-start',
   },
   messageBoxOwn: {
@@ -34,19 +35,19 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.third,
   },
   senderName: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginBottom: 2,
+    marginBottom: ui.verticalScale(2),
   },
   time: {
-    fontSize: 10,
+    fontSize: ui.scaleFont(10, 0.25),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    marginBottom: 4,
+    marginBottom: ui.verticalScale(4),
   },
   messageText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },

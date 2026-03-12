@@ -25,6 +25,7 @@ import {
 } from '../../../assets/utils/citySearchUtils'
 import customFetch from '../../../assets/utils/customFetch'
 import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const GAME_TYPES = [
   { label: 'Wybierz typ gry', value: '' },
@@ -48,6 +49,8 @@ const SUGGESTIONS_LIMIT = 30
 
 const FindEvent = () => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const { setIsInteractive, setOverlayOpacity, userLocation, flyTo, flyToProvince } = useMap()
   const { consents } = useAuth()
   const [loading, setLoading] = useState(false)
@@ -70,6 +73,11 @@ const FindEvent = () => {
   const isMountedRef = useRef(true)
   const suggestionsDebounceRef = useRef(null)
   const searchAbortControllerRef = useRef(null)
+
+  const headerIconSize = ui.moderateScale(26, 0.35)
+  const actionIconSize = ui.moderateScale(26, 0.35)
+  const stateIconSize = ui.moderateScale(50, 0.3)
+  const floatingIconSize = ui.moderateScale(24, 0.35)
 
   useEffect(() => {
     return () => {
@@ -318,7 +326,7 @@ const FindEvent = () => {
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.titleWrapper} pointerEvents='auto'>
-        <Ionicons name='location-sharp' size={26} color={COLORS.secondary} />
+        <Ionicons name='location-sharp' size={headerIconSize} color={COLORS.secondary} />
         <Text style={styles.titleText}>Znajdź Wydarzenie</Text>
       </View>
 
@@ -391,8 +399,8 @@ const FindEvent = () => {
         {/* Przyciski */}
         <View style={styles.actionRow}>
         <Pressable style={styles.controlSearchButton} onPress={() => setShowAdvancedSearch((prev) => !prev)}>
-          {showAdvancedSearch ?(<Ionicons name='arrow-up' size={26} color={COLORS.background} />): (
-            <Ionicons name='settings-sharp' size={26} color={COLORS.background} />
+          {showAdvancedSearch ?(<Ionicons name='arrow-up' size={actionIconSize} color={COLORS.background} />): (
+            <Ionicons name='settings-sharp' size={actionIconSize} color={COLORS.background} />
           )}
         </Pressable>
         <TouchableOpacity
@@ -428,7 +436,7 @@ const FindEvent = () => {
             ))
           ) : (
             <View style={styles.noResults}>
-              <Ionicons name='search' size={50} color={COLORS.gray} />
+              <Ionicons name='search' size={stateIconSize} color={COLORS.gray} />
               <Text style={styles.noResultsText}>
                 Brak wydarzeń spełniających kryteria
               </Text>
@@ -443,7 +451,7 @@ const FindEvent = () => {
           <View style={styles.infoWrapper}>
           <Ionicons
             name='information-circle'
-            size={50}
+              size={stateIconSize}
             color={COLORS.secondary}
           />
           <Text style={styles.infoText}>
@@ -464,7 +472,7 @@ const FindEvent = () => {
           >
             <Ionicons
               name={showList ? 'map' : 'list'}
-              size={24}
+              size={floatingIconSize}
               color={COLORS.secondary}
             />
           </TouchableOpacity>
@@ -479,7 +487,7 @@ const FindEvent = () => {
 
 export default FindEvent
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -488,78 +496,81 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
+    paddingVertical: ui.verticalScale(6),
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   titleText: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   searchContainer: {
-    paddingHorizontal: 18,
-    paddingTop: 6,
-    paddingBottom: 12,
+    paddingHorizontal: ui.spacing(18, 0.4),
+    paddingTop: ui.verticalScale(6),
+    paddingBottom: ui.verticalScale(12),
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   inputRow: {
-    marginBottom: 12,
+    marginBottom: ui.verticalScale(12),
   },
   inputRowSecond: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: ui.verticalScale(12),
   },
   inputLocation: {
     backgroundColor: COLORS.white,
-    borderRadius: 16,
-    height: 40,
-    paddingHorizontal: 20,
-    fontSize: 16,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.controlPaddingVertical,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.background,
   },
   pickerWrapper: {
     flex: 1,
     backgroundColor: COLORS.white,
-    borderRadius: 16,
-    height: 40,
-    marginRight: 12,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
+    marginRight: ui.spacing(12, 0.35),
     justifyContent: 'center',
     overflow: 'hidden',
-    paddingLeft: 10,
+    paddingLeft: ui.controlPaddingHorizontal,
   },
   picker: {
-    height: 'auto',
+    color: COLORS.background,
+    height: ui.pickerHeight,
   },
   pickerItem: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     color: COLORS.background,
   },
   inputDistance: {
     backgroundColor: COLORS.white,
-    borderRadius: 16,
-    height: 40,
-    width: 70,
-    paddingHorizontal: 10,
-    fontSize: 16,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
+    width: ui.scale(70),
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.controlPaddingVertical,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.background,
     textAlign: 'center',
   },
   searchButton: {
     backgroundColor: COLORS.secondary,
-    borderRadius: 16,
-    height: 40,
-    marginLeft: 12,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
+    marginLeft: ui.spacing(12, 0.35),
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   controlSearchButton: {
-    width: 80,
-    height: 40,
-    borderRadius: 16,
+    width: ui.scale(80),
+    minHeight: ui.controlMinHeight,
+    borderRadius: ui.controlRadius,
     backgroundColor: COLORS.secondary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -570,7 +581,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchButtonText: {
-    fontSize: 20,
+    fontSize: ui.scaleFont(20, 0.4),
     fontFamily: 'ObjectFont',
     color: COLORS.background,
   },
@@ -578,17 +589,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   eventListContent: {
-    padding: 16,
+    padding: ui.spacing(16),
   },
   noResults: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 50,
+    paddingVertical: ui.verticalScale(50),
   },
   noResultsText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: ui.verticalScale(16),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
     textAlign: 'center',
@@ -597,17 +608,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: ui.spacing(40, 0.45),
   },
   infoWrapper: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    padding: 20,
-    borderRadius: 16,
+    padding: ui.spacing(20, 0.45),
+    borderRadius: ui.moderateScale(16, 0.35),
     alignItems: 'center',
   },
   infoText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: ui.verticalScale(16),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     textAlign: 'center',
@@ -615,15 +626,15 @@ const styles = StyleSheet.create({
   },
   controlsContainer: {
     position: 'absolute',
-    right: 16,
-    bottom: 100,
+    right: ui.spacing(16, 0.35),
+    bottom: ui.verticalScale(100),
     alignItems: 'center',
-    gap: 4,
+    gap: ui.verticalScale(4),
   },
   controlButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: ui.moderateScale(48, 0.35),
+    height: ui.moderateScale(48, 0.35),
+    borderRadius: ui.moderateScale(24, 0.35),
     backgroundColor: COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
@@ -634,17 +645,17 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   controlButtonText: {
-    fontSize: 10,
+    fontSize: ui.scaleFont(10, 0.25),
     color: COLORS.secondary,
     fontFamily: 'ObjectFont',
-    marginTop: 4,
+    marginTop: ui.verticalScale(4),
   },
 
 
   suggestionsContainer: {
     position: 'absolute',
-    top: 42,
-    left: 20,
+    top: ui.verticalScale(42),
+    left: ui.spacing(20, 0.35),
     width: '100%',
     zIndex: 10,
   }

@@ -8,11 +8,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Entypo from '@expo/vector-icons/Entypo';
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX';
 
 
 
 
 const MyEventCard = ({ event, status, onPress, statusData }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const { markEventAsRead } = useSocketIo()
   const [isRead, setIsRead] = useState(statusData?.readBy !== false)
   const [isPressed, setIsPressed] = useState(false)
@@ -25,7 +28,7 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
   const getStatusLabel = () => {
     switch (status) {
       case 'owner':
-        return 'Twoje wydarzenie'
+        return 'Organizator'
       case 'accepted':
         return 'Zaakceptowany'
       case 'interested':
@@ -46,20 +49,20 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
   const getStatusIcon = () => {
     switch (status) {
       case 'owner':
-        return <FontAwesome5 name="crown" size={40} color='rgba(255, 255, 255, 0.15)' 
+        return <FontAwesome5 name="crown" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' 
         />
       case 'accepted':
-        return <FontAwesome name="check" size={40} color='rgba(255, 255, 255, 0.15)' />
+        return <FontAwesome name="check" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       case 'interested':
-        return <FontAwesome name="hourglass-2" size={40} color='rgba(255, 255, 255, 0.15)' />
+        return <FontAwesome name="hourglass-2" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       case 'rejected':
-        return <Entypo name="cross" size={40} color='rgba(255, 255, 255, 0.15)' />
+        return <Entypo name="cross" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       case 'finished':
-        return <FontAwesome name="check" size={40} color='rgba(255, 255, 255, 0.15)' />
+        return <FontAwesome name="check" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       case 'completed':
-        return <FontAwesome name="check" size={40} color='rgba(255, 255, 255, 0.15)' />
+        return <FontAwesome name="check" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       case 'cancelled':
-        return <Entypo name="cross" size={40} color='rgba(255, 255, 255, 0.15)' />
+        return <Entypo name="cross" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       default:
         return null
     }
@@ -151,13 +154,13 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
         {/* Dodatkowe informacje */}
         <View style={styles.footer}>
           <View style={styles.footerItem}>
-            <Ionicons name='time' size={14} color={COLORS.secondary} />
+            <Ionicons name='time' size={ui.moderateScale(14, 0.3)} color={COLORS.secondary} />
             <Text style={styles.footerText}>{event.duration} min</Text>
           </View>
           <View style={styles.footerItem}>
             <MaterialCommunityIcons
               name='cash'
-              size={14}
+              size={ui.moderateScale(14, 0.3)}
               color={COLORS.secondary}
             />
             <Text style={styles.footerText}>{event.price}zł</Text>
@@ -165,13 +168,13 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
           <View style={styles.footerItem}>
             <Ionicons
               name='speedometer-outline'
-              size={14}
+              size={ui.moderateScale(14, 0.3)}
               color={COLORS.secondary}
             />
             <Text style={styles.footerText}>{event.level} </Text>
           </View>
           <View style={styles.footerItem}>
-            <Ionicons name='people' size={14} color={COLORS.secondary} />
+            <Ionicons name='people' size={ui.moderateScale(14, 0.3)} color={COLORS.secondary} />
             <Text style={styles.footerText}>{event.playerCount}</Text>
           </View>
         </View>
@@ -186,104 +189,103 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
 
 export default MyEventCard
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   card: {
-    borderRadius: 16,
-    marginBottom: 16,
+    borderRadius: ui.moderateScale(16, 0.35),
+    marginBottom: ui.verticalScale(16),
     overflow: 'hidden',
   },
   container: {
-   borderBottomLeftRadius: 16,
-   borderBottomRightRadius: 16,
+   borderBottomLeftRadius: ui.moderateScale(16, 0.35),
+   borderBottomRightRadius: ui.moderateScale(16, 0.35),
    flex: 1,
   },
   statusBadgeContainer: {
-    height: 30,
+    height: ui.verticalScale(30),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    marginTop: 4,
+    paddingHorizontal: ui.spacing(8, 0.35),
+    marginTop: ui.verticalScale(4),
   },
   statusTextLabel: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'ObjectFont',
     color: COLORS.gray,
   },
   statusTextData: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'ObjectFont',
     color: COLORS.primary,
   },
   title: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: ui.verticalScale(8),
+    paddingHorizontal: ui.spacing(12, 0.35),
     justifyContent: 'center',
-    // alignItems: 'center',
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
 
   },
   titleText: {
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
     color: COLORS.primary,
     fontFamily: 'ObjectFont',
   },
   notificationBadge: {
     position: 'absolute',
-    top: 8,
-    right: 16,
+    top: ui.verticalScale(8),
+    right: ui.spacing(16, 0.35),
     backgroundColor: 'red',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    paddingVertical: ui.verticalScale(4),
+    paddingHorizontal: ui.spacing(8, 0.35),
+    borderRadius: ui.moderateScale(8, 0.35),
     zIndex: 10,
   },
   notificationText: {
-    fontSize: 10,
+    fontSize: ui.scaleFont(10, 0.25),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.white,
   },
   content: {
-    padding: 16,
-    paddingTop: 8,
+    padding: ui.spacing(16),
+    paddingTop: ui.verticalScale(8),
     width: '70%',
   },
   iconWrapperGameType: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: ui.verticalScale(8),
   },
   iconWrapperStatus: {
     position: 'absolute',
     top: '50%',
-    right: 16,
+    right: ui.spacing(16, 0.35),
     width: '25%',
     aspectRatio: 1,
-    transform: [{ translateY: '-60%' }],
+    marginTop: -ui.scale(36),
     zIndex: 10,
     borderRadius: 999,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 6,
+    borderWidth: ui.moderateScale(6, 0.25),
     borderColor: 'rgba(255, 255, 255, 0.15)',
     backgroundColor: 'transparent',
   },
   gameType: {
-    fontSize: 11,
+    fontSize: ui.scaleFont(11, 0.3),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   info: {
-    marginTop: 4,
+    marginTop: ui.verticalScale(4),
   },
   address: {
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     opacity: 0.7,
     fontStyle: 'italic',
-    marginBottom: 8,
+    marginBottom: ui.verticalScale(8),
   },
   dateContainer: {
     flexDirection: 'row',
@@ -291,22 +293,22 @@ const styles = StyleSheet.create({
   },
   dateDay: {
     backgroundColor: COLORS.third,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 6,
-    marginRight: -8,
+    paddingVertical: ui.verticalScale(4),
+    paddingHorizontal: ui.spacing(10, 0.35),
+    borderRadius: ui.moderateScale(6, 0.35),
+    marginRight: -ui.spacing(8, 0.35),
     zIndex: 2,
   },
   dateHour: {
     backgroundColor: '#4682B4',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    paddingLeft: 16,
-    borderRadius: 6,
+    paddingVertical: ui.verticalScale(4),
+    paddingHorizontal: ui.spacing(10, 0.35),
+    paddingLeft: ui.spacing(16),
+    borderRadius: ui.moderateScale(6, 0.35),
     zIndex: 1,
   },
   dateText: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },
@@ -316,16 +318,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: COLORS.secondary,
-    paddingVertical: 10,
+    paddingVertical: ui.verticalScale(10),
   },
   footerItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginLeft: 4,
+    marginLeft: ui.spacing(4, 0.25),
   },
 })

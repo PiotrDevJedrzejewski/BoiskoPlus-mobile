@@ -11,6 +11,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated'
 import { useEffect } from 'react'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const defaultAvatar = require('../assets/images/defaultAvatar.png')
 
@@ -22,6 +23,8 @@ const ChatRoomListItem = ({
   unreadCount = 0,
   isUserOnline = () => false,
 }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   let displayName = ''
   let avatar = null
   let gameTypeIcon = null
@@ -119,7 +122,7 @@ const ChatRoomListItem = ({
         </View>
 
         {/* Arrow */}
-        <Ionicons name='chevron-forward' size={20} color={COLORS.gray} />
+        <Ionicons name='chevron-forward' size={ui.moderateScale(20, 0.35)} color={COLORS.gray} />
       </View>
     </TouchableOpacity>
   )
@@ -127,10 +130,10 @@ const ChatRoomListItem = ({
 
 export default ChatRoomListItem
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   item: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: ui.spacing(16),
+    paddingVertical: ui.verticalScale(8),
   },
   itemSelected: {
     backgroundColor: 'rgba(255, 207, 0, 0.1)',
@@ -139,54 +142,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    padding: 12,
+    borderRadius: ui.moderateScale(16, 0.35),
+    padding: ui.spacing(12, 0.35),
     borderBottomWidth: 1,
     borderBottomColor: COLORS.secondary,
   },
   notification: {
     position: 'absolute',
     top: '50%',
-    right: 40,
+    right: ui.spacing(40, 0.45),
     backgroundColor: 'red',
-    borderRadius: '50%',
-    width: 25,
-    height: 25,
+    borderRadius: ui.moderateScale(12.5, 0.3),
+    width: ui.moderateScale(25, 0.35),
+    height: ui.moderateScale(25, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
+    marginTop: -ui.moderateScale(12.5, 0.35),
   },
   notificationText: {
     color: COLORS.white,
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontWeight: 'bold',
   },
   avatarWrapper: {
     position: 'relative',
-    width: 50,
-    height: 50,
-    marginRight: 12,
+    width: ui.scale(50),
+    height: ui.scale(50),
+    marginRight: ui.spacing(12, 0.35),
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
+    width: ui.scale(50),
+    height: ui.scale(50),
+    borderRadius: ui.moderateScale(12, 0.35),
   },
   gameTypeIconWrapper: {
     position: 'absolute',
-    bottom: -4,
-    right: -4,
+    bottom: -ui.verticalScale(4),
+    right: -ui.spacing(4, 0.25),
     transform: [{ scale: 0.5 }],
-    transformOrigin: 'bottom right',
   },
   onlineStatus: {
     position: 'absolute',
-    transformOrigin: 'bottom left',
     bottom: 0,
     left: 0,
-    width: 12,
-    height: 12,
-    borderRadius: '50%',
+    width: ui.scale(12),
+    height: ui.scale(12),
+    borderRadius: ui.moderateScale(6, 0.25),
     borderWidth: 1,
     borderColor: COLORS.secondary,
   },
@@ -200,19 +202,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   nickname: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginBottom: 2,
+    marginBottom: ui.verticalScale(2),
   },
   ownerName: {
-    fontSize: 11,
+    fontSize: ui.scaleFont(11, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    marginBottom: 2,
+    marginBottom: ui.verticalScale(2),
   },
   lastMessage: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },

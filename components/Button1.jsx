@@ -1,19 +1,25 @@
 import { Pressable, Text, StyleSheet, Animated, View } from 'react-native'
 import { useRef } from 'react'
+import {
+  moderateScale,
+  scale,
+  scaleFont,
+  verticalScale,
+} from '../assets/utils/scaleUI.UX'
 
 const Button1 = ({
   text = '',
-  height = 80,
-  width = 300,
+  height = verticalScale(80),
+  width = scale(300),
   backgroundColor = '#ffcf00', // $color-secondary
   color = '#003b22', // $color-background
-  fontSize = 36,
+  fontSize = scaleFont(36),
   lineColor = '#edf9e5', // $color-primary
   padding = 0,
   margin = 0,
   fontFamily = 'Montserrat-Bold',
   weight = 'bold',
-  borderRadius = 20,
+  borderRadius = moderateScale(20, 0.45),
   children = null,
   ...rest
 }) => {
@@ -156,8 +162,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: '12%',
     width: '80%',
-    height: 4,
-    borderRadius: 2,
+    height: moderateScale(4, 0.45),
+    borderRadius: moderateScale(2, 0.45),
   },
 })
 

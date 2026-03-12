@@ -9,6 +9,12 @@ import spinner from '../assets/utils/spinner.json'
 import { useAuth } from '../context/AuthContext'
 import CookiesAndRules from '../components/popup/CookiesAndRules'
 import { useEffect } from 'react'
+import {
+  moderateScale,
+  scale,
+  scaleFont,
+  verticalScale,
+} from '../assets/utils/scaleUI.UX'
 
 const LogoBoiskoPlus = require('../assets/images/LogoBoiskoPlus.png')
 const background = require('../assets/images/pexels-jsalamanca-61143.jpg')
@@ -29,9 +35,9 @@ const Home = () => {
   }, [user, loading])
 
   const buttonSettings = {
-    height: 50,
-    width: 220,
-    fontSize: 18,
+    height: verticalScale(50),
+    width: scale(220),
+    fontSize: scaleFont(18),
   }
 
   if (!fontsLoaded || loading) {
@@ -48,7 +54,7 @@ const Home = () => {
           source={spinner}
           autoPlay
           loop
-          style={{ width: 80, height: 80 }}
+          style={{ width: scale(80), height: scale(80) }}
         />
       </View>
     )
@@ -113,18 +119,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   textContainer: {
-    padding: 20,
+    padding: moderateScale(20, 0.45),
   },
   title: {
     color: 'white',
-    fontSize: 32,
+    fontSize: scaleFont(32, 0.5),
     fontFamily: 'ObjectFont',
     textAlign: 'center',
   },
   description: {
     color: 'white',
-    fontSize: 16,
-    marginTop: 10,
+    fontSize: scaleFont(16, 0.4),
+    marginTop: verticalScale(10),
     textAlign: 'center',
     fontFamily: 'ObjectFont',
   },
@@ -132,16 +138,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginBottom: 80,
-    gap: 20,
+    marginBottom: verticalScale(80),
+    gap: moderateScale(20, 0.45),
   },
   logoContainer: {
     flex: 1,
     position: 'absolute',
     alignItems: 'center',
     width: '100%',
-    paddingHorizontal: 20,
-    paddingBottom: 50,
+    paddingHorizontal: moderateScale(20, 0.45),
+    paddingBottom: verticalScale(50),
   },
   logo: {
     width: '100%',

@@ -5,9 +5,15 @@ import CardDashboard from '../../../components/CardDashboard'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import Entypo from '@expo/vector-icons/Entypo'
 import { BlurView } from 'expo-blur'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const DashboardHome = () => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
+  const cardIconSize = ui.moderateScale(50, 0.35)
+  const mapIconSize = ui.moderateScale(24, 0.35)
 
   const handleCardPress = (path) => {
     router.push(path)
@@ -37,7 +43,7 @@ const DashboardHome = () => {
             <View style={styles.cardWrapper}>
               <CardDashboard
                 icon={
-                  <Entypo name='location' size={50} color={COLORS.secondary} />
+                  <Entypo name='location' size={cardIconSize} color={COLORS.secondary} />
                 }
                 title='Znajdź Grę'
                 desc='Przeglądaj dostępne gry i zapisuj się na mecze'
@@ -47,7 +53,7 @@ const DashboardHome = () => {
                 icon={
                   <MaterialCommunityIcons
                     name='pencil'
-                    size={50}
+                    size={cardIconSize}
                     color={COLORS.secondary}
                   />
                 }
@@ -61,7 +67,7 @@ const DashboardHome = () => {
                 icon={
                   <Ionicons
                     name='calendar-sharp'
-                    size={50}
+                    size={cardIconSize}
                     color={COLORS.secondary}
                   />
                 }
@@ -77,7 +83,7 @@ const DashboardHome = () => {
                 icon={
                   <Ionicons
                     name='settings-sharp'
-                    size={50}
+                    size={cardIconSize}
                     color={COLORS.secondary}
                   />
                 }
@@ -94,7 +100,7 @@ const DashboardHome = () => {
               >
                 <Ionicons
                   name='map'
-                  size={24}
+                  size={mapIconSize}
                   color={COLORS.secondary}
                   style={styles.mapIcon}
                 />
@@ -110,7 +116,7 @@ const DashboardHome = () => {
 
 export default DashboardHome
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     zIndex: 5,
@@ -125,60 +131,60 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   content: {
-    padding: 10,
-    paddingTop: 20,
+    padding: ui.spacing(10, 0.35),
+    paddingTop: ui.verticalScale(20),
     alignItems: 'center',
   },
   title: {
-    fontSize: 36,
+    fontSize: ui.scaleFont(36, 0.5),
     fontFamily: 'ObjectFont',
     color: COLORS.primary,
     textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 40,
+    marginBottom: ui.verticalScale(16),
+    lineHeight: ui.verticalScale(40),
   },
   desc: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'ObjectFont',
     color: COLORS.primary,
     textAlign: 'center',
-    marginBottom: 32,
-    paddingHorizontal: 10,
+    marginBottom: ui.verticalScale(32),
+    paddingHorizontal: ui.spacing(10, 0.35),
     opacity: 0.9,
   },
   titleWrapper: {
-    borderTopStartRadius: 16,
-    borderTopEndRadius: 16,
+    borderTopStartRadius: ui.moderateScale(16, 0.35),
+    borderTopEndRadius: ui.moderateScale(16, 0.35),
   },
   blurView: {
-    paddingTop: 20,
+    paddingTop: ui.verticalScale(20),
     width: '100%',
-    borderRadius: 16,
+    borderRadius: ui.moderateScale(16, 0.35),
     overflow: 'hidden',
     backgroundColor: 'rgba(18, 115, 64, 0.7)',
   },
   cardWrapper: {
     width: '100%',
-    borderBottomEndRadius: 16,
-    borderBottomStartRadius: 16,
+    borderBottomEndRadius: ui.moderateScale(16, 0.35),
+    borderBottomStartRadius: ui.moderateScale(16, 0.35),
   },
   mapButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.background,
-    borderBottomEndRadius: 16,
-    borderBottomStartRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    borderBottomEndRadius: ui.moderateScale(16, 0.35),
+    borderBottomStartRadius: ui.moderateScale(16, 0.35),
+    paddingVertical: ui.verticalScale(16),
+    paddingHorizontal: ui.spacing(32, 0.45),
     width: '100%',
-    marginTop: 8,
+    marginTop: ui.verticalScale(8),
   },
   mapIcon: {
-    marginRight: 10,
+    marginRight: ui.spacing(10, 0.35),
   },
   mapButtonText: {
-    fontSize: 20,
+    fontSize: ui.scaleFont(20, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },

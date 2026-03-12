@@ -15,8 +15,9 @@ import FormEvent from '../../../../components/FormEvent'
 import EditEventUserCard from '../../../../components/EditEventUserCard'
 import ConfirmModal from '../../../../components/popup/ConfirmModal'
 import customFetch from '../../../../assets/utils/customFetch'
+import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
 
-const StatBadge = ({ count, label, color }) => (
+const StatBadge = ({ count, label, color, styles }) => (
   <View style={[styles.statBadge, { borderColor: color }]}>
     <Text style={[styles.statCount, { color }]}>{count}</Text>
     <Text style={styles.statLabel}>{label}</Text>
@@ -25,6 +26,8 @@ const StatBadge = ({ count, label, color }) => (
 
 const EditEvent = () => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const { id } = useLocalSearchParams()
 
   const [loading, setLoading] = useState(true)
@@ -203,15 +206,15 @@ const EditEvent = () => {
           style={styles.backIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name='arrow-back' size={24} color={COLORS.secondary} />
+          <Ionicons name='arrow-back' size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Ionicons name='create' size={22} color={COLORS.secondary} />
+          <Ionicons name='create' size={ui.moderateScale(22, 0.35)} color={COLORS.secondary} />
           <Text style={styles.headerText} numberOfLines={1}>
             {event?.eventName || 'Edycja wydarzenia'}
           </Text>
         </View>
-        <View style={{ width: 40 }} />
+        <View style={{ width: ui.moderateScale(40, 0.35) }} />
       </View>
 
       <ScrollView
@@ -226,7 +229,7 @@ const EditEvent = () => {
             onPress={() => setShowEditForm(!showEditForm)}
             activeOpacity={0.8}
           >
-            <Ionicons name='pencil' size={18} color={COLORS.background} />
+            <Ionicons name='pencil' size={ui.moderateScale(18, 0.35)} color={COLORS.background} />
             <Text style={styles.actionButtonText}>
               {showEditForm ? 'Anuluj' : 'Edytuj'}
             </Text>
@@ -239,7 +242,7 @@ const EditEvent = () => {
           >
             <Ionicons
               name='checkmark-done'
-              size={18}
+              size={ui.moderateScale(18, 0.35)}
               color={COLORS.background}
             />
             <Text style={styles.actionButtonText}>Zakończ</Text>
@@ -250,7 +253,7 @@ const EditEvent = () => {
             onPress={() => setShowDeleteModal(true)}
             activeOpacity={0.8}
           >
-            <Ionicons name='trash' size={18} color='#fff' />
+            <Ionicons name='trash' size={ui.moderateScale(18, 0.35)} color='#fff' />
             <Text style={[styles.actionButtonText, { color: '#fff' }]}>
               Usuń
             </Text>
@@ -263,16 +266,19 @@ const EditEvent = () => {
             count={interestedCount}
             label='Zainteresowani'
             color={COLORS.secondary}
+            styles={styles}
           />
           <StatBadge
             count={acceptedCount}
             label='Zaakceptowani'
             color={COLORS.third}
+            styles={styles}
           />
           <StatBadge
             count={rejectedCount}
             label='Odrzuceni'
             color={COLORS.error}
+            styles={styles}
           />
         </View>
 
@@ -339,7 +345,7 @@ const EditEvent = () => {
 
 export default EditEvent
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -351,8 +357,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: ui.verticalScale(12),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
@@ -360,13 +366,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: ui.verticalScale(16),
+    paddingHorizontal: ui.spacing(16),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   backIconButton: {
-    width: 40,
-    height: 40,
+    width: ui.moderateScale(40, 0.35),
+    height: ui.moderateScale(40, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -375,34 +381,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 8,
+    marginHorizontal: ui.spacing(8, 0.35),
   },
   headerText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 8,
+    marginLeft: ui.spacing(8, 0.35),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
   },
   actionsRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 20,
+    gap: ui.spacing(10, 0.35),
+    marginBottom: ui.verticalScale(20),
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 10,
-    gap: 6,
+    paddingVertical: ui.verticalScale(14),
+    borderRadius: ui.moderateScale(10, 0.35),
+    gap: ui.spacing(6, 0.35),
   },
   editButton: {
     backgroundColor: COLORS.secondary,
@@ -414,51 +420,51 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.error,
   },
   actionButtonText: {
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: ui.verticalScale(24),
   },
   statBadge: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 12,
-    marginHorizontal: 4,
+    paddingVertical: ui.verticalScale(12),
+    marginHorizontal: ui.spacing(4, 0.25),
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 10,
+    borderRadius: ui.moderateScale(10, 0.35),
     borderWidth: 1,
   },
   statCount: {
-    fontSize: 20,
+    fontSize: ui.scaleFont(20, 0.4),
     fontFamily: 'Montserrat-Bold',
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: ui.scaleFont(10, 0.25),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    marginTop: 2,
+    marginTop: ui.verticalScale(2),
   },
   formContainer: {
-    marginTop: 10,
+    marginTop: ui.verticalScale(10),
   },
   usersContainer: {
-    marginTop: 10,
+    marginTop: ui.verticalScale(10),
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginBottom: 16,
+    marginBottom: ui.verticalScale(16),
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
     textAlign: 'center',
-    paddingVertical: 40,
+    paddingVertical: ui.verticalScale(40),
   },
 })

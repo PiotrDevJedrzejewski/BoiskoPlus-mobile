@@ -1,7 +1,11 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native'
 import { COLORS } from '../constants/colors'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const Rules = () => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
   return (
     <ScrollView style={styles.rulesContainer}>
       <View style={styles.rulesContent}>
@@ -117,36 +121,36 @@ const Rules = () => {
 
 export default Rules
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   rulesContainer: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
   rulesContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
   },
   title: {
-    fontSize: 28,
+    fontSize: ui.scaleFont(28, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginBottom: 10,
+    marginBottom: ui.verticalScale(10),
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Italic',
     color: COLORS.secondary,
-    marginBottom: 20,
+    marginBottom: ui.verticalScale(20),
     textAlign: 'center',
     opacity: 0.8,
   },
   paragraph: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    lineHeight: 22,
-    marginBottom: 15,
+    lineHeight: ui.verticalScale(22),
+    marginBottom: ui.verticalScale(15),
     textAlign: 'justify',
   },
 })

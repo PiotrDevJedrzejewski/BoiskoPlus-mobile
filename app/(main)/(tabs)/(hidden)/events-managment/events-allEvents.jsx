@@ -11,38 +11,31 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../../../../../constants/colors'
 import { useDashboard } from '../../../../../context/DashboardContext'
+import FilterButton from '../../../../../components/FilterButton'
 import MyEventCard from '../../../../../components/MyEventCard'
+import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
 
-const FilterButton = ({ icon, label, isActive, onPress, color }) => (
-  <TouchableOpacity
-    style={[styles.filterButton, isActive && styles.filterButtonActive]}
-    onPress={onPress}
-    activeOpacity={0.7}
-  >
-    {icon}
-    <Text style={[styles.filterLabel, isActive && styles.filterLabelActive]}>
-      {label}
-    </Text>
-    <View
-      style={[
-        styles.filterIndicator,
-        isActive
-          ? { backgroundColor: color || COLORS.secondary }
-          : styles.filterIndicatorOff,
-      ]}
-    />
-  </TouchableOpacity>
-)
+const FILTER_DOT_COUNT = 3
 
 const EventsAllEvents = () => {
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
+  const headerIconSize = ui.moderateScale(26, 0.35)
+  const backIconSize = ui.moderateScale(28, 0.35)
+  const filterIconSize = ui.moderateScale(16, 0.3)
+  const stateIconSize = ui.moderateScale(60, 0.3)
 
   const [showOwnerEvents, setShowOwnerEvents] = useState(true)
   const [showAcceptedEvents, setShowAcceptedEvents] = useState(true)
   const [showInterestedEvents, setShowInterestedEvents] = useState(true)
   const [showRejectedEvents, setShowRejectedEvents] = useState(true)
   const [showFinishedEvents, setShowFinishedEvents] = useState(true)
+  const [activeFilterDot, setActiveFilterDot] = useState(0)
+  const [filtersContainerWidth, setFiltersContainerWidth] = useState(0)
+  const [filtersContentWidth, setFiltersContentWidth] = useState(0)
 
   useEffect(() => {
     refreshEventsData().catch(() => {})
@@ -80,6 +73,23 @@ const EventsAllEvents = () => {
     return true
   })
 
+  const handleFiltersScroll = ({ nativeEvent }) => {
+    const maxScrollOffset = Math.max(filtersContentWidth - filtersContainerWidth, 0)
+
+    if (maxScrollOffset === 0) {
+      setActiveFilterDot(0)
+      return
+    }
+
+    const progress = nativeEvent.contentOffset.x / maxScrollOffset
+    const nextDot = Math.min(
+      FILTER_DOT_COUNT - 1,
+      Math.max(0, Math.round(progress * (FILTER_DOT_COUNT - 1)))
+    )
+
+    setActiveFilterDot(nextDot)
+  }
+
   return (
     <View style={styles.container} pointerEvents='box-none'>
       <View style={styles.header}>
@@ -90,79 +100,101 @@ const EventsAllEvents = () => {
           }
           activeOpacity={0.8}
         >
-          <Ionicons name='arrow-back' size={28} color={COLORS.primary} />
+          <Ionicons name='arrow-back' size={backIconSize} color={COLORS.primary} />
         </TouchableOpacity>
-        <Ionicons name='calendar' size={26} color={COLORS.secondary} />
+        <Ionicons name='calendar' size={headerIconSize} color={COLORS.secondary} />
         <Text style={styles.headerText}>Wydarzenia</Text>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filtersContainer}
-        contentContainerStyle={styles.filtersContent}
-      >
-        <FilterButton
-          icon={
-            <Ionicons
-              name='person-add'
-              size={16}
-              color={showOwnerEvents ? COLORS.secondary : COLORS.primary}
+      <View style={styles.filtersSection}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filtersContainer}
+          contentContainerStyle={styles.filtersContent}
+          onLayout={({ nativeEvent }) => {
+            setFiltersContainerWidth(nativeEvent.layout.width)
+          }}
+          onContentSizeChange={(width) => {
+            setFiltersContentWidth(width)
+          }}
+          onScroll={handleFiltersScroll}
+          scrollEventThrottle={16}
+        >
+          <FilterButton
+            icon={
+              <Ionicons
+                name='person-add'
+                size={filterIconSize}
+                color={showOwnerEvents ? COLORS.secondary : COLORS.primary}
+              />
+            }
+            label='Moje'
+            isActive={showOwnerEvents}
+            onPress={() => setShowOwnerEvents(!showOwnerEvents)}
+          />
+          <FilterButton
+            icon={
+              <Ionicons
+                name='checkmark-circle'
+                size={filterIconSize}
+                color={showAcceptedEvents ? COLORS.secondary : COLORS.primary}
+              />
+            }
+            label='Zaakceptowane'
+            isActive={showAcceptedEvents}
+            onPress={() => setShowAcceptedEvents(!showAcceptedEvents)}
+          />
+          <FilterButton
+            icon={
+              <Ionicons
+                name='heart'
+                size={filterIconSize}
+                color={showInterestedEvents ? COLORS.secondary : COLORS.primary}
+              />
+            }
+            label='Zainteresowane'
+            isActive={showInterestedEvents}
+            onPress={() => setShowInterestedEvents(!showInterestedEvents)}
+          />
+          <FilterButton
+            icon={
+              <Ionicons
+                name='close-circle'
+                size={filterIconSize}
+                color={showRejectedEvents ? COLORS.secondary : COLORS.primary}
+              />
+            }
+            label='Odrzucone'
+            isActive={showRejectedEvents}
+            onPress={() => setShowRejectedEvents(!showRejectedEvents)}
+          />
+          <FilterButton
+            icon={
+              <Ionicons
+                name='checkbox'
+                size={filterIconSize}
+                color={showFinishedEvents ? COLORS.secondary : COLORS.primary}
+              />
+            }
+            label='Zakończone'
+            isActive={showFinishedEvents}
+            onPress={() => setShowFinishedEvents(!showFinishedEvents)}
+          />
+        </ScrollView>
+
+        <View style={styles.filterDotsContainer}>
+          {Array.from({ length: FILTER_DOT_COUNT }).map((_, index) => (
+            <View
+              key={`filter-dot-${index}`}
+              style={[
+                styles.filterDot,
+                index === activeFilterDot && styles.filterDotActive,
+              ]}
             />
-          }
-          label='Moje'
-          isActive={showOwnerEvents}
-          onPress={() => setShowOwnerEvents(!showOwnerEvents)}
-        />
-        <FilterButton
-          icon={
-            <Ionicons
-              name='checkmark-circle'
-              size={16}
-              color={showAcceptedEvents ? COLORS.secondary : COLORS.primary}
-            />
-          }
-          label='Zaakceptowane'
-          isActive={showAcceptedEvents}
-          onPress={() => setShowAcceptedEvents(!showAcceptedEvents)}
-        />
-        <FilterButton
-          icon={
-            <Ionicons
-              name='heart'
-              size={16}
-              color={showInterestedEvents ? COLORS.secondary : COLORS.primary}
-            />
-          }
-          label='Zainteresowane'
-          isActive={showInterestedEvents}
-          onPress={() => setShowInterestedEvents(!showInterestedEvents)}
-        />
-        <FilterButton
-          icon={
-            <Ionicons
-              name='close-circle'
-              size={16}
-              color={showRejectedEvents ? COLORS.secondary : COLORS.primary}
-            />
-          }
-          label='Odrzucone'
-          isActive={showRejectedEvents}
-          onPress={() => setShowRejectedEvents(!showRejectedEvents)}
-        />
-        <FilterButton
-          icon={
-            <Ionicons
-              name='checkbox'
-              size={16}
-              color={showFinishedEvents ? COLORS.secondary : COLORS.primary}
-            />
-          }
-          label='Zakończone'
-          isActive={showFinishedEvents}
-          onPress={() => setShowFinishedEvents(!showFinishedEvents)}
-        />
-      </ScrollView>
+          ))}
+        </View>
+      </View>
 
       {loading && (
         <View style={styles.loadingContainer}>
@@ -173,7 +205,7 @@ const EventsAllEvents = () => {
 
       {error && !loading && (
         <View style={styles.errorContainer}>
-          <Ionicons name='alert-circle-outline' size={60} color={COLORS.error} />
+          <Ionicons name='alert-circle-outline' size={stateIconSize} color={COLORS.error} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             style={styles.retryButton}
@@ -221,7 +253,7 @@ const EventsAllEvents = () => {
 
           {filteredOwnerEvents.length === 0 && filteredUserEvents.length === 0 && (
             <View style={styles.emptyState}>
-              <Ionicons name='calendar-outline' size={60} color={COLORS.gray} />
+              <Ionicons name='calendar-outline' size={stateIconSize} color={COLORS.gray} />
               <Text style={styles.emptyText}>Brak wydarzeń</Text>
               <Text style={styles.emptySubtext}>
                 Zmień filtry lub stwórz nowe wydarzenie
@@ -236,70 +268,62 @@ const EventsAllEvents = () => {
 
 export default EventsAllEvents
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  header: {
+   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingVertical: ui.verticalScale(20),
     position: 'relative',
+    backgroundColor:'rgba(0, 0, 0, 0.3)',
   },
   backButton: {
-       position: 'absolute',
-    left: 10,
-    top: '48%',
-    width: 46,
-    height: 46,
+    position: 'absolute',
+    height: '100%',
+    left: ui.spacing(15, 0.35),
+    width: ui.moderateScale(46, 0.35),
+    height: ui.moderateScale(46, 0.35),
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerText: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
-  filtersContainer: {
-    maxHeight: 80,
+  filtersSection: {
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
+  filtersContainer: {
+    maxHeight: ui.verticalScale(80),
+  },
   filtersContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
+    paddingHorizontal: ui.spacing(16),
+    paddingVertical: ui.verticalScale(12),
+    gap: ui.spacing(12),
     flexDirection: 'row',
   },
-  filterButton: {
+  filterDotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    minWidth: 80,
+    gap: ui.spacing(8, 0.35),
+    paddingBottom: ui.verticalScale(10),
   },
-  filterButtonActive: {},
-  filterLabel: {
-    fontSize: 12,
-    fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginTop: 4,
-    opacity: 0.5,
+  filterDot: {
+    width: ui.moderateScale(8, 0.35),
+    height: ui.moderateScale(8, 0.35),
+    borderRadius: 999,
+    backgroundColor: 'rgba(237, 249, 229, 0.25)',
   },
-  filterLabelActive: {
-    opacity: 1,
-  },
-  filterIndicator: {
-    height: 2,
-    width: 30,
-    borderRadius: 1,
-    marginTop: 6,
-  },
-  filterIndicatorOff: {
-    backgroundColor: '#4b4b4b',
-    width: 15,
+  filterDotActive: {
+    width: ui.moderateScale(10, 0.35),
+    backgroundColor: COLORS.secondary,
   },
   loadingContainer: {
     flex: 1,
@@ -307,8 +331,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: ui.verticalScale(12),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
@@ -316,35 +340,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   eventsContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: ui.spacing(16),
+    paddingBottom: ui.verticalScale(32),
   },
   section: {
-    marginBottom: 24,
-    
+    marginBottom: ui.verticalScale(24),
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginBottom: 12,
+    marginBottom: ui.verticalScale(12),
     textAlign: 'center',
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: ui.verticalScale(60),
   },
   emptyText: {
-    marginTop: 16,
-    fontSize: 18,
+    marginTop: ui.verticalScale(16),
+    fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.gray,
   },
   emptySubtext: {
-    marginTop: 8,
-    fontSize: 14,
+    marginTop: ui.verticalScale(8),
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
     textAlign: 'center',
@@ -353,24 +376,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: ui.spacing(20, 0.45),
   },
   errorText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: ui.verticalScale(16),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.error,
     textAlign: 'center',
   },
   retryButton: {
-    marginTop: 20,
+    marginTop: ui.verticalScale(20),
     backgroundColor: COLORS.secondary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: ui.spacing(24, 0.45),
+    paddingVertical: ui.verticalScale(12),
+    borderRadius: ui.moderateScale(12, 0.35),
   },
   retryButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },

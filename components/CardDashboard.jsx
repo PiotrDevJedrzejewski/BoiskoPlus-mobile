@@ -1,7 +1,11 @@
 import { StyleSheet, Text, View, Pressable } from 'react-native'
 import { COLORS } from '../constants/colors'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const CardDashboard = ({ icon, title, desc, onPress }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.iconContainer}>{icon}</View>
@@ -15,31 +19,31 @@ const CardDashboard = ({ icon, title, desc, onPress }) => {
 
 export default CardDashboard
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   card: {
     backgroundColor: COLORS.backgroundSecondary,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    marginBottom: 16,
-    marginHorizontal: 10,
-    borderRadius: 16,
+    padding: ui.spacing(16),
+    marginBottom: ui.verticalScale(16),
+    marginHorizontal: ui.spacing(10, 0.35),
+    borderRadius: ui.moderateScale(16, 0.35),
     position: 'relative',
   },
   iconContainer: {
-    marginRight: 16,
+    marginRight: ui.spacing(16),
   },
   textContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 22,
+    fontSize: ui.scaleFont(22, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginBottom: 4,
+    marginBottom: ui.verticalScale(4),
   },
   desc: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     opacity: 0.7,

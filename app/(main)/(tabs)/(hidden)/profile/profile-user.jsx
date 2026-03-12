@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { COLORS } from '../../../../../constants/colors'
+import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
 
 const defaultAvatar = require('../../../../../assets/images/defaultAvatar.png')
 
@@ -49,7 +50,7 @@ const MOCK_USER_STATS = {
   },
 }
 
-const StatItem = ({ label, value }) => (
+const StatItem = ({ label, value, styles }) => (
   <View style={styles.statItem}>
     <Text style={styles.statValue}>{value}</Text>
     <Text style={styles.statLabel}>{label}</Text>
@@ -59,6 +60,8 @@ const StatItem = ({ label, value }) => (
 const ProfileUser = () => {
   const router = useRouter()
   const { id } = useLocalSearchParams()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
 
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState(null)
@@ -127,7 +130,7 @@ const ProfileUser = () => {
   if (!user) {
     return (
       <View style={styles.loadingContainer}>
-        <Ionicons name='person-outline' size={64} color={COLORS.gray} />
+        <Ionicons name='person-outline' size={ui.moderateScale(64, 0.35)} color={COLORS.gray} />
         <Text style={styles.loadingText}>Nie znaleziono użytkownika</Text>
         <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
           <Text style={styles.backButtonText}>Wróć</Text>
@@ -145,13 +148,13 @@ const ProfileUser = () => {
           style={styles.backIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name='arrow-back' size={24} color={COLORS.secondary} />
+          <Ionicons name='arrow-back' size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Ionicons name='person-circle' size={26} color={COLORS.secondary} />
+          <Ionicons name='person-circle' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
           <Text style={styles.headerText}>Profil Gracza</Text>
         </View>
-        <View style={{ width: 40 }} />
+        <View style={{ width: ui.moderateScale(40, 0.35) }} />
       </View>
 
       <ScrollView
@@ -183,10 +186,10 @@ const ProfileUser = () => {
         <View style={styles.statsSection}>
           <Text style={styles.sectionTitle}>Statystyki</Text>
           <View style={styles.statsGrid}>
-            <StatItem label='Rozegrane gry' value={userStats.gamesPlayed} />
-            <StatItem label='Utworzone gry' value={userStats.eventsOrganized} />
-            <StatItem label='Polubienia' value={userStats.totalLikes} />
-            <StatItem label='Punkty' value={userStats.points} />
+            <StatItem label='Rozegrane gry' value={userStats.gamesPlayed} styles={styles} />
+            <StatItem label='Utworzone gry' value={userStats.eventsOrganized} styles={styles} />
+            <StatItem label='Polubienia' value={userStats.totalLikes} styles={styles} />
+            <StatItem label='Punkty' value={userStats.points} styles={styles} />
           </View>
         </View>
 
@@ -208,7 +211,7 @@ const ProfileUser = () => {
               <>
                 <Ionicons
                   name={isLiked ? 'heart' : 'heart-outline'}
-                  size={22}
+                  size={ui.moderateScale(22, 0.35)}
                   color={isLiked ? COLORS.error : COLORS.primary}
                 />
                 <Text
@@ -228,7 +231,7 @@ const ProfileUser = () => {
             onPress={handleReport}
             activeOpacity={0.8}
           >
-            <Ionicons name='flag-outline' size={20} color={COLORS.error} />
+            <Ionicons name='flag-outline' size={ui.moderateScale(20, 0.35)} color={COLORS.error} />
             <Text style={styles.reportButtonText}>Zgłoś użytkownika</Text>
           </TouchableOpacity>
         </View>
@@ -239,7 +242,7 @@ const ProfileUser = () => {
 
 export default ProfileUser
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -251,20 +254,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: ui.verticalScale(12),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
   backButton: {
-    marginTop: 20,
+    marginTop: ui.verticalScale(20),
     backgroundColor: COLORS.secondary,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    paddingVertical: ui.verticalScale(10),
+    paddingHorizontal: ui.spacing(24, 0.45),
+    borderRadius: ui.moderateScale(8, 0.35),
   },
   backButtonText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },
@@ -272,13 +275,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: ui.verticalScale(16),
+    paddingHorizontal: ui.spacing(16),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   backIconButton: {
-    width: 40,
-    height: 40,
+    width: ui.moderateScale(40, 0.35),
+    height: ui.moderateScale(40, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -287,71 +290,71 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerText: {
-    fontSize: 22,
+    fontSize: ui.scaleFont(22, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
     alignItems: 'center',
   },
   avatarSection: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: ui.verticalScale(20),
   },
   avatar: {
-    width: 150,
-    height: 150,
-    borderRadius: 16,
+    width: ui.scale(150),
+    height: ui.scale(150),
+    borderRadius: ui.moderateScale(16, 0.35),
     borderWidth: 2,
     borderColor: COLORS.primary,
   },
   username: {
-    fontSize: 28,
+    fontSize: ui.scaleFont(28, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginBottom: 24,
+    marginBottom: ui.verticalScale(24),
   },
   infoSection: {
     width: '100%',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
+    borderRadius: ui.moderateScale(16, 0.35),
+    padding: ui.spacing(16),
+    marginBottom: ui.verticalScale(24),
   },
   infoRow: {
     flexDirection: 'row',
-    paddingVertical: 8,
+    paddingVertical: ui.verticalScale(8),
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   infoLabel: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    width: 100,
+    width: ui.scale(100),
   },
   infoValue: {
     flex: 1,
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
   statsSection: {
     width: '100%',
-    marginBottom: 24,
+    marginBottom: ui.verticalScale(24),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: ui.verticalScale(16),
   },
   statsGrid: {
     flexDirection: 'row',
@@ -361,26 +364,26 @@ const styles = StyleSheet.create({
   statItem: {
     width: '48%',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(16),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: ui.verticalScale(12),
   },
   statValue: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginTop: 4,
+    marginTop: ui.verticalScale(4),
     textAlign: 'center',
   },
   buttonsSection: {
     width: '100%',
-    gap: 12,
+    gap: ui.verticalScale(12),
   },
   likeButton: {
     flexDirection: 'row',
@@ -389,9 +392,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.backgroundSecondary,
     borderWidth: 2,
     borderColor: COLORS.secondary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(14),
+    paddingHorizontal: ui.spacing(20, 0.45),
   },
   likedButton: {
     borderColor: COLORS.error,
@@ -401,10 +404,10 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   likeButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
   },
   likedButtonText: {
     color: COLORS.error,
@@ -416,14 +419,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: COLORS.error,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(12),
+    paddingHorizontal: ui.spacing(20, 0.45),
   },
   reportButtonText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.error,
-    marginLeft: 8,
+    marginLeft: ui.spacing(8, 0.35),
   },
 })

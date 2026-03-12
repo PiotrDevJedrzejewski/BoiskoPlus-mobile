@@ -14,8 +14,9 @@ import { COLORS } from '../../../../../constants/colors'
 import { useAuth } from '../../../../../context/AuthContext'
 import ConfirmModal from '../../../../../components/popup/ConfirmModal'
 import ProfileAvatarSection from '../../../../../components/profile/ProfileAvatarSection'
+import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
 
-const StatItem = ({ label, value }) => (
+const StatItem = ({ label, value, styles }) => (
   <View style={styles.statItem}>
     <Text style={styles.statValue}>{value}</Text>
     <Text style={styles.statLabel}>{label}</Text>
@@ -24,6 +25,8 @@ const StatItem = ({ label, value }) => (
 
 const Profile = () => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const {
@@ -85,7 +88,7 @@ const Profile = () => {
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name='person-circle' size={26} color={COLORS.secondary} />
+        <Ionicons name='person-circle' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
         <Text style={styles.headerText}>Profil Gracza</Text>
       </View>
 
@@ -124,10 +127,10 @@ const Profile = () => {
         <View style={styles.statsSection}>
           <Text style={styles.sectionTitle}>Statystyki</Text>
           <View style={styles.statsGrid}>
-            <StatItem label='Rozegrane gry' value={stats.gamesPlayed} />
-            <StatItem label='Utworzone gry' value={stats.eventsOrganized} />
-            <StatItem label='Polubienia' value={stats.totalLikes} />
-            <StatItem label='Punkty' value={stats.points} />
+            <StatItem label='Rozegrane gry' value={stats.gamesPlayed} styles={styles} />
+            <StatItem label='Utworzone gry' value={stats.eventsOrganized} styles={styles} />
+            <StatItem label='Polubienia' value={stats.totalLikes} styles={styles} />
+            <StatItem label='Punkty' value={stats.points} styles={styles} />
           </View>
         </View>
 
@@ -138,7 +141,7 @@ const Profile = () => {
             onPress={handleEditProfile}
             activeOpacity={0.8}
           >
-            <Ionicons name='create-outline' size={20} color={COLORS.primary} />
+            <Ionicons name='create-outline' size={ui.moderateScale(20, 0.35)} color={COLORS.primary} />
             <Text style={styles.buttonText}>Edytuj profil</Text>
           </TouchableOpacity>
 
@@ -147,7 +150,7 @@ const Profile = () => {
             onPress={handleChangePassword}
             activeOpacity={0.8}
           >
-            <Ionicons name='key-outline' size={20} color={COLORS.primary} />
+            <Ionicons name='key-outline' size={ui.moderateScale(20, 0.35)} color={COLORS.primary} />
             <Text style={styles.buttonText}>Zmień hasło</Text>
           </TouchableOpacity>
 
@@ -156,7 +159,7 @@ const Profile = () => {
             onPress={handleDeleteAccount}
             activeOpacity={0.8}
           >
-            <Ionicons name='trash-outline' size={20} color={COLORS.error} />
+            <Ionicons name='trash-outline' size={ui.moderateScale(20, 0.35)} color={COLORS.error} />
             <Text style={[styles.buttonText, styles.dangerButtonText]}>
               Usuń konto
             </Text>
@@ -185,7 +188,7 @@ const Profile = () => {
 
 export default Profile
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -197,8 +200,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: ui.verticalScale(12),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
@@ -206,64 +209,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: ui.verticalScale(20),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   headerText: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
     alignItems: 'center',
   },
   username: {
-    fontSize: 28,
+    fontSize: ui.scaleFont(28, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginBottom: 24,
+    marginBottom: ui.verticalScale(24),
   },
   infoSection: {
     width: '100%',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
+    borderRadius: ui.moderateScale(16, 0.35),
+    padding: ui.spacing(16),
+    marginBottom: ui.verticalScale(24),
   },
   infoRow: {
     flexDirection: 'row',
-    paddingVertical: 8,
+    paddingVertical: ui.verticalScale(8),
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   infoLabel: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    width: 100,
+    width: ui.scale(100),
   },
   infoValue: {
     flex: 1,
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
   statsSection: {
     width: '100%',
-    marginBottom: 24,
+    marginBottom: ui.verticalScale(24),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: ui.verticalScale(16),
   },
   statsGrid: {
     flexDirection: 'row',
@@ -273,26 +276,26 @@ const styles = StyleSheet.create({
   statItem: {
     width: '48%',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(16),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: ui.verticalScale(12),
   },
   statValue: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginTop: 4,
+    marginTop: ui.verticalScale(4),
     textAlign: 'center',
   },
   buttonsSection: {
     width: '100%',
-    gap: 12,
+    gap: ui.verticalScale(12),
   },
   button: {
     flexDirection: 'row',
@@ -301,15 +304,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.backgroundSecondary,
     borderWidth: 1,
     borderColor: COLORS.secondary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(14),
+    paddingHorizontal: ui.spacing(20, 0.45),
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
   },
   dangerButton: {
     borderColor: COLORS.error,

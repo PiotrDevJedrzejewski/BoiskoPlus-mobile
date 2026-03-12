@@ -6,12 +6,15 @@ import LogoBoiskoPlus from '../assets/images/LogoBoiskoPlus.png'
 import { COLORS } from '../constants/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { useSocketIo } from '../context/SocketIoContext'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const HeaderDrawer = () => {
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
   const router = useRouter()
   const { unreadEventsCount } = useSocketIo()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer())
@@ -40,14 +43,14 @@ const HeaderDrawer = () => {
             borderless: true,
           }}
         >
-          <Ionicons name='menu' size={28} color={COLORS.secondary} />
+          <Ionicons name='menu' size={ui.moderateScale(28, 0.35)} color={COLORS.secondary} />
         </Pressable>
 
         {/* Logo - środek */}
         <View style={styles.logoContainer}>
           <Image
             source={LogoBoiskoPlus}
-            style={{ width: 40, height: 40 }}
+            style={styles.logoImage}
             resizeMode='contain'
           />
           <Text style={styles.logoTextPrimary} numberOfLines={1}>
@@ -66,7 +69,7 @@ const HeaderDrawer = () => {
           }}
         >
           <View>
-            <Ionicons name='notifications' size={26} color={COLORS.secondary} />
+            <Ionicons name='notifications' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
             {/* Badge dla nieprzeczytanych zmian wydarzeń */}
             {unreadEventsCount > 0 && (
               <View style={styles.notificationBadge}>
@@ -84,56 +87,60 @@ const HeaderDrawer = () => {
 
 export default HeaderDrawer
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingHorizontal: ui.spacing(10, 0.35),
+    paddingVertical: ui.verticalScale(8),
     backgroundColor: COLORS.background,
     justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.backgroundSecondary,
   },
   iconButton: {
-    width: 44,
-    height: 44,
+    width: ui.moderateScale(44, 0.25),
+    height: ui.moderateScale(44, 0.25),
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 22,
+    borderRadius: ui.moderateScale(22, 0.25),
   },
   logoContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: ui.spacing(2, 0.2),
+  },
+  logoImage: {
+    width: ui.scale(40),
+    height: ui.scale(40),
   },
   logoTextPrimary: {
     color: COLORS.primary,
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.35),
     fontFamily: 'ObjectFont',
   },
   logoTextSecondary: {
     color: COLORS.secondary,
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.35),
     fontFamily: 'ObjectFont',
   },
   notificationBadge: {
     position: 'absolute',
-    top: -5,
-    right: -5,
+    top: -ui.verticalScale(5),
+    right: -ui.spacing(5, 0.35),
     backgroundColor: COLORS.error,
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+    borderRadius: ui.moderateScale(10, 0.25),
+    minWidth: ui.scale(18),
+    height: ui.scale(18),
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: ui.spacing(4, 0.25),
   },
   badgeText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: ui.scaleFont(11, 0.25),
     fontFamily: 'Montserrat-Bold',
   },
 })

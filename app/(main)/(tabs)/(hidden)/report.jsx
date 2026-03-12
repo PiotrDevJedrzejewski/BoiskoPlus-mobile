@@ -14,9 +14,12 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { COLORS } from '../../../../constants/colors'
+import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
 
 const Report = () => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const { type, userId, eventId } = useLocalSearchParams()
 
   const [message, setMessage] = useState('')
@@ -122,13 +125,13 @@ const Report = () => {
           style={styles.backIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name='arrow-back' size={24} color={COLORS.secondary} />
+          <Ionicons name='arrow-back' size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Ionicons name='flag' size={22} color={COLORS.secondary} />
+          <Ionicons name='flag' size={ui.moderateScale(22, 0.35)} color={COLORS.secondary} />
           <Text style={styles.headerText}>Zgłaszanie</Text>
         </View>
-        <View style={{ width: 40 }} />
+        <View style={{ width: ui.moderateScale(40, 0.35) }} />
       </View>
 
       <ScrollView
@@ -141,7 +144,7 @@ const Report = () => {
         <View style={styles.infoBanner}>
           <Ionicons
             name='information-circle'
-            size={20}
+            size={ui.moderateScale(20, 0.35)}
             color={COLORS.secondary}
           />
           <Text style={styles.infoBannerText}>
@@ -152,7 +155,7 @@ const Report = () => {
         {/* Type display */}
         <View style={styles.typeContainer}>
           <View style={styles.typeIconWrapper}>
-            <Ionicons name={getTypeIcon()} size={24} color={COLORS.secondary} />
+            <Ionicons name={getTypeIcon()} size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
           </View>
           <Text style={styles.typeText}>{getTypeDisplayName()}</Text>
         </View>
@@ -220,7 +223,7 @@ const Report = () => {
             ) : (
               <>
                 <Text style={styles.submitButtonText}>Wyślij raport</Text>
-                <Ionicons name='send' size={18} color={COLORS.background} />
+                <Ionicons name='send' size={ui.moderateScale(18, 0.35)} color={COLORS.background} />
               </>
             )}
           </TouchableOpacity>
@@ -241,7 +244,7 @@ const Report = () => {
 
 export default Report
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -250,13 +253,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: ui.verticalScale(16),
+    paddingHorizontal: ui.spacing(16),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   backIconButton: {
-    width: 40,
-    height: 40,
+    width: ui.moderateScale(40, 0.35),
+    height: ui.moderateScale(40, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -265,91 +268,91 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerText: {
-    fontSize: 20,
+    fontSize: ui.scaleFont(20, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
   },
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 207, 0, 0.1)',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 20,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(14, 0.35),
+    marginBottom: ui.verticalScale(20),
     borderWidth: 1,
     borderColor: 'rgba(255, 207, 0, 0.3)',
   },
   infoBannerText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
   },
   typeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(16),
+    marginBottom: ui.verticalScale(16),
   },
   typeIconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: ui.moderateScale(44, 0.35),
+    height: ui.moderateScale(44, 0.35),
+    borderRadius: ui.moderateScale(22, 0.35),
     backgroundColor: COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: ui.spacing(14, 0.35),
   },
   typeText: {
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },
   idContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 4,
+    marginBottom: ui.verticalScale(20),
+    paddingHorizontal: ui.spacing(4, 0.25),
   },
   idLabel: {
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
   },
   idValue: {
     flex: 1,
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginLeft: 8,
+    marginLeft: ui.spacing(8, 0.35),
   },
   inputContainer: {
-    marginBottom: 24,
+    marginBottom: ui.verticalScale(24),
   },
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: ui.verticalScale(10),
   },
   label: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
   },
   charCount: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
   },
@@ -360,46 +363,46 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.backgroundSecondary,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
+    borderRadius: ui.controlRadius,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.controlPaddingVertical,
+    fontSize: ui.scaleFont(15, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    minHeight: 160,
+    minHeight: ui.verticalScale(160),
   },
   textAreaError: {
     borderColor: COLORS.error,
   },
   errorText: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.error,
-    marginTop: 6,
+    marginTop: ui.verticalScale(6),
   },
   warningText: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.secondary,
-    marginTop: 6,
+    marginTop: ui.verticalScale(6),
   },
   buttonsContainer: {
-    gap: 12,
+    gap: ui.verticalScale(12),
   },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    paddingVertical: 16,
-    gap: 10,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(16),
+    gap: ui.spacing(10, 0.35),
   },
   submitButtonDisabled: {
     opacity: 0.7,
   },
   submitButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },
@@ -409,11 +412,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(14),
   },
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },

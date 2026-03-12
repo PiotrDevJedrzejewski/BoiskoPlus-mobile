@@ -17,8 +17,9 @@ import FullScreenAd from '../../../../components/popup/FullScreenAd'
 import customFetch from '../../../../assets/utils/customFetch'
 import { useDashboard } from '../../../../context/DashboardContext'
 import { useNotification } from '../../../../context/NotificationContext'
+import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
 
-const ActionButton = ({ icon, label, onPress, muted = false }) => (
+const ActionButton = ({ icon, label, onPress, muted = false, styles, ui }) => (
   <TouchableOpacity
     style={styles.actionButton}
     onPress={onPress}
@@ -26,7 +27,7 @@ const ActionButton = ({ icon, label, onPress, muted = false }) => (
   >
     <Ionicons
       name={icon}
-      size={28}
+      size={ui.moderateScale(28, 0.35)}
       color={muted ? COLORS.gray : COLORS.primary}
     />
     <Text style={[styles.actionButtonText, muted && styles.actionButtonMuted]}>
@@ -35,7 +36,7 @@ const ActionButton = ({ icon, label, onPress, muted = false }) => (
   </TouchableOpacity>
 )
 
-const ExpandableSection = ({ title, expanded, onToggle, badge, children }) => (
+const ExpandableSection = ({ title, expanded, onToggle, badge, children, styles, ui }) => (
   <View style={styles.expandableContainer}>
     <TouchableOpacity
       style={styles.expandableHeader}
@@ -47,7 +48,7 @@ const ExpandableSection = ({ title, expanded, onToggle, badge, children }) => (
       </Text>
       <Ionicons
         name={expanded ? 'chevron-up' : 'chevron-down'}
-        size={24}
+        size={ui.moderateScale(24, 0.35)}
         color={COLORS.secondary}
       />
     </TouchableOpacity>
@@ -64,6 +65,8 @@ const InfoRow = ({ label, value }) => (
 
 const SingleEvent = () => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const { id } = useLocalSearchParams()
   const eventID = id
 
@@ -356,7 +359,7 @@ const SingleEvent = () => {
   if (!event) {
     return (
       <View style={styles.notFoundContainer}>
-        <Ionicons name='alert-circle' size={64} color={COLORS.error} />
+        <Ionicons name='alert-circle' size={ui.moderateScale(64, 0.35)} color={COLORS.error} />
         <Text style={styles.notFoundText}>
           Nie znaleziono wydarzenia o podanym ID, możliwe że zostało usunięte
         </Text>
@@ -376,12 +379,12 @@ const SingleEvent = () => {
           style={styles.backIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name='arrow-back' size={24} color={COLORS.secondary} />
+          <Ionicons name='arrow-back' size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
         </TouchableOpacity>
         <Text style={styles.headerText} numberOfLines={1}>
           {event.eventName}
         </Text>
-        <View style={{ width: 40 }} />
+        <View style={{ width: ui.moderateScale(40, 0.35) }} />
       </View>
 
       <ScrollView
@@ -406,6 +409,8 @@ const SingleEvent = () => {
             label='Wycisz chat'
             onPress={handleToggleChatMute}
             muted={isChatMuted}
+            styles={styles}
+            ui={ui}
           />
           <ActionButton
             icon={
@@ -416,16 +421,22 @@ const SingleEvent = () => {
             label='Wycisz powiadomienia'
             onPress={handleToggleNotificationsMute}
             muted={isNotificationsMuted}
+            styles={styles}
+            ui={ui}
           />
           <ActionButton
             icon='flag-outline'
             label='Zgłoś'
             onPress={handleReport}
+            styles={styles}
+            ui={ui}
           />
           <ActionButton
             icon='close-circle-outline'
             label='Opuść'
             onPress={handleLeave}
+            styles={styles}
+            ui={ui}
           />
         </View>
 
@@ -438,6 +449,8 @@ const SingleEvent = () => {
           title='Informacje o wydarzeniu'
           expanded={showInfo}
           onToggle={() => setShowInfo(!showInfo)}
+          styles={styles}
+          ui={ui}
         >
           <InfoRow label='Nazwa' value={event.eventName} />
           <InfoRow label='Adres' value={event.addressString} />
@@ -467,6 +480,8 @@ const SingleEvent = () => {
           expanded={showPlayers}
           onToggle={() => setShowPlayers(!showPlayers)}
           badge={`${players.length} zaakceptowanych`}
+          styles={styles}
+          ui={ui}
         >
           {playersLoading ? (
             <ActivityIndicator size='small' color={COLORS.secondary} />
@@ -503,7 +518,7 @@ const SingleEvent = () => {
 
 export default SingleEvent
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -525,24 +540,24 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: ui.spacing(40, 0.45),
   },
   notFoundText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     textAlign: 'center',
-    marginTop: 16,
-    marginBottom: 24,
+    marginTop: ui.verticalScale(16),
+    marginBottom: ui.verticalScale(24),
   },
   backButton: {
     backgroundColor: COLORS.secondary,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 10,
+    paddingVertical: ui.verticalScale(12),
+    paddingHorizontal: ui.spacing(32, 0.45),
+    borderRadius: ui.moderateScale(10, 0.35),
   },
   backButtonText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },
@@ -550,87 +565,87 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: ui.verticalScale(16),
+    paddingHorizontal: ui.spacing(16),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   backIconButton: {
-    width: 40,
-    height: 40,
+    width: ui.moderateScale(40, 0.35),
+    height: ui.moderateScale(40, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerText: {
     flex: 1,
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
     textAlign: 'center',
-    marginHorizontal: 8,
+    marginHorizontal: ui.spacing(8, 0.35),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
   },
   joinButton: {
     backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    paddingVertical: 18,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(18),
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: ui.verticalScale(20),
   },
   joinButtonWithStatus: {
     backgroundColor: COLORS.third,
   },
   joinButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },
   actionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 24,
-    paddingVertical: 12,
+    marginBottom: ui.verticalScale(24),
+    paddingVertical: ui.verticalScale(12),
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 12,
+    borderRadius: ui.moderateScale(12, 0.35),
   },
   actionButton: {
     alignItems: 'center',
-    padding: 8,
+    padding: ui.spacing(8, 0.35),
   },
   actionButtonText: {
-    fontSize: 10,
+    fontSize: ui.scaleFont(10, 0.25),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginTop: 4,
+    marginTop: ui.verticalScale(4),
     textAlign: 'center',
   },
   actionButtonMuted: {
     color: COLORS.gray,
   },
   sectionLabel: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginBottom: 8,
+    marginBottom: ui.verticalScale(8),
   },
   expandableContainer: {
-    marginTop: 16,
+    marginTop: ui.verticalScale(16),
   },
   expandableHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(16),
   },
   expandableTitle: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },
@@ -639,32 +654,32 @@ const styles = StyleSheet.create({
     fontFamily: 'Lato-Regular',
   },
   expandableContent: {
-    marginTop: 12,
-    paddingHorizontal: 4,
+    marginTop: ui.verticalScale(12),
+    paddingHorizontal: ui.spacing(4, 0.25),
   },
   infoRow: {
     flexDirection: 'row',
-    paddingVertical: 10,
+    paddingVertical: ui.verticalScale(10),
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    width: 120,
+    width: ui.scale(120),
   },
   infoValue: {
     flex: 1,
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
     textAlign: 'center',
-    paddingVertical: 20,
+    paddingVertical: ui.verticalScale(20),
   },
 })

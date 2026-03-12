@@ -6,9 +6,12 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { COLORS } from '../../constants/colors'
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const CookiesAndRules = () => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const {
     needsConsent,
     pendingConsents,
@@ -33,7 +36,7 @@ const CookiesAndRules = () => {
           <View style={styles.modalHeader}>
             <FontAwesome6
               name='cookie-bite'
-              size={24}
+              size={ui.moderateScale(24, 0.35)}
               color={COLORS.secondary}
               style={styles.modalIcon}
             />
@@ -100,10 +103,10 @@ const CookiesAndRules = () => {
           <View style={styles.modalButtons}>
             <Button1
               text='Akceptuj wszystko'
-              height={46}
-              width={220}
-              fontSize={16}
-              padding={12}
+              height={ui.moderateScale(46, 0.35)}
+              width={ui.scale(220)}
+              fontSize={ui.scaleFont(16, 0.35)}
+              padding={ui.spacing(12, 0.35)}
               backgroundColor='#ffcf00'
               color='#003b22'
               onPress={acceptAllConsents}
@@ -112,9 +115,9 @@ const CookiesAndRules = () => {
           <View style={styles.modalButtons}>
             <Button1
               text='Zapisz wybrane'
-              height={46}
-              width={220}
-              fontSize={16}
+              height={ui.moderateScale(46, 0.35)}
+              width={ui.scale(220)}
+              fontSize={ui.scaleFont(16, 0.35)}
               backgroundColor={isReadyToSave ? '#ffcf00' : '#5b5b5b'}
               color='#003b22'
               onPress={isReadyToSave ? saveConsents : undefined}
@@ -133,19 +136,19 @@ const CookiesAndRules = () => {
 
 export default CookiesAndRules
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.65)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: ui.spacing(20, 0.45),
   },
   modalCard: {
     width: '98%',
     maxWidth: 420,
-    borderRadius: 18,
-    padding: 20,
+    borderRadius: ui.moderateScale(18, 0.35),
+    padding: ui.spacing(20, 0.45),
     //shadow
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -157,42 +160,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-    marginBottom: 10,
+    gap: ui.spacing(12, 0.35),
+    marginBottom: ui.verticalScale(10),
   },
   modalIcon: {
-    fontSize: 28,
+    fontSize: ui.scaleFont(28, 0.45),
   },
   modalTitle: {
     color: '#ffcf00',
-    fontSize: 20,
+    fontSize: ui.scaleFont(20, 0.4),
     fontFamily: 'ObjectFont',
   },
   modalDescription: {
     color: '#ffffff',
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 16,
+    fontSize: ui.scaleFont(14, 0.35),
+    lineHeight: ui.verticalScale(20),
+    marginBottom: ui.verticalScale(16),
   },
   modalSection: {
-    marginBottom: 16,
+    marginBottom: ui.verticalScale(16),
   },
   modalSectionTitle: {
     color: '#ffcf00',
-    fontSize: 16,
-    marginBottom: 8,
+    fontSize: ui.scaleFont(16, 0.35),
+    marginBottom: ui.verticalScale(8),
     fontFamily: 'ObjectFont',
   },
   optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 18,
+    gap: ui.spacing(10, 0.35),
+    marginBottom: ui.verticalScale(18),
   },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
+    width: ui.scale(18),
+    height: ui.scale(18),
+    borderRadius: ui.moderateScale(4, 0.25),
     borderWidth: 1,
     borderColor: '#ffcf00',
   },
@@ -201,12 +204,12 @@ const styles = StyleSheet.create({
   },
   optionText: {
     color: '#ffffff',
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
   },
   rulesLink: {
     color: '#ffcf00',
     textDecorationLine: 'underline',
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
   },
   choiceRow: {
     flexDirection: 'row',
@@ -230,12 +233,12 @@ const styles = StyleSheet.create({
   },
   modalButtons: {
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
+    gap: ui.spacing(8, 0.35),
+    marginBottom: ui.verticalScale(12),
   },
   validationText: {
     color: '#ff9b9b',
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     textAlign: 'center',
   },
 })

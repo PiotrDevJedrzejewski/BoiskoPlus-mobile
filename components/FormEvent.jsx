@@ -14,6 +14,7 @@ import { COLORS } from '../constants/colors'
 import customFetch from '../assets/utils/customFetch'
 import { Toast } from 'toastify-react-native'
 import { useRouter } from 'expo-router'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const GAME_TYPES = [
   { label: 'Wybierz typ gry', value: '' },
@@ -120,6 +121,8 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
   const [eventData, setEventData] = useState(initialData || defaultEventData)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
 
   // Wypełnij formularz danymi z predefined place (orlika)
   useEffect(() => {
@@ -333,7 +336,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
 
       {/* Adres - Ulica i numer */}
       <View style={styles.row}>
-        <View style={[styles.halfColumn, { flex: 2 }]}>
+        <View style={styles.streetColumn}>
           <Text style={styles.label}>Ulica</Text>
           <TextInput
             style={styles.input}
@@ -347,7 +350,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
             placeholderTextColor={COLORS.gray}
           />
         </View>
-        <View style={[styles.halfColumn, { flex: 1 }]}>
+        <View style={styles.numberColumn}>
           <Text style={styles.label}>Numer</Text>
           <TextInput
             style={styles.input}
@@ -367,7 +370,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
       {/* Kod pocztowy */}
       <Text style={styles.label}>Kod pocztowy</Text>
       <TextInput
-        style={[styles.input, { width: 150 }]}
+        style={[styles.input, styles.postalCodeInput]}
         value={eventData.address.postalCode}
         onChangeText={handlePostalCodeChange}
         placeholder='XX-XXX'
@@ -525,80 +528,93 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
 
 export default FormEvent
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
   },
   content: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
   },
   label: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: ui.verticalScale(16),
+    marginBottom: ui.verticalScale(8),
   },
   input: {
     backgroundColor: COLORS.backgroundSecondary,
     borderWidth: 1,
     borderColor: COLORS.secondary,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.controlPaddingVertical,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
+  postalCodeInput: {
+    width: ui.scale(150),
+  },
   textArea: {
-    minHeight: 100,
-    paddingTop: 12,
+    minHeight: ui.verticalScale(100),
+    paddingTop: ui.controlPaddingVertical,
   },
   pickerWrapper: {
     backgroundColor: COLORS.backgroundSecondary,
     borderWidth: 1,
     borderColor: COLORS.secondary,
-    borderRadius: 16,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
     overflow: 'hidden',
+    justifyContent: 'center',
+    paddingLeft: ui.controlPaddingHorizontal,
   },
   picker: {
     color: COLORS.primary,
-    height: 50,
+    height: ui.pickerHeight,
   },
   row: {
     flexDirection: 'row',
-    gap: 12,
+    gap: ui.spacing(12, 0.35),
   },
   halfColumn: {
     flex: 1,
   },
+  streetColumn: {
+    flex: 2,
+  },
+  numberColumn: {
+    flex: 1,
+  },
   checkboxContainer: {
-    marginTop: 24,
+    marginTop: ui.verticalScale(24),
   },
   checkboxRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: ui.verticalScale(16),
   },
   checkboxLabel: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   submitButton: {
     backgroundColor: COLORS.secondary,
-    borderRadius: 16,
-    paddingVertical: 16,
+    borderRadius: ui.moderateScale(16, 0.35),
+    paddingVertical: ui.verticalScale(16),
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: ui.verticalScale(24),
   },
   submitButtonDisabled: {
     opacity: 0.6,
   },
   submitButtonText: {
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },

@@ -22,6 +22,7 @@ import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
 import { auth } from '../assets/utils/firebase'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
 import DatePicker from '../components/DatePicker'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const parseIsoDate = (value) => {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -51,6 +52,8 @@ const parseIsoDate = (value) => {
 
 const Register = () => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState([false, false])
 
@@ -412,8 +415,8 @@ const Register = () => {
             <Button1
               text='Zarejestruj się'
               width={'100%'}
-              height={50}
-              fontSize={20}
+              height={ui.verticalScale(50)}
+              fontSize={ui.scaleFont(20, 0.4)}
               lineColor='#fff'
               backgroundColor={COLORS.secondary}
               color={COLORS.background}
@@ -446,7 +449,7 @@ const Register = () => {
 
 export default Register
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -454,12 +457,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   spinner: {
-    width: 150,
-    height: 150,
+    width: ui.scale(150),
+    height: ui.scale(150),
   },
   loadingText: {
-    marginTop: 20,
-    fontSize: 18,
+    marginTop: ui.verticalScale(20),
+    fontSize: ui.scaleFont(18, 0.4),
     color: COLORS.primary,
   },
   auth: {
@@ -467,7 +470,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: ui.verticalScale(40),
   },
   authMask: {
     position: 'absolute',
@@ -480,8 +483,8 @@ const styles = StyleSheet.create({
   },
   authFormContainer: {
     backgroundColor: COLORS.background,
-    borderRadius: 16,
-    padding: 30,
+    borderRadius: ui.moderateScale(16, 0.35),
+    padding: ui.spacing(30, 0.45),
     width: '90%',
     maxWidth: 400,
     shadowColor: '#000',
@@ -491,69 +494,71 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   authFormTitle: {
-    fontSize: 32,
+    fontSize: ui.scaleFont(32, 0.5),
     fontWeight: 'bold',
     color: COLORS.primary,
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: ui.verticalScale(30),
   },
   authForm: {
     width: '100%',
   },
   authFormGroup: {
-    marginBottom: 20,
+    marginBottom: ui.verticalScale(20),
   },
   label: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontWeight: '600',
     color: COLORS.primary,
-    marginBottom: 8,
+    marginBottom: ui.verticalScale(8),
   },
   input: {
     backgroundColor: '#f5f5f5',
-    borderRadius: 10,
-    padding: 15,
-    fontSize: 16,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.controlPaddingVertical,
+    fontSize: ui.scaleFont(16, 0.35),
     color: COLORS.background,
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
   authFormShow: {
-    padding: 5,
-    marginTop: 5,
+    padding: ui.spacing(5, 0.35),
+    marginTop: ui.verticalScale(5),
     alignSelf: 'flex-start',
   },
   showButtonText: {
     color: COLORS.secondary,
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontWeight: '600',
   },
   smallText: {
     color: '#666',
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: ui.scaleFont(12, 0.3),
+    marginTop: ui.verticalScale(4),
   },
   authFormAlternate: {
-    marginTop: 30,
+    marginTop: ui.verticalScale(30),
     alignItems: 'center',
   },
   authFormAlternateText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     color: '#666',
-    marginBottom: 15,
+    marginBottom: ui.verticalScale(15),
   },
   link: {
     color: COLORS.secondary,
     fontWeight: 'bold',
   },
   authFormAlternateIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: ui.moderateScale(50, 0.35),
+    height: ui.moderateScale(50, 0.35),
+    borderRadius: ui.moderateScale(25, 0.35),
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: ui.verticalScale(10),
   },
   googleIconImage: {
     width: '100%',
@@ -561,7 +566,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   googleText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     color: COLORS.primary,
   },
 })

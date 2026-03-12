@@ -3,8 +3,11 @@ import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../../../constants/colors'
 import FormEvent from '../../../../components/FormEvent'
 import { useLocalSearchParams } from 'expo-router'
+import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
 
 const AddEvent = () => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const params = useLocalSearchParams()
   const predefinedPlace = params.predefinedPlace ? JSON.parse(params.predefinedPlace) : null
 
@@ -12,7 +15,7 @@ const AddEvent = () => {
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name='add-circle' size={26} color={COLORS.secondary} />
+        <Ionicons name='add-circle' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
         <Text style={styles.headerText}>Stwórz Wydarzenie</Text>
       </View>
 
@@ -24,7 +27,7 @@ const AddEvent = () => {
 
 export default AddEvent
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -33,13 +36,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: ui.verticalScale(20),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   headerText: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
 })

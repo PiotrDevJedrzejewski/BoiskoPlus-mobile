@@ -13,49 +13,68 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 import { COLORS } from '../../../../../constants/colors'
 import CardDashboard from '../../../../../components/CardDashboard'
 import { useDashboard } from '../../../../../context/DashboardContext'
-
-const DASHBOARD_CARDS = [
-  {
-    key: 'all-events',
-    title: 'Wszystkie wydarzenia',
-    desc: 'Lista wszystkich Twoich wydarzeń, niezależnie od statusu.',
-    route: '/(main)/(tabs)/(hidden)/events-managment/events-allEvents',
-    renderIcon: () => (
-      <MaterialIcons name='emoji-events' size={52} color={COLORS.secondary} />
-    ),
-  },
-  {
-    key: 'active-events',
-    title: 'Aktywne wydarzenia',
-    desc: 'Sprawdź czy zostałeś dodany do wydarzenia',
-    route: '/(main)/(tabs)/(hidden)/events-managment/events-active',
-    renderIcon: () => (
-      <Ionicons name='calendar-sharp' size={50} color={COLORS.secondary} />
-    ),
-  },
-  {
-    key: 'owner-events',
-    title: 'Edytuj wydarzenia',
-    desc: '+Dodaj, -usuń gracza lub edytuj swoje wydarzenie.',
-    route: '/(main)/(tabs)/(hidden)/events-managment/events-owner',
-    renderIcon: () => (
-      <FontAwesome5 name="tools" size={50} color={COLORS.secondary} />
-    ),
-  },
-  {
-    key: 'other-events',
-    title: 'Historia wydarzeń',
-    desc: 'Przeglądaj zakończone wydarzenia i ich szczegóły.',
-    route: '/(main)/(tabs)/(hidden)/events-managment/events-other',
-    renderIcon: () => (
-      <Ionicons name='archive' size={50} color={COLORS.secondary} />
-    ),
-  },
-]
+import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
 
 const EventsDashboard = () => {
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
+  const dashboardCards = [
+    {
+      key: 'all-events',
+      title: 'Wszystkie wydarzenia',
+      desc: 'Lista wszystkich Twoich wydarzeń, niezależnie od statusu.',
+      route: '/(main)/(tabs)/(hidden)/events-managment/events-allEvents',
+      icon: (
+        <MaterialIcons
+          name='emoji-events'
+          size={ui.moderateScale(52, 0.35)}
+          color={COLORS.secondary}
+        />
+      ),
+    },
+    {
+      key: 'active-events',
+      title: 'Aktywne wydarzenia',
+      desc: 'Sprawdź czy zostałeś dodany do wydarzenia',
+      route: '/(main)/(tabs)/(hidden)/events-managment/events-active',
+      icon: (
+        <Ionicons
+          name='calendar-sharp'
+          size={ui.moderateScale(50, 0.35)}
+          color={COLORS.secondary}
+        />
+      ),
+    },
+    {
+      key: 'owner-events',
+      title: 'Edytuj wydarzenia',
+      desc: '+Dodaj, -usuń gracza lub edytuj swoje wydarzenie.',
+      route: '/(main)/(tabs)/(hidden)/events-managment/events-owner',
+      icon: (
+        <FontAwesome5
+          name='tools'
+          size={ui.moderateScale(50, 0.35)}
+          color={COLORS.secondary}
+        />
+      ),
+    },
+    {
+      key: 'other-events',
+      title: 'Historia wydarzeń',
+      desc: 'Przeglądaj zakończone wydarzenia i ich szczegóły.',
+      route: '/(main)/(tabs)/(hidden)/events-managment/events-other',
+      icon: (
+        <Ionicons
+          name='archive'
+          size={ui.moderateScale(50, 0.35)}
+          color={COLORS.secondary}
+        />
+      ),
+    },
+  ]
 
   useEffect(() => {
     refreshEventsData().catch(() => {})
@@ -69,9 +88,9 @@ const EventsDashboard = () => {
           onPress={() => router.push('/(main)/(tabs)/dashboard-home')}
           activeOpacity={0.8}
         >
-          <Ionicons name='arrow-back' size={28} color={COLORS.primary} />
+          <Ionicons name='arrow-back' size={ui.moderateScale(28, 0.35)} color={COLORS.primary} />
         </TouchableOpacity>
-        <Ionicons name='calendar' size={26} color={COLORS.secondary} />
+        <Ionicons name='calendar' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
         <Text style={styles.headerText}>Moje Wydarzenia</Text>
       </View>
 
@@ -87,10 +106,10 @@ const EventsDashboard = () => {
           </View>
         )}
 
-        {DASHBOARD_CARDS.map((card) => (
+        {dashboardCards.map((card) => (
           <CardDashboard
             key={card.key}
-            icon={card.renderIcon()}
+            icon={card.icon}
             title={card.title}
             desc={card.desc}
             onPress={() => router.push(card.route)}
@@ -103,7 +122,7 @@ const EventsDashboard = () => {
 
 export default EventsDashboard
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -113,41 +132,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingVertical: ui.verticalScale(20),
     position: 'relative',
+    backgroundColor:'rgba(0, 0, 0, 0.3)',
   },
   backButton: {
     position: 'absolute',
-    left: 10,
-    top: '48%',
-    width: 46,
-    height: 46,
+    height: '100%',
+    left: ui.spacing(15, 0.35),
+    width: ui.moderateScale(46, 0.35),
+    height: ui.moderateScale(46, 0.35),
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerText: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   list: {
     flex: 1,
   },
   listContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: ui.spacing(16),
+    paddingBottom: ui.verticalScale(32),
   },
   loadingInline: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
-    gap: 8,
+    marginBottom: ui.verticalScale(12),
+    gap: ui.spacing(8, 0.35),
   },
   loadingText: {
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },

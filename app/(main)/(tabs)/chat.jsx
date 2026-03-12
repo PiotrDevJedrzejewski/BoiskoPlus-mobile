@@ -21,11 +21,14 @@ import { useAuth } from '../../../context/AuthContext'
 import { useNotification } from '../../../context/NotificationContext'
 import LottieView from 'lottie-react-native'
 import { useFonts } from 'expo-font'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const typing = require('../../../assets/utils/typing.json')
 const CUSTOM_TAB_BAR_HEIGHT = 60
 
 const Chat = () => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const { user } = useAuth()
   const {
     chatSocket,
@@ -577,7 +580,16 @@ const Chat = () => {
   }
 
   const typingText = getTypingText()
-  const inputBottomOffset = Math.max(0, keyboardHeight - CUSTOM_TAB_BAR_HEIGHT)
+  const tabBarHeight = ui.verticalScale(CUSTOM_TAB_BAR_HEIGHT)
+  const inputBottomOffset = Math.max(0, keyboardHeight - tabBarHeight)
+  const headerIconSize = ui.moderateScale(26, 0.35)
+  const filterIconSize = ui.moderateScale(14, 0.3)
+  const stateIconSize = ui.moderateScale(50, 0.3)
+  const backIconSize = ui.moderateScale(24, 0.35)
+  const settingsIconSize = ui.moderateScale(22, 0.35)
+  const searchIconSize = ui.moderateScale(20, 0.35)
+  const sendIconSize = ui.moderateScale(20, 0.35)
+  const typingAnimationSize = ui.scale(80)
 
   // Loading screen dla czcionek
   if (!fontsLoaded) {
@@ -596,7 +608,7 @@ const Chat = () => {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <Ionicons name='chatbubbles' size={26} color={COLORS.secondary} />
+          <Ionicons name='chatbubbles' size={headerIconSize} color={COLORS.secondary} />
           <Text style={styles.headerText}>Czat</Text>
         </View>
 
@@ -627,7 +639,7 @@ const Chat = () => {
           >
             <Ionicons
               name='chatbubble'
-              size={14}
+              size={filterIconSize}
               color={
                 filterType === 'private' ? COLORS.background : COLORS.primary
               }
@@ -650,7 +662,7 @@ const Chat = () => {
           >
             <Ionicons
               name='people'
-              size={14}
+              size={filterIconSize}
               color={
                 filterType === 'group' ? COLORS.background : COLORS.primary
               }
@@ -677,7 +689,7 @@ const Chat = () => {
           />
           <Ionicons
             name='search'
-            size={20}
+            size={searchIconSize}
             color={COLORS.gray}
             style={styles.searchIcon}
           />
@@ -704,7 +716,7 @@ const Chat = () => {
             <View style={styles.emptyState}>
               <Ionicons
                 name='chatbubbles-outline'
-                size={50}
+                size={stateIconSize}
                 color={COLORS.gray}
               />
               <Text style={styles.emptyText}>Brak pokojów czatu</Text>
@@ -721,7 +733,7 @@ const Chat = () => {
       {/* Header z powrotem */}
       <View style={styles.messageHeader}>
         <TouchableOpacity onPress={handleBackToList} style={styles.backButton}>
-          <Ionicons name='arrow-back' size={24} color={COLORS.primary} />
+          <Ionicons name='arrow-back' size={backIconSize} color={COLORS.primary} />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.headerUsername} numberOfLines={1}>
@@ -737,7 +749,7 @@ const Chat = () => {
           style={styles.settingsButton}
           onPress={() => setShowSettings(!showSettings)}
         >
-          <Ionicons name='settings-outline' size={22} color={COLORS.primary} />
+          <Ionicons name='settings-outline' size={settingsIconSize} color={COLORS.primary} />
         </TouchableOpacity>
       </View>
 
@@ -795,7 +807,10 @@ const Chat = () => {
           style={styles.messagesContainer}
           contentContainerStyle={[
             styles.messagesContent,
-            { paddingBottom: 96 + (typingText ? 20 : 0) },
+            {
+              paddingBottom:
+                ui.verticalScale(96) + (typingText ? ui.verticalScale(20) : 0),
+            },
           ]}
           showsVerticalScrollIndicator={false}
           onScroll={({ nativeEvent }) => {
@@ -850,7 +865,7 @@ const Chat = () => {
             <View style={styles.emptyMessages}>
               <Ionicons
                 name='chatbubble-outline'
-                size={50}
+                size={stateIconSize}
                 color={COLORS.gray}
               />
               <Text style={styles.emptyText}>Brak wiadomości</Text>
@@ -874,12 +889,13 @@ const Chat = () => {
                 autoPlay
                 loop
                 style={{
-                  width: 80,
-                  height: 80,
+                  width: typingAnimationSize,
+                  height: typingAnimationSize,
                   position: 'absolute',
                   top: '50%',
                   left: '50%',
-                  transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+                  marginLeft: -typingAnimationSize / 2,
+                  marginTop: -typingAnimationSize / 2,
                 }}
               />
             </View>
@@ -904,7 +920,7 @@ const Chat = () => {
         >
           <Ionicons
             name='send'
-            size={20}
+            size={sendIconSize}
             color={input.trim() ? COLORS.background : COLORS.gray}
           />
         </TouchableOpacity>
@@ -915,46 +931,47 @@ const Chat = () => {
 
 export default Chat
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    position: 'relative',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: ui.verticalScale(20),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   headerText: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   filters: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: ui.spacing(16),
+    paddingVertical: ui.verticalScale(12),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    gap: 8,
+    gap: ui.spacing(8, 0.35),
   },
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
+    paddingHorizontal: ui.spacing(12, 0.35),
+    paddingVertical: ui.verticalScale(8),
+    borderRadius: ui.moderateScale(16, 0.35),
     backgroundColor: '#494949',
-    gap: 6,
+    gap: ui.spacing(6, 0.35),
   },
   filterButtonActive: {
     backgroundColor: COLORS.secondary,
   },
   filterText: {
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
@@ -963,17 +980,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Bold',
   },
   searchContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: ui.spacing(16),
+    paddingVertical: ui.verticalScale(12),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   searchInput: {
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    height: 44,
-    paddingHorizontal: 16,
-    paddingRight: 40,
-    fontSize: 16,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.controlPaddingVertical,
+    paddingRight: ui.spacing(40, 0.35),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     borderWidth: 1,
@@ -981,8 +999,8 @@ const styles = StyleSheet.create({
   },
   searchIcon: {
     position: 'absolute',
-    right: 28,
-    top: 24,
+    right: ui.spacing(28, 0.35),
+    top: ui.verticalScale(24),
   },
   roomList: {
     flex: 1,
@@ -991,17 +1009,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 50,
+    paddingVertical: ui.verticalScale(50),
   },
   emptyText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: ui.verticalScale(16),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
   },
   emptySubtext: {
-    marginTop: 8,
-    fontSize: 14,
+    marginTop: ui.verticalScale(8),
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
     opacity: 0.7,
@@ -1010,32 +1028,32 @@ const styles = StyleSheet.create({
   messageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: ui.spacing(16),
+    paddingVertical: ui.verticalScale(16),
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.third,
   },
   backButton: {
-    padding: 4,
-    marginRight: 12,
+    padding: ui.spacing(4, 0.35),
+    marginRight: ui.spacing(12, 0.35),
   },
   headerInfo: {
     flex: 1,
   },
   headerUsername: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    marginTop: 2,
+    marginTop: ui.verticalScale(2),
   },
   settingsButton: {
-    padding: 4,
+    padding: ui.spacing(4, 0.35),
   },
   loadingContainer: {
     flex: 1,
@@ -1043,8 +1061,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+    marginTop: ui.verticalScale(12),
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
@@ -1052,20 +1070,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   messagesContent: {
-    padding: 16,
+    padding: ui.spacing(16),
     flexGrow: 1,
   },
   emptyMessages: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 50,
+    paddingVertical: ui.verticalScale(50),
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: ui.spacing(16),
+    paddingVertical: ui.verticalScale(12),
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderTopWidth: 1,
     borderTopColor: COLORS.third,
@@ -1078,35 +1096,36 @@ const styles = StyleSheet.create({
   typingIndicator: {
     position: 'absolute',
     flexDirection: 'row',
-    top: -24,
-    left: 16,
+    top: -ui.verticalScale(24),
+    left: ui.spacing(16),
   },
   typingIndicatorText: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'ObjectFont',
     color: COLORS.primary,
   },
   typingAnimationWrapper: {
-    width: 50,
-    height: 20,
+    width: ui.scale(50),
+    height: ui.verticalScale(20),
     overflow: 'hidden',
     position: 'relative',
   },
   messageInput: {
     flex: 1,
     backgroundColor: COLORS.white,
-    borderRadius: 20,
-    height: 44,
-    paddingHorizontal: 16,
-    fontSize: 16,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.controlPaddingVertical,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.background,
-    marginRight: 12,
+    marginRight: ui.spacing(12, 0.35),
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: ui.controlMinHeight,
+    height: ui.controlMinHeight,
+    borderRadius: ui.controlMinHeight / 2,
     backgroundColor: COLORS.secondary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -1116,13 +1135,19 @@ const styles = StyleSheet.create({
   },
   // Settings dropdown styles
   settingsDropdown: {
+    position: 'absolute',
+    zIndex: 20,
+    top: ui.verticalScale(60),
+    right: 0,
+    width: '100%',
+    borderRadius: ui.moderateScale(8, 0.35),
     backgroundColor: COLORS.backgroundSecondary,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.third,
   },
   settingsOption: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: ui.verticalScale(12),
+    paddingHorizontal: ui.spacing(16),
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
@@ -1130,7 +1155,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   settingsOptionText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
@@ -1139,18 +1164,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: ui.verticalScale(10),
   },
   loadingOlderText: {
-    marginLeft: 8,
-    fontSize: 12,
+    marginLeft: ui.spacing(8, 0.35),
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
   },
   noMoreMessages: {
     textAlign: 'center',
-    paddingVertical: 10,
-    fontSize: 12,
+    paddingVertical: ui.verticalScale(10),
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
     fontStyle: 'italic',

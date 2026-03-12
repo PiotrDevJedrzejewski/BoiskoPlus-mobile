@@ -13,11 +13,18 @@ import { COLORS } from '../../../../../constants/colors'
 import { useDashboard } from '../../../../../context/DashboardContext'
 import MyEventCard from '../../../../../components/MyEventCard'
 import { parseEventDate } from '../../../../../assets/utils/eventsApi'
+import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
 
 const EventsActive = () => {
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const [activeEvents, setActiveEvents] = useState([])
+
+  const backIconSize = ui.moderateScale(28, 0.35)
+  const headerIconSize = ui.moderateScale(26, 0.35)
+  const stateIconSize = ui.moderateScale(58, 0.3)
 
   useEffect(() => {
     refreshEventsData().catch(() => {})
@@ -45,10 +52,10 @@ const EventsActive = () => {
           }
           activeOpacity={0.8}
         >
-          <Ionicons name='arrow-back' size={28} color={COLORS.primary} />
+          <Ionicons name='arrow-back' size={backIconSize} color={COLORS.primary} />
         </TouchableOpacity>
-        <Ionicons name='time' size={26} color={COLORS.secondary} />
-        <Text style={styles.headerText}>Zaakceptowane i Zainteresowane</Text>
+        <Ionicons name='time' size={headerIconSize} color={COLORS.secondary} />
+        <Text style={styles.headerText}>Aktywne</Text>
       </View>
 
       <Text style={styles.infoText}>
@@ -64,7 +71,7 @@ const EventsActive = () => {
 
       {error && !loading && (
         <View style={styles.centered}>
-          <Ionicons name='alert-circle-outline' size={58} color={COLORS.error} />
+          <Ionicons name='alert-circle-outline' size={stateIconSize} color={COLORS.error} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             style={styles.retryButton}
@@ -95,7 +102,7 @@ const EventsActive = () => {
 
           {activeEvents.length === 0 && (
             <View style={styles.centered}>
-              <Ionicons name='calendar-outline' size={58} color={COLORS.gray} />
+              <Ionicons name='calendar-outline' size={stateIconSize} color={COLORS.gray} />
               <Text style={styles.emptyText}>Brak zaakceptowanych i zainteresowanych</Text>
             </View>
           )}
@@ -107,86 +114,86 @@ const EventsActive = () => {
 
 export default EventsActive
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  header: {
+   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    paddingVertical: ui.verticalScale(20),
     position: 'relative',
+    backgroundColor:'rgba(0, 0, 0, 0.3)',
   },
   backButton: {
-        position: 'absolute',
-    left: 10,
-    top: '48%',
-    width: 46,
-    height: 46,
+    position: 'absolute',
+    height: '100%',
+    left: ui.spacing(15, 0.35),
+    width: ui.moderateScale(46, 0.35),
+    height: ui.moderateScale(46, 0.35),
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerText: {
-    fontSize: 22,
+    fontSize: ui.scaleFont(22, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
     textAlign: 'center',
   },
   infoText: {
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     opacity: 0.8,
     textAlign: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 2,
+    paddingHorizontal: ui.spacing(16),
+    paddingTop: ui.verticalScale(10),
+    paddingBottom: ui.verticalScale(2),
   },
   list: {
     flex: 1,
   },
   listContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: ui.spacing(16),
+    paddingBottom: ui.verticalScale(32),
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: ui.spacing(20, 0.45),
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: ui.verticalScale(12),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
   errorText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: ui.verticalScale(16),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.error,
     textAlign: 'center',
   },
   retryButton: {
-    marginTop: 20,
+    marginTop: ui.verticalScale(20),
     backgroundColor: COLORS.secondary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: ui.spacing(24, 0.45),
+    paddingVertical: ui.verticalScale(12),
+    borderRadius: ui.moderateScale(12, 0.35),
   },
   retryButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },
   emptyText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: ui.verticalScale(12),
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.gray,
     textAlign: 'center',

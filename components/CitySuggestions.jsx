@@ -1,8 +1,12 @@
 import { memo, useMemo } from 'react'
 import { StyleSheet, FlatList, View, Text, TouchableOpacity } from 'react-native'
 import { COLORS } from '../constants/colors'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const CitySuggestions = ({ suggestions, onSuggestionClick }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
   const flatItems = useMemo(() => {
     if (!suggestions || suggestions.length === 0) {
       return []
@@ -73,14 +77,14 @@ const CitySuggestions = ({ suggestions, onSuggestionClick }) => {
 
 export default memo(CitySuggestions)
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   suggestionsContainer: {
-    maxHeight: 300,
+    maxHeight: ui.verticalScale(300),
     backgroundColor: COLORS.backgroundSecondary,
     borderWidth: 1,
     borderColor: COLORS.secondary,
-    borderRadius: 8,
-    marginTop: 4,
+    borderRadius: ui.moderateScale(8, 0.35),
+    marginTop: ui.verticalScale(4),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -89,20 +93,20 @@ const styles = StyleSheet.create({
   },
   provinceHeader: {
     backgroundColor: COLORS.background,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: ui.spacing(12, 0.35),
+    paddingVertical: ui.verticalScale(6),
   },
   provinceText: {
     color: COLORS.secondary,
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontWeight: 'bold',
   },
   suggestionItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: ui.verticalScale(8),
+    paddingHorizontal: ui.spacing(16),
   },
   suggestionCity: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     color: COLORS.primary,
   },
 })

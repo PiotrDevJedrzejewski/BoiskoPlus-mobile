@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const MUTE_OPTIONS = [
   { key: '1h', label: 'Wycisz na 1 godzinę', icon: 'time-outline' },
@@ -38,6 +39,9 @@ const MuteChatModal = ({
   loading = false,
   roomName = 'Czat',
 }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
   const handleMute = (duration) => {
     if (onMute) {
       onMute(duration)
@@ -65,7 +69,7 @@ const MuteChatModal = ({
               <View style={styles.header}>
                 <Ionicons
                   name={isMuted ? 'notifications-off' : 'notifications'}
-                  size={24}
+                  size={ui.moderateScale(24, 0.35)}
                   color={COLORS.secondary}
                 />
                 <Text style={styles.headerText}>Ustawienia powiadomień</Text>
@@ -95,7 +99,7 @@ const MuteChatModal = ({
                       >
                         <Ionicons
                           name={option.icon}
-                          size={20}
+                          size={ui.moderateScale(20, 0.35)}
                           color={COLORS.primary}
                         />
                         <Text style={styles.optionText}>{option.label}</Text>
@@ -118,7 +122,7 @@ const MuteChatModal = ({
                   >
                     <Ionicons
                       name='notifications'
-                      size={20}
+                      size={ui.moderateScale(20, 0.35)}
                       color={isMuted ? COLORS.third : COLORS.gray}
                     />
                     <Text
@@ -156,7 +160,7 @@ const MuteChatModal = ({
 
 export default MuteChatModal
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -164,67 +168,67 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: COLORS.backgroundSecondary,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    paddingBottom: 40,
+    borderTopLeftRadius: ui.moderateScale(24, 0.35),
+    borderTopRightRadius: ui.moderateScale(24, 0.35),
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
     maxHeight: '80%',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: ui.verticalScale(12),
   },
   headerText: {
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
   },
   roomName: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    marginBottom: 20,
-    paddingLeft: 34,
+    marginBottom: ui.verticalScale(20),
+    paddingLeft: ui.spacing(34, 0.4),
   },
   loadingContainer: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: ui.verticalScale(40),
   },
   loadingText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    marginTop: 12,
+    marginTop: ui.verticalScale(12),
   },
   optionsContainer: {
-    gap: 8,
+    gap: ui.spacing(8, 0.35),
   },
   optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(16),
   },
   optionText: {
-    fontSize: 15,
+    fontSize: ui.scaleFont(15, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   separator: {
     height: 1,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    marginVertical: 16,
+    marginVertical: ui.verticalScale(16),
   },
   unmuteButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(16),
     borderWidth: 1,
     borderColor: COLORS.third,
   },
@@ -232,10 +236,10 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   unmuteText: {
-    fontSize: 15,
+    fontSize: ui.scaleFont(15, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.third,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
     flex: 1,
   },
   unmuteTextDisabled: {
@@ -243,26 +247,26 @@ const styles = StyleSheet.create({
   },
   mutedBadge: {
     backgroundColor: COLORS.error,
-    borderRadius: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    borderRadius: ui.moderateScale(8, 0.35),
+    paddingVertical: ui.verticalScale(4),
+    paddingHorizontal: ui.spacing(8, 0.35),
   },
   mutedBadgeText: {
-    fontSize: 10,
+    fontSize: ui.scaleFont(10, 0.25),
     fontFamily: 'Montserrat-Bold',
     color: '#fff',
   },
   cancelButton: {
-    marginTop: 16,
+    marginTop: ui.verticalScale(16),
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(14),
     alignItems: 'center',
   },
   cancelButtonText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },

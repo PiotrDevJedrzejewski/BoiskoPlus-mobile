@@ -1,11 +1,14 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../constants/colors'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const defaultAvatar = require('../assets/images/defaultAvatar.png')
 
 const PlayerCard = ({ playerInfo, onPress }) => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
 
   const handlePress = () => {
     if (onPress) {
@@ -63,13 +66,13 @@ const PlayerCard = ({ playerInfo, onPress }) => {
 
 export default PlayerCard
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     width: '100%',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    padding: 16,
-    marginVertical: 8,
+    borderRadius: ui.moderateScale(16, 0.35),
+    padding: ui.spacing(16),
+    marginVertical: ui.verticalScale(8),
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
@@ -81,12 +84,12 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   avatarContainer: {
-    marginRight: 12,
+    marginRight: ui.spacing(12, 0.35),
   },
   avatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 12,
+    width: ui.scale(70),
+    height: ui.scale(70),
+    borderRadius: ui.moderateScale(12, 0.35),
     borderWidth: 2,
     borderColor: COLORS.primary,
   },
@@ -96,7 +99,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   infoText: {
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
@@ -106,7 +109,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   statsText: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
   },

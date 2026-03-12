@@ -9,6 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const NotificationsModal = ({
   visible,
@@ -17,6 +18,8 @@ const NotificationsModal = ({
   unreadEvents = 0,
 }) => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const totalUnread = unreadMessages + unreadEvents
 
   const handleNavigateToChat = () => {
@@ -44,7 +47,7 @@ const NotificationsModal = ({
               <View style={styles.header}>
                 <Ionicons
                   name='notifications'
-                  size={24}
+                  size={ui.moderateScale(24, 0.35)}
                   color={COLORS.secondary}
                 />
                 <Text style={styles.headerText}>Powiadomienia</Text>
@@ -68,7 +71,7 @@ const NotificationsModal = ({
                   <View style={styles.notificationLeft}>
                     <Ionicons
                       name='chatbubbles'
-                      size={24}
+                      size={ui.moderateScale(24, 0.35)}
                       color={COLORS.primary}
                     />
                     <Text style={styles.notificationText}>Nowe wiadomości</Text>
@@ -99,7 +102,7 @@ const NotificationsModal = ({
                   <View style={styles.notificationLeft}>
                     <Ionicons
                       name='calendar'
-                      size={24}
+                      size={ui.moderateScale(24, 0.35)}
                       color={COLORS.primary}
                     />
                     <Text style={styles.notificationText}>
@@ -142,63 +145,63 @@ const NotificationsModal = ({
 
 export default NotificationsModal
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: ui.spacing(20, 0.45),
   },
   container: {
     width: '100%',
     maxWidth: 350,
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: ui.moderateScale(16, 0.35),
+    padding: ui.spacing(20, 0.45),
     borderBottomWidth: 2,
     borderBottomColor: COLORS.secondary,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingBottom: 16,
+    marginBottom: ui.verticalScale(20),
+    paddingBottom: ui.verticalScale(16),
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   headerText: {
-    fontSize: 20,
+    fontSize: ui.scaleFont(20, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
     flex: 1,
   },
   totalBadge: {
     backgroundColor: COLORS.error,
-    borderRadius: 12,
-    minWidth: 24,
-    height: 24,
+    borderRadius: ui.moderateScale(12, 0.35),
+    minWidth: ui.scale(24),
+    height: ui.scale(24),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: ui.spacing(8, 0.35),
   },
   totalBadgeText: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Montserrat-Bold',
     color: '#fff',
   },
   listContainer: {
-    gap: 12,
-    marginBottom: 20,
+    gap: ui.spacing(12, 0.35),
+    marginBottom: ui.verticalScale(20),
   },
   notificationItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(16),
   },
   notificationLeft: {
     flexDirection: 'row',
@@ -206,25 +209,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   notificationText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   badge: {
     backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    minWidth: 28,
-    height: 28,
+    borderRadius: ui.moderateScale(12, 0.35),
+    minWidth: ui.scale(28),
+    height: ui.scale(28),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: ui.spacing(8, 0.35),
   },
   badgeEmpty: {
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
   badgeText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },
@@ -235,12 +238,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: COLORS.primary,
-    borderRadius: 10,
-    paddingVertical: 12,
+    borderRadius: ui.moderateScale(10, 0.35),
+    paddingVertical: ui.verticalScale(12),
     alignItems: 'center',
   },
   closeButtonText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },

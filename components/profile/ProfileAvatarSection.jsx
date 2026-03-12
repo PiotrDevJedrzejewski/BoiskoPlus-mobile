@@ -7,11 +7,14 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { COLORS } from '../../constants/colors'
 import { storage } from '../../assets/utils/firebase'
 import { getStorageRefFromUrlOrPath } from '../../assets/utils/firebaseStorage'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const defaultAvatar = require('../../assets/images/defaultAvatar.png')
 
 const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
   const [avatarUploading, setAvatarUploading] = useState(false)
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
 
   const avatar = user?.avatarUrl ? { uri: user.avatarUrl } : defaultAvatar
   // Keep user id field robust across legacy payload variants.
@@ -130,7 +133,7 @@ const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
         disabled={avatarUploading}
         activeOpacity={0.8}
       >
-        <Ionicons name='camera' size={18} color={COLORS.background} />
+        <Ionicons name='camera' size={ui.moderateScale(18, 0.35)} color={COLORS.background} />
         <Text style={styles.changeAvatarText}>
           {avatarUploading ? 'Zapisywanie...' : 'Zmień Avatar'}
         </Text>
@@ -141,37 +144,37 @@ const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
 
 export default ProfileAvatarSection
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   avatarSection: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: ui.verticalScale(20),
   },
   avatar: {
-    width: 150,
-    height: 150,
-    borderRadius: 16,
+    width: ui.scale(150),
+    height: ui.scale(150),
+    borderRadius: ui.moderateScale(16, 0.35),
     borderWidth: 2,
     borderColor: COLORS.primary,
   },
   avatarHint: {
-    fontSize: 10,
+    fontSize: ui.scaleFont(10, 0.25),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    marginTop: 4,
+    marginTop: ui.verticalScale(4),
   },
   changeAvatarButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.secondary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginTop: 12,
+    paddingVertical: ui.verticalScale(10),
+    paddingHorizontal: ui.spacing(20, 0.45),
+    borderRadius: ui.moderateScale(12, 0.35),
+    marginTop: ui.verticalScale(12),
   },
   changeAvatarText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
-    marginLeft: 8,
+    marginLeft: ui.spacing(8, 0.35),
   },
 })

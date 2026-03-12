@@ -8,9 +8,12 @@ import { useAuth } from '../../../../context/AuthContext'
 import { checkSystemLocationPermissions } from '../../../../assets/utils/getUserLocation'
 import SettingSection from '../../../../components/settingsComponents/SettingSection'
 import SettingRow from '../../../../components/settingsComponents/SettingRow'
+import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
 
 const Settings = () => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const { userLocation, setStartLocation } = useMap()
   const { 
     consents, 
@@ -128,7 +131,7 @@ const Settings = () => {
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name='settings' size={26} color={COLORS.secondary} />
+        <Ionicons name='settings' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
         <Text style={styles.headerText}>Ustawienia</Text>
       </View>
 
@@ -222,7 +225,7 @@ const Settings = () => {
 
 export default Settings
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -231,44 +234,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: ui.verticalScale(20),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   headerText: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
   },
   versionContainer: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: ui.verticalScale(20),
   },
   versionText: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
   },
   locationInfo: {
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    marginBottom: 8,
-    //border 1 px solid color.secondary
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(10),
+    paddingHorizontal: ui.spacing(16),
+    marginBottom: ui.verticalScale(8),
     borderWidth: 1,
     borderColor: COLORS.secondary,
   },
   locationInfoText: {
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     fontStyle: 'italic',
     textTransform: 'capitalize',

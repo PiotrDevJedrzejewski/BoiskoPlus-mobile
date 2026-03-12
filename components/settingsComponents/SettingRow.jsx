@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, TouchableOpacity, Switch } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const SettingRow = ({
   icon,
@@ -14,6 +15,8 @@ const SettingRow = ({
   disabled = false,
   danger = false,
 }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const IconComponent =
     iconFamily === 'material' ? MaterialCommunityIcons : Ionicons
 
@@ -30,7 +33,7 @@ const SettingRow = ({
       <View style={styles.settingRowLeft}>
         <IconComponent
           name={icon}
-          size={22}
+          size={ui.moderateScale(22, 0.35)}
           color={danger ? COLORS.error : COLORS.secondary}
         />
         <Text style={[styles.settingRowLabel, danger && styles.dangerText]}>
@@ -48,7 +51,7 @@ const SettingRow = ({
       ) : (
         <View style={styles.settingRowRight}>
           {value && <Text style={styles.settingRowValue}>{value}</Text>}
-          <Ionicons name='chevron-forward' size={20} color={COLORS.gray} />
+          <Ionicons name='chevron-forward' size={ui.moderateScale(20, 0.35)} color={COLORS.gray} />
         </View>
       )}
     </RowContainer>
@@ -57,16 +60,16 @@ const SettingRow = ({
 
 export default SettingRow
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 8,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(14),
+    paddingHorizontal: ui.spacing(16),
+    marginBottom: ui.verticalScale(8),
   },
   settingRowDisabled: {
     opacity: 0.5,
@@ -77,10 +80,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingRowLabel: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   dangerText: {
     color: COLORS.error,
@@ -90,9 +93,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   settingRowValue: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    marginRight: 8,
+    marginRight: ui.spacing(8, 0.35),
   },
 })

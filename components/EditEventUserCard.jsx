@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../constants/colors'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const defaultAvatar = require('../assets/images/defaultAvatar.png')
 
@@ -12,6 +13,8 @@ const EditEventUserCard = ({
   onReject,
   loading = false,
 }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const avatar = user?.avatarUrl ? { uri: user.avatarUrl } : defaultAvatar
 
   return (
@@ -70,7 +73,7 @@ const EditEventUserCard = ({
         >
           <Ionicons
             name='checkmark'
-            size={20}
+            size={ui.moderateScale(20, 0.35)}
             color={status === 'accepted' ? COLORS.gray : COLORS.background}
           />
         </TouchableOpacity>
@@ -87,7 +90,7 @@ const EditEventUserCard = ({
         >
           <Ionicons
             name='close'
-            size={20}
+            size={ui.moderateScale(20, 0.35)}
             color={status === 'rejected' ? COLORS.gray : '#fff'}
           />
         </TouchableOpacity>
@@ -98,52 +101,52 @@ const EditEventUserCard = ({
 
 export default EditEventUserCard
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(12, 0.35),
+    marginBottom: ui.verticalScale(10),
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 10,
+    width: ui.scale(50),
+    height: ui.scale(50),
+    borderRadius: ui.moderateScale(10, 0.35),
     borderWidth: 1,
     borderColor: COLORS.primary,
   },
   infoContainer: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: ui.spacing(12, 0.35),
   },
   nickname: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },
   name: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    marginTop: 2,
+    marginTop: ui.verticalScale(2),
   },
   statsRow: {
     flexDirection: 'row',
-    marginTop: 6,
-    gap: 10,
+    marginTop: ui.verticalScale(6),
+    gap: ui.spacing(10, 0.35),
   },
   statText: {
-    fontSize: 11,
+    fontSize: ui.scaleFont(11, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginRight: 8,
+    paddingHorizontal: ui.spacing(8, 0.35),
+    paddingVertical: ui.verticalScale(4),
+    borderRadius: ui.moderateScale(8, 0.35),
+    marginRight: ui.spacing(8, 0.35),
   },
   statusAccepted: {
     backgroundColor: 'rgba(16, 185, 129, 0.2)',
@@ -155,18 +158,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 207, 0, 0.2)',
   },
   statusText: {
-    fontSize: 10,
+    fontSize: ui.scaleFont(10, 0.25),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
   buttonsContainer: {
     flexDirection: 'row',
-    gap: 8,
+    gap: ui.spacing(8, 0.35),
   },
   button: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
+    width: ui.moderateScale(36, 0.35),
+    height: ui.moderateScale(36, 0.35),
+    borderRadius: ui.moderateScale(8, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
   },

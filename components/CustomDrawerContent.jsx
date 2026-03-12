@@ -6,12 +6,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
 import { COLORS } from '../constants/colors'
 import { useAuth } from '../context/AuthContext'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 // Custom Drawer Content Component
 export default function CustomDrawerContent(props) {
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { logout } = useAuth()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui, insets)
 
   const navigateTo = (path) => {
     router.push(path)
@@ -109,12 +112,12 @@ export default function CustomDrawerContent(props) {
             onPress={closeDrawer}
             android_ripple={{ color: COLORS.background }}
           >
-            <Ionicons name='chevron-back' size={32} color={COLORS.primary} />
+            <Ionicons name='chevron-back' size={ui.moderateScale(32, 0.35)} color={COLORS.primary} />
             <Ionicons
               name='chevron-back'
-              size={32}
+              size={ui.moderateScale(32, 0.35)}
               color={COLORS.primary}
-              style={{ marginLeft: -16 }}
+              style={{ marginLeft: -ui.spacing(16, 0.35) }}
             />
           </Pressable>
         </View>
@@ -137,6 +140,9 @@ export default function CustomDrawerContent(props) {
 
 // Drawer Item Component
 function DrawerItem({ icon, label, onPress }) {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
   return (
     <Pressable
       style={styles.drawerItem}
@@ -144,7 +150,7 @@ function DrawerItem({ icon, label, onPress }) {
       android_ripple={{ color: COLORS.background }}
     >
       <View style={styles.drawerItemContainer}>
-        <Ionicons name={icon} size={28} color={COLORS.secondary} />
+        <Ionicons name={icon} size={ui.moderateScale(28, 0.35)} color={COLORS.secondary} />
         <Text style={styles.drawerItemText}>{label}</Text>
       </View>
       <LinearGradient
@@ -157,67 +163,67 @@ function DrawerItem({ icon, label, onPress }) {
   )
 }
 
-const styles = StyleSheet.create({
+const createStyles = (ui, insets = { top: 0 }) => StyleSheet.create({
   gradientContainer: {
     flex: 1,
   },
   closeButtonX: {
     position: 'absolute',
-    top: 30,
-    right: 10,
+    top: insets.top + ui.verticalScale(6),
+    right: ui.spacing(10, 0.35),
     zIndex: 100,
-    padding: 8,
-    borderRadius: 20,
+    padding: ui.spacing(8, 0.35),
+    borderRadius: ui.moderateScale(20, 0.35),
   },
   closeButtonContainer: {
     alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 10,
+    marginTop: ui.verticalScale(30),
+    marginBottom: ui.verticalScale(10),
   },
   closeButtonArrows: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
-    borderRadius: 16,
+    padding: ui.spacing(10, 0.35),
+    borderRadius: ui.moderateScale(16, 0.35),
   },
   drawerContainer: {
     flex: 1,
   },
   drawerItem: {
     alignItems: 'center',
-    gap: 5,
+    gap: ui.verticalScale(5),
   },
   drawerItemContainer: {
     width: '100%',
-    paddingVertical: 19,
-    paddingHorizontal: 20,
+    paddingVertical: ui.verticalScale(19),
+    paddingHorizontal: ui.spacing(20, 0.45),
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
   drawerItemText: {
-    fontSize: 18,
-    marginLeft: 20,
+    fontSize: ui.scaleFont(18, 0.4),
+    marginLeft: ui.spacing(20, 0.45),
     fontFamily: 'Montserrat-Regular',
     color: COLORS.primary,
   },
   separator: {
-    height: 2,
+    height: ui.verticalScale(2),
     width: '110%',
     opacity: 0.2,
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    gap: 10,
+    padding: ui.spacing(20, 0.45),
+    gap: ui.spacing(10, 0.35),
     borderTopWidth: 1,
     borderTopColor: COLORS.background,
-    marginTop: 10,
+    marginTop: ui.verticalScale(10),
   },
   logoutText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.error,
   },

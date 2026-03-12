@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
 import { COLORS } from '../constants/colors'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const MONTHS = [
   { value: 1, label: 'Styczeń' },
@@ -68,6 +69,8 @@ const DatePicker = ({
   placeholderYear = 'RRRR',
   disabled = false,
 }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const parsedValue = parseIsoDate(value)
 
   const initialDate = parsedValue || maximumDate || new Date(2000, 0, 1)
@@ -253,12 +256,12 @@ const DatePicker = ({
 
 export default DatePicker
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   datePickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: ui.spacing(8, 0.35),
   },
   disabled: {
     opacity: 0.6,
@@ -266,14 +269,14 @@ const styles = StyleSheet.create({
   dateBox: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    borderRadius: 10,
-    padding: 8,
+    borderRadius: ui.moderateScale(10, 0.35),
+    padding: ui.spacing(8, 0.35),
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
   dateText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontWeight: '600',
     color: COLORS.background,
   },
@@ -281,15 +284,15 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   dateLabel: {
-    fontSize: 10,
+    fontSize: ui.scaleFont(10, 0.25),
     color: '#666',
-    marginTop: 4,
+    marginTop: ui.verticalScale(4),
   },
   dateSeparator: {
-    paddingHorizontal: 2,
+    paddingHorizontal: ui.spacing(2, 0.2),
   },
   dateSeparatorText: {
-    fontSize: 25,
+    fontSize: ui.scaleFont(25, 0.4),
     color: '#999',
     fontWeight: '300',
   },
@@ -300,17 +303,17 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    paddingBottom: 30,
+    borderTopLeftRadius: ui.moderateScale(20, 0.35),
+    borderTopRightRadius: ui.moderateScale(20, 0.35),
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(30),
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
     fontWeight: '600',
     color: '#333',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: ui.verticalScale(20),
   },
   pickersContainer: {
     flexDirection: 'row',
@@ -321,30 +324,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pickerLabel: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     color: '#666',
-    marginBottom: 5,
+    marginBottom: ui.verticalScale(5),
   },
   picker: {
     width: '100%',
-    height: 150,
+    height: ui.verticalScale(150),
   },
   errorText: {
-    marginTop: 8,
+    marginTop: ui.verticalScale(8),
     textAlign: 'center',
-    fontSize: 13,
+    fontSize: ui.scaleFont(13, 0.35),
     color: COLORS.error,
   },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
-    gap: 10,
+    marginTop: ui.verticalScale(20),
+    gap: ui.spacing(10, 0.35),
   },
   modalButton: {
     flex: 1,
-    padding: 15,
-    borderRadius: 10,
+    padding: ui.spacing(15, 0.4),
+    borderRadius: ui.moderateScale(10, 0.35),
     alignItems: 'center',
   },
   cancelButton: {
@@ -353,6 +356,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: '#666',
     fontWeight: '600',
+    fontSize: ui.scaleFont(14, 0.35),
   },
   confirmButton: {
     backgroundColor: '#4CAF50',
@@ -360,5 +364,6 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     color: '#fff',
     fontWeight: '600',
+    fontSize: ui.scaleFont(14, 0.35),
   },
 })

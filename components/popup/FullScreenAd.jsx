@@ -9,8 +9,11 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const FullScreenAd = ({ visible, onClose, onPremiumPress }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const [countdown, setCountdown] = useState(5)
   const [canClose, setCanClose] = useState(false)
 
@@ -57,7 +60,7 @@ const FullScreenAd = ({ visible, onClose, onPremiumPress }) => {
             onPress={handlePremiumPress}
             activeOpacity={0.8}
           >
-            <Ionicons name='diamond' size={20} color={COLORS.secondary} />
+            <Ionicons name='diamond' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
             <Text style={styles.premiumText}>
               Męczą Cię reklamy? Kup premium za 9.99zł + VAT
             </Text>
@@ -65,7 +68,7 @@ const FullScreenAd = ({ visible, onClose, onPremiumPress }) => {
 
           {/* Ad placeholder */}
           <View style={styles.adContainer}>
-            <Ionicons name='megaphone' size={64} color={COLORS.gray} />
+            <Ionicons name='megaphone' size={ui.moderateScale(64, 0.35)} color={COLORS.gray} />
             <Text style={styles.adPlaceholder}>REKLAMA</Text>
             <Text style={styles.adSubtext}>Tutaj wyświetli się reklama</Text>
           </View>
@@ -78,7 +81,7 @@ const FullScreenAd = ({ visible, onClose, onPremiumPress }) => {
                 onPress={onClose}
                 activeOpacity={0.8}
               >
-                <Ionicons name='close' size={20} color={COLORS.background} />
+                <Ionicons name='close' size={ui.moderateScale(20, 0.35)} color={COLORS.background} />
                 <Text style={styles.closeButtonText}>Zamknij reklamę</Text>
               </TouchableOpacity>
             ) : (
@@ -97,13 +100,13 @@ const FullScreenAd = ({ visible, onClose, onPremiumPress }) => {
 
 export default FullScreenAd
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: ui.spacing(20, 0.45),
   },
   container: {
     width: '100%',
@@ -114,43 +117,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.backgroundSecondary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginBottom: 24,
+    paddingVertical: ui.verticalScale(12),
+    paddingHorizontal: ui.spacing(20, 0.45),
+    borderRadius: ui.moderateScale(12, 0.35),
+    marginBottom: ui.verticalScale(24),
     borderWidth: 1,
     borderColor: COLORS.secondary,
   },
   premiumText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
     textAlign: 'center',
   },
   adContainer: {
     width: '100%',
     aspectRatio: 16 / 9,
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
+    borderRadius: ui.moderateScale(16, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: ui.verticalScale(24),
     borderWidth: 2,
     borderColor: COLORS.gray,
     borderStyle: 'dashed',
   },
   adPlaceholder: {
-    fontSize: 24,
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.gray,
-    marginTop: 12,
+    marginTop: ui.verticalScale(12),
   },
   adSubtext: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
-    marginTop: 4,
+    marginTop: ui.verticalScale(4),
   },
   buttonWrapper: {
     width: '100%',
@@ -160,25 +163,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.secondary,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    paddingVertical: ui.verticalScale(16),
+    paddingHorizontal: ui.spacing(24, 0.45),
+    borderRadius: ui.moderateScale(12, 0.35),
   },
   closeButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
-    marginLeft: 8,
+    marginLeft: ui.spacing(8, 0.35),
   },
   countdownButton: {
     backgroundColor: COLORS.backgroundSecondary,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    paddingVertical: ui.verticalScale(16),
+    paddingHorizontal: ui.spacing(24, 0.45),
+    borderRadius: ui.moderateScale(12, 0.35),
     alignItems: 'center',
   },
   countdownText: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
   },

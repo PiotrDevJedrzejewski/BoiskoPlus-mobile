@@ -10,10 +10,13 @@ import {
 import { useRouter } from 'expo-router'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../constants/colors'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 // import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
 
 const EventMarkerEventList = ({ events, onClose }) => {
   const router = useRouter()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
 
   const handleEventPress = (eventId) => {
     onClose();
@@ -29,70 +32,70 @@ const EventMarkerEventList = ({ events, onClose }) => {
       football: (
         <MaterialCommunityIcons
           name='soccer'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
       volleyball: (
         <MaterialCommunityIcons
           name='volleyball'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
       basketball: (
         <MaterialCommunityIcons
           name='basketball'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
       handball: (
         <MaterialCommunityIcons
           name='handball'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
       rugby: (
         <MaterialCommunityIcons
           name='rugby'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
       hockey: (
         <MaterialCommunityIcons
           name='hockey-sticks'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
       tennis: (
         <MaterialCommunityIcons
           name='tennis'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
       badminton: (
         <MaterialCommunityIcons
           name='badminton'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
       'table tennis': (
         <MaterialCommunityIcons
           name='table-tennis'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
       bowling: (
         <MaterialCommunityIcons
           name='bowling'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
@@ -113,7 +116,7 @@ const EventMarkerEventList = ({ events, onClose }) => {
     }
     return (
       iconMap[gameType] || (
-        <Ionicons name='help-circle' size={28} color={COLORS.secondary} />
+        <Ionicons name='help-circle' size={ui.moderateScale(28, 0.35)} color={COLORS.secondary} />
       )
     )
   }
@@ -137,7 +140,7 @@ const EventMarkerEventList = ({ events, onClose }) => {
               Wydarzenia ({events?.length || 0})
             </Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Ionicons name='close' size={24} color={COLORS.primary} />
+              <Ionicons name='close' size={ui.moderateScale(24, 0.35)} color={COLORS.primary} />
             </TouchableOpacity>
           </View>
 
@@ -170,7 +173,7 @@ const EventMarkerEventList = ({ events, onClose }) => {
                     <View style={styles.detailItem}>
                       <MaterialCommunityIcons
                         name='cash'
-                        size={14}
+                        size={ui.moderateScale(14, 0.3)}
                         color={COLORS.secondary}
                       />
                       <Text style={styles.detailText}>{event.price}zł</Text>
@@ -178,7 +181,7 @@ const EventMarkerEventList = ({ events, onClose }) => {
                     <View style={styles.detailItem}>
                       <Ionicons
                         name='time'
-                        size={14}
+                        size={ui.moderateScale(14, 0.3)}
                         color={COLORS.secondary}
                       />
                       <Text style={styles.detailText}>{event.duration}min</Text>
@@ -186,7 +189,7 @@ const EventMarkerEventList = ({ events, onClose }) => {
                     <View style={styles.detailItem}>
                       <Ionicons
                         name='people'
-                        size={14}
+                        size={ui.moderateScale(14, 0.3)}
                         color={COLORS.secondary}
                       />
                       <Text style={styles.detailText}>{event.playerCount}</Text>
@@ -197,7 +200,7 @@ const EventMarkerEventList = ({ events, onClose }) => {
                 {/* Strzałka */}
                 <Ionicons
                   name='chevron-forward'
-                  size={20}
+                  size={ui.moderateScale(20, 0.35)}
                   color={COLORS.grayLight}
                 />
               </TouchableOpacity>
@@ -211,17 +214,17 @@ const EventMarkerEventList = ({ events, onClose }) => {
 
 export default EventMarkerEventList
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: ui.spacing(20, 0.45),
   },
   container: {
     backgroundColor: COLORS.background,
-    borderRadius: 16,
+    borderRadius: ui.moderateScale(16, 0.35),
     width: '100%',
     maxHeight: '70%',
     overflow: 'hidden',
@@ -232,65 +235,65 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: ui.spacing(16),
+    paddingVertical: ui.verticalScale(14),
     borderBottomWidth: 1,
     borderBottomColor: COLORS.third,
     backgroundColor: COLORS.backgroundSecondary,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
   },
   closeButton: {
-    padding: 4,
+    padding: ui.spacing(4, 0.25),
   },
   listWrapper: {
-    padding: 12,
+    padding: ui.spacing(12, 0.35),
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(12, 0.35),
+    marginBottom: ui.verticalScale(10),
   },
   iconSection: {
     alignItems: 'center',
-    marginRight: 12,
-    minWidth: 50,
+    marginRight: ui.spacing(12, 0.35),
+    minWidth: ui.scale(50),
   },
   gameType: {
-    fontSize: 8,
+    fontSize: ui.scaleFont(8, 0.25),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginTop: 4,
+    marginTop: ui.verticalScale(4),
     textAlign: 'center',
   },
   infoSection: {
     flex: 1,
-    marginRight: 8,
+    marginRight: ui.spacing(8, 0.35),
   },
   eventName: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginBottom: 6,
+    marginBottom: ui.verticalScale(6),
   },
   detailsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: ui.spacing(12, 0.35),
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: ui.spacing(4, 0.25),
   },
   detailText: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     opacity: 0.9,

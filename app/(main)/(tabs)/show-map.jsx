@@ -24,11 +24,14 @@ import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Toast } from 'toastify-react-native'
 import { getCurrentLocation } from '../../../assets/utils/getUserLocation'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const SUGGESTIONS_DEBOUNCE_MS = 80
 const SUGGESTIONS_LIMIT = 30
 
 const ShowMap = () => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
   const {
     flyTo,
     flyToProvince,
@@ -57,6 +60,11 @@ const ShowMap = () => {
   const isMountedRef = useRef(true)
   const suggestionsDebounceRef = useRef(null)
   const searchAbortControllerRef = useRef(null)
+
+  const searchIconSize = ui.moderateScale(24, 0.35)
+  const locateIconSize = ui.moderateScale(24, 0.35)
+  const eyeIconSize = ui.moderateScale(28, 0.35)
+  const fieldIconSize = ui.moderateScale(56, 0.35)
 
   useEffect(() => {
     return () => {
@@ -312,7 +320,7 @@ const ShowMap = () => {
           <View style={styles.searchBox}>
             <Ionicons
               name='map'
-              size={24}
+              size={searchIconSize}
               color={COLORS.secondary}
               style={styles.searchIcon}
             />
@@ -357,7 +365,7 @@ const ShowMap = () => {
             onPress={handleMyLocation}
             activeOpacity={0.8}
           >
-            <Ionicons name='locate' size={24} color={COLORS.secondary} />
+            <Ionicons name='locate' size={locateIconSize} color={COLORS.secondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -367,11 +375,11 @@ const ShowMap = () => {
           >
             <Ionicons
               name={showMarkers ? 'eye' : 'eye-off'}
-              size={28}
+              size={eyeIconSize}
               color={COLORS.secondary}
               style={styles.controlIconEye}
             />
-            <MaterialCommunityIcons name="soccer-field" size={56} color={COLORS.third} style={styles.controlIconField} />
+            <MaterialCommunityIcons name="soccer-field" size={fieldIconSize} color={COLORS.third} style={styles.controlIconField} />
           </TouchableOpacity>
             <Text style={styles.controlButtonTextField }>Boiska</Text>
         </View>
@@ -382,7 +390,7 @@ const ShowMap = () => {
 
 export default ShowMap
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -394,18 +402,18 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     position: 'absolute',
-    top: 20,
-    left: 16,
-    right: 16,
+    top: ui.verticalScale(20),
+    left: ui.spacing(16, 0.35),
+    right: ui.spacing(16, 0.35),
     zIndex: 20,
   },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.background,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: ui.controlRadius,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.buttonPaddingVertical,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -413,40 +421,44 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: ui.spacing(8, 0.35),
   },
   searchInput: {
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
+    borderRadius: ui.controlRadius,
     flex: 1,
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     color: COLORS.primary,
-    padding: 10,
+    minHeight: ui.controlMinHeight,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.controlPaddingVertical,
   },
   searchButton: {
     backgroundColor: COLORS.secondary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-    marginLeft: 8,
-    minWidth: 70,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.buttonPaddingVertical,
+    borderRadius: ui.controlRadius,
+    marginLeft: ui.spacing(8, 0.35),
+    minWidth: ui.scale(70),
+    minHeight: ui.controlMinHeight,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   searchButtonText: {
     color: COLORS.background,
     fontFamily: 'ObjectFont',
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
   },
   controlsContainer: {
     position: 'absolute',
-    right: 16,
-    bottom: 100,
-    gap: 12,
+    right: ui.spacing(16, 0.35),
+    bottom: ui.verticalScale(100),
+    gap: ui.verticalScale(12),
   },
   controlButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: ui.moderateScale(48, 0.35),
+    height: ui.moderateScale(48, 0.35),
+    borderRadius: ui.moderateScale(24, 0.35),
     backgroundColor: COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
@@ -459,30 +471,30 @@ const styles = StyleSheet.create({
   },
   controlIconEye: {
     position: 'absolute',
-    top: 12,
-    left: 12,
+    top: ui.verticalScale(12),
+    left: ui.spacing(12, 0.35),
     zIndex: 6,
   },
   controlIconField: {
     opacity: 0.5,
     position: 'absolute',
     zIndex: 5,
-    left: -2,
+    left: -ui.spacing(2, 0.2),
   },
 
   controlButtonTextLocation: {
     position: 'absolute',
-    top: -20,
-    right: 7,
-    fontSize: 10,
+    top: -ui.verticalScale(20),
+    right: ui.spacing(7, 0.25),
+    fontSize: ui.scaleFont(10, 0.25),
     color: COLORS.secondary,
     fontFamily: 'ObjectFont',
   },
   controlButtonTextField: {
     position: 'absolute',
-    bottom: -20,
-    right: 5,
-    fontSize: 10,
+    bottom: -ui.verticalScale(20),
+    right: ui.spacing(5, 0.25),
+    fontSize: ui.scaleFont(10, 0.25),
     color: COLORS.secondary,
     fontFamily: 'ObjectFont',
   },

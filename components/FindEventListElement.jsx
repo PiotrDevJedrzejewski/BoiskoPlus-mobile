@@ -2,8 +2,12 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../constants/colors'
 import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
+import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const FindEventListElement = ({ event, onPress }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+
   if (!event) {
     return (
       <View style={styles.elementLoading}>
@@ -52,13 +56,13 @@ const FindEventListElement = ({ event, onPress }) => {
       {/* Dodatkowe informacje */}
       <View style={styles.additionalInfo}>
         <View style={styles.infoItem}>
-          <Ionicons name='time' size={16} color={COLORS.secondary} />
+          <Ionicons name='time' size={ui.moderateScale(16, 0.35)} color={COLORS.secondary} />
           <Text style={styles.infoText}>{event.duration} min</Text>
         </View>
         <View style={styles.infoItem}>
           <MaterialCommunityIcons
             name='cash'
-            size={16}
+            size={ui.moderateScale(16, 0.35)}
             color={COLORS.secondary}
           />
           <Text style={styles.infoText}>{event.price}zł</Text>
@@ -66,13 +70,13 @@ const FindEventListElement = ({ event, onPress }) => {
         <View style={styles.infoItem}>
           <MaterialCommunityIcons
             name='gauge'
-            size={16}
+            size={ui.moderateScale(16, 0.35)}
             color={COLORS.secondary}
           />
           <Text style={styles.infoText}>{event.level}</Text>
         </View>
         <View style={styles.infoItem}>
-          <Ionicons name='people' size={16} color={COLORS.secondary} />
+          <Ionicons name='people' size={ui.moderateScale(16, 0.35)} color={COLORS.secondary} />
           <Text style={styles.infoText}>{event.playerCount}</Text>
         </View>
       </View>
@@ -82,59 +86,59 @@ const FindEventListElement = ({ event, onPress }) => {
 
 export default FindEventListElement
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   element: {
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    marginBottom: 16,
+    borderRadius: ui.moderateScale(16, 0.35),
+    marginBottom: ui.verticalScale(16),
     overflow: 'hidden',
   },
   elementLoading: {
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    minHeight: 120,
+    borderRadius: ui.moderateScale(16, 0.35),
+    minHeight: ui.verticalScale(120),
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: ui.verticalScale(16),
   },
   loadingText: {
     color: COLORS.secondary,
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
   },
   iconWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    paddingBottom: 8,
+    padding: ui.spacing(16),
+    paddingBottom: ui.verticalScale(8),
   },
   gameType: {
     color: COLORS.secondary,
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Montserrat-Bold',
-    marginRight: 12,
+    marginRight: ui.spacing(12, 0.35),
     textTransform: 'uppercase',
   },
   textWrapper: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: ui.spacing(16),
+    paddingBottom: ui.verticalScale(12),
   },
   info: {
-    marginBottom: 8,
+    marginBottom: ui.verticalScale(8),
   },
   title: {
-    fontSize: 18,
+    fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginBottom: 4,
+    marginBottom: ui.verticalScale(4),
   },
   address: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     opacity: 0.8,
     fontStyle: 'italic',
-    marginBottom: 8,
+    marginBottom: ui.verticalScale(8),
   },
   dateContainer: {
     flexDirection: 'row',
@@ -142,27 +146,27 @@ const styles = StyleSheet.create({
   },
   dateDay: {
     backgroundColor: COLORS.third,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginRight: -10,
+    paddingVertical: ui.verticalScale(4),
+    paddingHorizontal: ui.spacing(12, 0.35),
+    borderRadius: ui.moderateScale(8, 0.35),
+    marginRight: -ui.spacing(10, 0.35),
     zIndex: 2,
   },
   dateHour: {
     backgroundColor: '#4682B4', // steelblue
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    paddingLeft: 20,
-    borderRadius: 8,
+    paddingVertical: ui.verticalScale(4),
+    paddingHorizontal: ui.spacing(12, 0.35),
+    paddingLeft: ui.spacing(20, 0.45),
+    borderRadius: ui.moderateScale(8, 0.35),
     zIndex: 1,
   },
   dateText: {
     color: COLORS.primary,
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
   },
   description: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
     opacity: 0.9,
@@ -173,8 +177,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: COLORS.secondary,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingVertical: ui.verticalScale(12),
+    paddingHorizontal: ui.spacing(8, 0.35),
   },
   infoItem: {
     flexDirection: 'row',
@@ -182,8 +186,8 @@ const styles = StyleSheet.create({
   },
   infoText: {
     color: COLORS.primary,
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    marginLeft: 4,
+    marginLeft: ui.spacing(4, 0.25),
   },
 })

@@ -15,10 +15,13 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../../../../../constants/colors'
 import { useAuth } from '../../../../../context/AuthContext'
+import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
 
 const ProfilePassword = () => {
   const router = useRouter()
   const { changePassword } = useAuth()
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
 
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -102,13 +105,13 @@ const ProfilePassword = () => {
           style={styles.backIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name='arrow-back' size={24} color={COLORS.secondary} />
+          <Ionicons name='arrow-back' size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Ionicons name='key' size={24} color={COLORS.secondary} />
+          <Ionicons name='key' size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
           <Text style={styles.headerText}>Zmiana Hasła</Text>
         </View>
-        <View style={{ width: 40 }} />
+        <View style={{ width: ui.moderateScale(40, 0.35) }} />
       </View>
 
       <ScrollView
@@ -179,7 +182,7 @@ const ProfilePassword = () => {
               <ActivityIndicator size='small' color={COLORS.background} />
             ) : (
               <>
-                <Ionicons name='save' size={20} color={COLORS.background} />
+                <Ionicons name='save' size={ui.moderateScale(20, 0.35)} color={COLORS.background} />
                 <Text style={styles.submitButtonText}>Zapisz zmiany</Text>
               </>
             )}
@@ -191,7 +194,7 @@ const ProfilePassword = () => {
             disabled={loading}
             activeOpacity={0.8}
           >
-            <Ionicons name='close' size={20} color={COLORS.primary} />
+            <Ionicons name='close' size={ui.moderateScale(20, 0.35)} color={COLORS.primary} />
             <Text style={styles.cancelButtonText}>Anuluj</Text>
           </TouchableOpacity>
         </View>
@@ -202,7 +205,7 @@ const ProfilePassword = () => {
 
 export default ProfilePassword
 
-const styles = StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -211,13 +214,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: ui.verticalScale(16),
+    paddingHorizontal: ui.spacing(16),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   backIconButton: {
-    width: 40,
-    height: 40,
+    width: ui.moderateScale(40, 0.35),
+    height: ui.moderateScale(40, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -226,40 +229,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerText: {
-    fontSize: 22,
+    fontSize: ui.scaleFont(22, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: ui.spacing(20, 0.45),
+    paddingBottom: ui.verticalScale(40),
   },
   formContainer: {
     backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: ui.moderateScale(16, 0.35),
+    padding: ui.spacing(20, 0.45),
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: ui.verticalScale(20),
   },
   label: {
-    fontSize: 14,
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginBottom: 8,
+    marginBottom: ui.verticalScale(8),
   },
   input: {
     backgroundColor: COLORS.background,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.controlPaddingVertical,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
@@ -267,28 +271,28 @@ const styles = StyleSheet.create({
     borderColor: COLORS.error,
   },
   errorText: {
-    fontSize: 12,
+    fontSize: ui.scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
     color: COLORS.error,
-    marginTop: 4,
+    marginTop: ui.verticalScale(4),
   },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    paddingVertical: 16,
-    marginTop: 10,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(16),
+    marginTop: ui.verticalScale(10),
   },
   submitButtonDisabled: {
     opacity: 0.7,
   },
   submitButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
   },
   cancelButton: {
     flexDirection: 'row',
@@ -297,14 +301,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    marginTop: 12,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(14),
+    marginTop: ui.verticalScale(12),
   },
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: ui.spacing(10, 0.35),
   },
 })
