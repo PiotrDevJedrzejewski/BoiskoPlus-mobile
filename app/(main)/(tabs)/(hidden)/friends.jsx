@@ -3,17 +3,18 @@ import {
   ActivityIndicator,
   StyleSheet,
   Text,
+  TextInput,
   View,
   ScrollView,
   TouchableOpacity,
   Alert,
-  RefreshControl,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../../../constants/colors'
 import PlayerCardWithActions from '../../../../components/PlayerCardWithActions'
 import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
 import { useDashboard } from '../../../../context/DashboardContext'
+import customFetch from '../../../../assets/utils/customFetch'
 
 const ExpandableSection = ({ title, expanded, onToggle, children, styles, ui }) => (
   // Mały komponent pomocniczy: sekcja, którą można zwinąć lub rozwinąć.
@@ -39,11 +40,17 @@ const FriendsScreen = () => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const [showInvites, setShowInvites] = useState(false)
+  const [searchPhrase, setSearchPhrase] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchError, setSearchError] = useState(null)
+  const [searchMessage, setSearchMessage] = useState(null)
   const {
     // Dane i akcje bierzemy z DashboardContext,
     // więc ekran jest tylko warstwą prezentacji i wywołań UI.
     friendshipsData,
     refreshFriendshipsData,
+    sendFriendRequest,
     acceptFriendRequest,
     rejectFriendRequest,
     cancelFriendRequest,
@@ -60,9 +67,55 @@ const FriendsScreen = () => {
     refreshFriendshipsData({ force: true }).catch(() => {})
   }, [refreshFriendshipsData])
 
-  const handleManualRefresh = async () => {
-    // Pull-to-refresh w ScrollView woła dokładnie ten handler.
-    await refreshFriendshipsData({ force: true })
+  const fetchSearchResults = async (phrase) => {
+    const normalizedPhrase = phrase.trim()
+
+    if (normalizedPhrase.length < 3) {
+      setSearchResults([])
+      setSearchMessage(null)
+      setSearchError('Wpisz co najmniej 3 znaki nicku, aby rozpocząć wyszukiwanie.')
+      return false
+    }
+
+    try {
+      setSearchLoading(true)
+      setSearchError(null)
+
+      const response = await customFetch.get('/users/search', {
+        params: { q: normalizedPhrase },
+      })
+
+      setSearchResults(response?.data?.users || [])
+      setSearchMessage(response?.data?.msg || null)
+      return true
+    } catch (error) {
+      console.error('Błąd wyszukiwania użytkowników:', error)
+      setSearchResults([])
+      setSearchMessage(null)
+      setSearchError(
+        error.response?.data?.msg || 'Nie udało się wyszukać użytkowników'
+      )
+      return false
+    } finally {
+      setSearchLoading(false)
+    }
+  }
+
+  const handleSearchUsers = async () => fetchSearchResults(searchPhrase)
+
+  const handleSearchInputChange = (value) => {
+    setSearchPhrase(value)
+
+    if (!value.trim()) {
+      setSearchResults([])
+      setSearchError(null)
+      setSearchMessage(null)
+    }
+  }
+
+  const refreshSearchResults = async () => {
+    if (searchPhrase.trim().length < 3) return
+    await fetchSearchResults(searchPhrase)
   }
 
   const showActionError = (fallbackMessage, actionResult) => {
@@ -151,6 +204,127 @@ const FriendsScreen = () => {
     )
   }
 
+  const handleSearchSendRequest = async (player) => {
+    const result = await sendFriendRequest(player._id)
+
+    if (!result.success) {
+      showActionError('Nie udało się wysłać zaproszenia do znajomych', result)
+      return
+    }
+
+    await Promise.all([
+      refreshFriendshipsData({ force: true }).catch(() => null),
+      refreshSearchResults(),
+    ])
+  }
+
+  const handleSearchAcceptInvite = async (player) => {
+    const result = await acceptFriendRequest(player.friendship?.friendshipId)
+
+    if (!result.success) {
+      showActionError('Nie udało się zaakceptować zaproszenia', result)
+      return
+    }
+
+    await Promise.all([
+      refreshFriendshipsData({ force: true }).catch(() => null),
+      refreshSearchResults(),
+    ])
+  }
+
+  const handleSearchRejectInvite = async (player) => {
+    const result = await rejectFriendRequest(player.friendship?.friendshipId)
+
+    if (!result.success) {
+      showActionError('Nie udało się odrzucić zaproszenia', result)
+      return
+    }
+
+    await Promise.all([
+      refreshFriendshipsData({ force: true }).catch(() => null),
+      refreshSearchResults(),
+    ])
+  }
+
+  const handleSearchCancelInvite = async (player) => {
+    const result = await cancelFriendRequest(player.friendship?.friendshipId)
+
+    if (!result.success) {
+      showActionError('Nie udało się anulować zaproszenia', result)
+      return
+    }
+
+    await Promise.all([
+      refreshFriendshipsData({ force: true }).catch(() => null),
+      refreshSearchResults(),
+    ])
+  }
+
+  const handleSearchRemoveFriend = async (player) => {
+    const result = await removeFriend(player.friendship?.friendshipId)
+
+    if (!result.success) {
+      showActionError('Nie udało się usunąć znajomego', result)
+      return
+    }
+
+    await Promise.all([
+      refreshFriendshipsData({ force: true }).catch(() => null),
+      refreshSearchResults(),
+    ])
+  }
+
+  const getSearchActions = (player) => {
+    const friendship = player.friendship || {}
+
+    if (friendship.canAcceptRequest) {
+      return [
+        {
+          text: 'Odrzuć',
+          type: 'secondary',
+          handler: () => handleSearchRejectInvite(player),
+        },
+        {
+          text: 'Dodaj',
+          type: 'primary',
+          handler: () => handleSearchAcceptInvite(player),
+        },
+      ]
+    }
+
+    if (friendship.canCancelRequest) {
+      return [
+        {
+          text: 'Anuluj',
+          type: 'secondary',
+          handler: () => handleSearchCancelInvite(player),
+        },
+      ]
+    }
+
+    if (friendship.canRemoveFriend) {
+      return [
+        {
+          text: 'Usuń',
+          type: 'secondary',
+          handler: () => handleSearchRemoveFriend(player),
+        },
+      ]
+    }
+
+    if (friendship.canSendRequest) {
+      return [
+        {
+          text: 'Dodaj',
+          type: 'primary',
+          handler: () => handleSearchSendRequest(player),
+        },
+      ]
+    }
+
+    return []
+  }
+
   const totalInvites = incomingRequests.length + outgoingRequests.length
   // Loader startowy pokazujemy tylko wtedy, gdy naprawdę nic jeszcze nie mamy.
   // Jeśli trwa kolejne odświeżenie, ale stare dane są na ekranie, lepiej ich nie zasłaniać spinnerem.
@@ -171,16 +345,6 @@ const FriendsScreen = () => {
         style={styles.list}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            // `refreshing` steruje natywnym spinnerem pull-to-refresh.
-            refreshing={loading}
-            onRefresh={handleManualRefresh}
-            tintColor={COLORS.secondary}
-            colors={[COLORS.secondary]}
-            progressBackgroundColor={COLORS.backgroundSecondary}
-          />
-        }
       >
          {/* Globalny komunikat błędu dla sekcji znajomych i zaproszeń. */}
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -236,6 +400,76 @@ const FriendsScreen = () => {
             />
           ))}
         </ExpandableSection>
+
+        <View style={styles.searchSection}>
+          <View style={styles.searchBox}>
+            <Ionicons
+              name='people'
+              size={ui.moderateScale(24, 0.35)}
+              color={COLORS.secondary}
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={styles.searchInput}
+              value={searchPhrase}
+              onChangeText={handleSearchInputChange}
+              placeholder='Szukaj po nicku...'
+              placeholderTextColor='#999'
+              autoCorrect={false}
+              autoCapitalize='none'
+              returnKeyType='search'
+              onSubmitEditing={handleSearchUsers}
+            />
+            <TouchableOpacity
+              style={styles.searchButton}
+              onPress={handleSearchUsers}
+              disabled={searchLoading}
+              activeOpacity={0.8}
+            >
+              {searchLoading ? (
+                <ActivityIndicator size='small' color={COLORS.primary} />
+              ) : (
+                <Text style={styles.searchButtonText}>Szukaj</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {searchError ? (
+            <Text style={styles.searchFeedbackError}>{searchError}</Text>
+          ) : null}
+
+          {searchResults.length > 0 ? (
+            <View style={styles.searchResultsContainer}>
+              {searchResults.slice(0, 5).map((player) => (
+                <PlayerCardWithActions
+                  key={player._id}
+                  player={player}
+                  actions={getSearchActions(player)}
+                />
+              ))}
+
+              {searchResults.length > 5 ? (
+                <ScrollView
+                  style={styles.searchResultsScroll}
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator={false}
+                >
+                  {searchResults.slice(5).map((player) => (
+                    <PlayerCardWithActions
+                      key={player._id}
+                      player={player}
+                      actions={getSearchActions(player)}
+                    />
+                  ))}
+                </ScrollView>
+              ) : null}
+            </View>
+          ) : null}
+
+          {searchMessage ? (
+            <Text style={styles.searchFeedbackMessage}>{searchMessage}</Text>
+          ) : null}
+        </View>
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionLabel}>Zaakceptowani znajomi</Text>
@@ -314,6 +548,75 @@ const createStyles = (ui) => StyleSheet.create({
   },
   expandableContainer: {
     marginBottom: ui.verticalScale(20),
+  },
+  searchSection: {
+    marginBottom: ui.verticalScale(20),
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderRadius: ui.controlRadius,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.buttonPaddingVertical,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    marginBottom: ui.verticalScale(12),
+  },
+  searchIcon: {
+    marginRight: ui.spacing(8, 0.35),
+  },
+  searchInput: {
+    backgroundColor: COLORS.backgroundSecondary,
+    borderRadius: ui.controlRadius,
+    flex: 1,
+    fontSize: ui.scaleFont(16, 0.35),
+    color: COLORS.primary,
+    minHeight: ui.controlMinHeight,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.controlPaddingVertical,
+  },
+  searchButton: {
+    backgroundColor: COLORS.secondary,
+    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingVertical: ui.buttonPaddingVertical,
+    borderRadius: ui.controlRadius,
+    marginLeft: ui.spacing(8, 0.35),
+    minWidth: ui.scale(70),
+    minHeight: ui.controlMinHeight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchButtonText: {
+    color: COLORS.background,
+    fontFamily: 'ObjectFont',
+    fontSize: ui.scaleFont(18, 0.4),
+  },
+  searchResultsContainer: {
+    backgroundColor: COLORS.backgroundSecondary,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingHorizontal: ui.spacing(10, 0.35),
+    paddingVertical: ui.verticalScale(10),
+  },
+  searchResultsScroll: {
+    maxHeight: ui.verticalScale(360),
+  },
+  searchFeedbackError: {
+    fontSize: ui.scaleFont(13, 0.35),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.error,
+    paddingHorizontal: ui.spacing(8, 0.35),
+    paddingBottom: ui.verticalScale(8),
+  },
+  searchFeedbackMessage: {
+    fontSize: ui.scaleFont(13, 0.35),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.gray,
+    paddingHorizontal: ui.spacing(8, 0.35),
+    paddingTop: ui.verticalScale(10),
   },
   expandableHeader: {
     flexDirection: 'row',
