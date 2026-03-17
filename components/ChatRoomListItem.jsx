@@ -178,8 +178,8 @@ const createStyles = (ui) => StyleSheet.create({
   },
   gameTypeIconWrapper: {
     position: 'absolute',
-    bottom: -ui.verticalScale(4),
-    right: -ui.spacing(4, 0.25),
+    bottom: -ui.verticalScale(16),
+    right: -ui.spacing(16, 0.25),
     transform: [{ scale: 0.5 }],
   },
   onlineStatus: {

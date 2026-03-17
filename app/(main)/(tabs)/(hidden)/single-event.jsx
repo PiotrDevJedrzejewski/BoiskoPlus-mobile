@@ -56,7 +56,7 @@ const ExpandableSection = ({ title, expanded, onToggle, badge, children, styles,
   </View>
 )
 
-const InfoRow = ({ label, value }) => (
+const InfoRow = ({ label, value, styles }) => (
   <View style={styles.infoRow}>
     <Text style={styles.infoLabel}>{label}:</Text>
     <Text style={styles.infoValue}>{value || '---'}</Text>
@@ -452,26 +452,28 @@ const SingleEvent = () => {
           styles={styles}
           ui={ui}
         >
-          <InfoRow label='Nazwa' value={event.eventName} />
-          <InfoRow label='Adres' value={event.addressString} />
+          <InfoRow label='Nazwa' value={event.eventName} styles={styles} />
+          <InfoRow label='Adres' value={event.addressString} styles={styles} />
           <InfoRow
             label='Data'
             value={`${event.startDate} ${event.startHour}`}
+            styles={styles}
           />
-          <InfoRow label='Opis' value={event.eventDescription} />
-          <InfoRow label='Czas trwania' value={event.duration} />
-          <InfoRow label='Typ boiska' value={event.fieldType} />
-          <InfoRow label='Typ gry' value={event.gameType} />
-          <InfoRow label='Poziom' value={event.level} />
-          <InfoRow label='Szuka graczy' value={event.playerCount} />
-          <InfoRow label='Cena' value={event.price} />
-          <InfoRow label='Płatność' value={event.paymentMethod} />
-          <InfoRow label='Telefon' value={event.phoneNumber} />
+          <InfoRow label='Opis' value={event.eventDescription} styles={styles} />
+          <InfoRow label='Czas trwania' value={event.duration} styles={styles} />
+          <InfoRow label='Typ boiska' value={event.fieldType} styles={styles} />
+          <InfoRow label='Typ gry' value={event.gameType} styles={styles} />
+          <InfoRow label='Poziom' value={event.level} styles={styles} />
+          <InfoRow label='Szuka graczy' value={event.playerCount} styles={styles} />
+          <InfoRow label='Cena' value={event.price} styles={styles} />
+          <InfoRow label='Płatność' value={event.paymentMethod} styles={styles} />
+          <InfoRow label='Telefon' value={event.phoneNumber} styles={styles} />
           <InfoRow
             label='Typ'
             value={event.isRecurring ? 'Cykliczne' : 'Jednorazowe'}
+            styles={styles}
           />
-          <InfoRow label='Status' value={event.eventStatus} />
+          <InfoRow label='Status' value={event.eventStatus} styles={styles} />
         </ExpandableSection>
 
         {/* Players */}

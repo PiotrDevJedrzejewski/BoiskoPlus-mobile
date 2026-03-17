@@ -147,7 +147,7 @@ const createStyles = (ui) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: ui.verticalScale(20),
+    paddingVertical: ui.verticalScale(15),
     position: 'relative',
     backgroundColor:'rgba(0, 0, 0, 0.3)',
   },

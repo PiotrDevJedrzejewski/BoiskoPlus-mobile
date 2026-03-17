@@ -71,6 +71,11 @@ export default function CustomDrawerContent(props) {
           onPress={() => navigateTo('/(main)/(tabs)/chat')}
         />
         <DrawerItem
+          icon='people'
+          label='Znajomi'
+          onPress={() => navigateTo('/(main)/(tabs)/(hidden)/friends')}
+        />
+        <DrawerItem
           icon='calendar'
           label='Moje Wydarzenia'
           onPress={() =>

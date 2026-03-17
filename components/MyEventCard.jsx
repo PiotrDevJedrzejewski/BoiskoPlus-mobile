@@ -257,7 +257,7 @@ const createStyles = (ui) => StyleSheet.create({
   },
   iconWrapperStatus: {
     position: 'absolute',
-    top: '50%',
+    top: '40%',
     right: ui.spacing(16, 0.35),
     width: '25%',
     aspectRatio: 1,
