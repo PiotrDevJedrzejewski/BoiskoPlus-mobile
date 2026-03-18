@@ -40,6 +40,11 @@ const EventsOwner = () => {
   const { loading, error } = eventsData
 
   const openEvent = (event) => {
+    const isEnded = ['completed', 'cancelled', 'finished'].includes(event.eventStatus)
+    if (isEnded) {
+      router.push(`/(main)/(tabs)/(hidden)/single-event?id=${event._id}`)
+      return
+    }
     router.push(`/(main)/(tabs)/(hidden)/edit-event?id=${event._id}`)
   }
 

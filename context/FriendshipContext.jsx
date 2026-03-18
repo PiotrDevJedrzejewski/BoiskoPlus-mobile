@@ -8,11 +8,16 @@ import {
 } from 'react'
 import customFetch from '../assets/utils/customFetch'
 import { useAuth } from './AuthContext'
+import { useSocketIo } from './SocketIoContext'
 
 const FriendshipContext = createContext()
 
 export const FriendshipProvider = ({ children }) => {
   const { user, isAuthChecked } = useAuth()
+  const { notificationSocket, setUnreadFriendRequestsCount, notificationConnectionState, ConnectionState } = useSocketIo()
+
+  // Czy pierwsze połączenie już odbyło się (login-fetch obsługuje badge same’)
+  const initialConnectDoneRef = useRef(false)
 
   // ─── Stan znajomych ───────────────────────────────────────────────────────
   const [friends, setFriends] = useState([])
@@ -68,6 +73,8 @@ export const FriendshipProvider = ({ children }) => {
       if (isMountedRef.current) {
         setIncoming(data.incoming)
         setOutgoing(data.outgoing)
+        // Cicha resync badge'a z DB (bez dźwięku) — poprawna wartość po re-logowaniu
+        setUnreadFriendRequestsCount(data.incoming.length)
       }
     } catch (err) {
       if (isMountedRef.current)
@@ -75,15 +82,57 @@ export const FriendshipProvider = ({ children }) => {
     } finally {
       if (isMountedRef.current) setPendingLoading(false)
     }
-  }, [])
+  }, [setUnreadFriendRequestsCount])
 
   // ─── Ładowanie przy starcie ───────────────────────────────────────────────
 
   useEffect(() => {
     if (!isAuthChecked || !user?.userID) return
+    initialConnectDoneRef.current = false // reset przy zmianie usera
     fetchFriends()
     fetchPending()
   }, [isAuthChecked, user?.userID, fetchFriends, fetchPending])
+
+  // ─── Resync po reconnect (bez dźwięku) ───────────────────────────────────
+  // Jeśli socket zerwał się i wrócił bez pełnego re-logowania (Render free-tier drop interesuje nas),
+  // robimy cichy HTTP-fetch żeby badge odzwierciedlał prawdę z DB.
+
+  useEffect(() => {
+    if (!user?.userID) return
+    if (notificationConnectionState !== ConnectionState.CONNECTED) return
+
+    if (!initialConnectDoneRef.current) {
+      // Pierwsze CONNECTED — fetchPending już uruchomił login-effect powyżej
+      initialConnectDoneRef.current = true
+      return
+    }
+
+    // Każdy kolejny CONNECTED to reconnect — resync z DB (bez dźwięku)
+    fetchPending()
+  }, [notificationConnectionState, ConnectionState.CONNECTED, user?.userID, fetchPending])
+
+  // ─── Real-time: nowe zaproszenie przez socket ─────────────────────────────
+
+  useEffect(() => {
+    if (!notificationSocket) return
+
+    const handleFriendRequest = (friendshipData) => {
+      if (!isMountedRef.current) return
+      setIncoming((prev) => {
+        // Unikaj duplikatów
+        const exists = prev.some(
+          (f) => f._id?.toString() === friendshipData._id?.toString()
+        )
+        if (exists) return prev
+        return [friendshipData, ...prev]
+      })
+    }
+
+    notificationSocket.on('friendRequest', handleFriendRequest)
+    return () => {
+      notificationSocket.off('friendRequest', handleFriendRequest)
+    }
+  }, [notificationSocket])
 
   // ─── Wyszukiwarka użytkowników ────────────────────────────────────────────
 
@@ -160,13 +209,12 @@ export const FriendshipProvider = ({ children }) => {
       )
       if (action === 'accepted') {
         await fetchFriends()
-        setIncoming((prev) => prev.filter((f) => f._id.toString() !== friendshipID))
-      } else {
-        setIncoming((prev) => prev.filter((f) => f._id.toString() !== friendshipID))
       }
+      setIncoming((prev) => prev.filter((f) => f._id.toString() !== friendshipID))
+      setUnreadFriendRequestsCount((prev) => Math.max(0, prev - 1))
       return data
     },
-    [fetchFriends]
+    [fetchFriends, setUnreadFriendRequestsCount]
   )
 
   const removeFriendship = useCallback(

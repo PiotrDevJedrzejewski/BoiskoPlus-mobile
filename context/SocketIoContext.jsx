@@ -157,6 +157,9 @@ export const SocketIoProvider = ({ children }) => {
   const [unreadEventsCount, setUnreadEventsCount] = useState(0)
   const [unreadEventsList, setUnreadEventsList] = useState([])
 
+  // Powiadomienia o zaproszeniach do znajomych
+  const [unreadFriendRequestsCount, setUnreadFriendRequestsCount] = useState(0)
+
   // Ostatnia aktualizacja statusu - używane do triggerowania re-renderów w komponentach
   const [lastStatusUpdate, setLastStatusUpdate] = useState(null)
 
@@ -269,6 +272,7 @@ export const SocketIoProvider = ({ children }) => {
         setRoomsState([])
         setUnreadEventsCount(0)
         setUnreadEventsList([])
+        setUnreadFriendRequestsCount(0)
         setOnlineUsers(new Set())
 
         return
@@ -745,6 +749,32 @@ export const SocketIoProvider = ({ children }) => {
   ])
 
   // ═════════════════════════════════════════════════
+  // EFFECT: Listener dla zaproszeń do znajomych
+  // ═════════════════════════════════════════════════
+
+  useEffect(() => {
+    if (!notificationSocket) return
+
+    const handleFriendRequest = (data) => {
+      const shouldNotify = shouldShowNotificationRef.current('chatMessages')
+      // chatMessages to globalny przełącznik dźwięku; można też dodać osobny klucz
+      if (shouldNotify !== false) {
+        playNotificationSound()
+      }
+      safeSetState(() => {
+        setUnreadFriendRequestsCount((prev) => prev + 1)
+      })
+    }
+
+    addNotificationListener('friendRequest', handleFriendRequest)
+
+    return () => {
+      notificationSocket.off('friendRequest', handleFriendRequest)
+      notificationListenersRef.current.delete('friendRequest')
+    }
+  }, [notificationSocket, addNotificationListener, playNotificationSound, safeSetState])
+
+  // ═════════════════════════════════════════════════
   // API FUNCTIONS
   // ═════════════════════════════════════════════════
 
@@ -998,6 +1028,15 @@ export const SocketIoProvider = ({ children }) => {
   }, [safeSetState])
 
   /**
+   * Resetuj licznik nieprzeczytanych zaproszeń do znajomych
+   */
+  const resetFriendRequestCount = useCallback(() => {
+    safeSetState(() => {
+      setUnreadFriendRequestsCount(0)
+    })
+  }, [safeSetState])
+
+  /**
    * Sprawdź czy event ma nieprzeczytane powiadomienia
    */
   const hasUnreadNotifications = useCallback(
@@ -1053,6 +1092,13 @@ export const SocketIoProvider = ({ children }) => {
   }, [roomsState])
 
   /**
+   * Łączna liczba wszystkich nieprzeczytanych powiadomień (eventy + zaproszenia)
+   */
+  const totalNotificationsCount = useMemo(() => {
+    return unreadEventsCount + unreadFriendRequestsCount
+  }, [unreadEventsCount, unreadFriendRequestsCount])
+
+  /**
    * Czy jesteśmy połączeni?
    */
   const isConnected = useMemo(() => {
@@ -1105,6 +1151,12 @@ export const SocketIoProvider = ({ children }) => {
       hasUnreadNotifications,
       lastStatusUpdate,
 
+      // Powiadomienia o zaproszeniach
+      unreadFriendRequestsCount,
+      setUnreadFriendRequestsCount,
+      resetFriendRequestCount,
+      totalNotificationsCount,
+
       // Subskrypcje eventów
       subscribeToEvent,
       unsubscribeFromEvent,
@@ -1140,6 +1192,10 @@ export const SocketIoProvider = ({ children }) => {
       resetUnreadEvents,
       hasUnreadNotifications,
       lastStatusUpdate,
+      unreadFriendRequestsCount,
+      setUnreadFriendRequestsCount,
+      resetFriendRequestCount,
+      totalNotificationsCount,
       subscribeToEvent,
       unsubscribeFromEvent,
       onlineUsers,

@@ -1,28 +1,27 @@
+import { useState } from 'react'
 import { Image, Text, View, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useNavigation, useRouter } from 'expo-router'
+import { useNavigation } from 'expo-router'
 import { DrawerActions } from '@react-navigation/native'
 import LogoBoiskoPlus from '../assets/images/LogoBoiskoPlus.png'
 import { COLORS } from '../constants/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { useSocketIo } from '../context/SocketIoContext'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import QuickNavModal from './popup/QuickNavModal'
 
 const HeaderDrawer = () => {
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
-  const router = useRouter()
-  const { unreadEventsCount } = useSocketIo()
+  const { unreadEventsCount, unreadFriendRequestsCount, totalUnreadMessages } = useSocketIo()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
+  const [quickNavVisible, setQuickNavVisible] = useState(false)
+
+  const totalBadge = unreadEventsCount + unreadFriendRequestsCount + totalUnreadMessages
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer())
-  }
-
-  const openNotifications = () => {
-    // TODO: Nawiguj do ekranu powiadomień
-    router.push('/(main)/(tabs)/(hidden)/events-managment/events-allEvents')
   }
 
   return (
@@ -61,7 +60,7 @@ const HeaderDrawer = () => {
 
         {/* Powiadomienia - prawa strona */}
         <Pressable
-          onPress={openNotifications}
+          onPress={() => setQuickNavVisible(true)}
           style={styles.iconButton}
           android_ripple={{
             color: COLORS.backgroundSecondary,
@@ -70,17 +69,21 @@ const HeaderDrawer = () => {
         >
           <View>
             <Ionicons name='notifications' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
-            {/* Badge dla nieprzeczytanych zmian wydarzeń */}
-            {unreadEventsCount > 0 && (
+            {totalBadge > 0 && (
               <View style={styles.notificationBadge}>
                 <Text style={styles.badgeText}>
-                  {unreadEventsCount > 9 ? '9+' : unreadEventsCount}
+                  {totalBadge > 9 ? '9+' : totalBadge}
                 </Text>
               </View>
             )}
           </View>
         </Pressable>
       </View>
+
+      <QuickNavModal
+        visible={quickNavVisible}
+        onClose={() => setQuickNavVisible(false)}
+      />
     </>
   )
 }

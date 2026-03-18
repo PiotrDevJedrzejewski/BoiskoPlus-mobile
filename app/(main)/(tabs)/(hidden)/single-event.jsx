@@ -19,6 +19,8 @@ import { useDashboard } from '../../../../context/DashboardContext'
 import { useNotification } from '../../../../context/NotificationContext'
 import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
 
+const ENDED_EVENT_STATUSES = ['completed', 'cancelled', 'finished']
+
 const ActionButton = ({ icon, label, onPress, muted = false, styles, ui }) => (
   <TouchableOpacity
     style={styles.actionButton}
@@ -346,7 +348,7 @@ const SingleEvent = () => {
     if (userStatus) return `Twój status: ${userStatus}`
     return 'Poproś o dołączenie'
   }
-
+  const isViewOnly = event ? ENDED_EVENT_STATUSES.includes(event.eventStatus) : false
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -392,53 +394,62 @@ const SingleEvent = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Join Button */}
-        <TouchableOpacity
-          style={[styles.joinButton, userStatus && styles.joinButtonWithStatus]}
-          onPress={handleJoinRequest}
-          disabled={statusLoading}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.joinButtonText}>{getStatusText()}</Text>
-        </TouchableOpacity>
+        {/* Join Button / View-only indicator */}
+        {isViewOnly ? (
+          <View style={styles.viewOnlyBanner}>
+            <Ionicons name='eye-outline' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
+            <Text style={styles.viewOnlyText}>Tryb podglądu – wydarzenie zakończone</Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[styles.joinButton, userStatus && styles.joinButtonWithStatus]}
+            onPress={handleJoinRequest}
+            disabled={statusLoading}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.joinButtonText}>{getStatusText()}</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Action Buttons */}
-        <View style={styles.actionsContainer}>
-          <ActionButton
-            icon={isChatMuted ? 'chatbubbles' : 'chatbubbles-outline'}
-            label='Wycisz chat'
-            onPress={handleToggleChatMute}
-            muted={isChatMuted}
-            styles={styles}
-            ui={ui}
-          />
-          <ActionButton
-            icon={
-              isNotificationsMuted
-                ? 'notifications-off'
-                : 'notifications-outline'
-            }
-            label='Wycisz powiadomienia'
-            onPress={handleToggleNotificationsMute}
-            muted={isNotificationsMuted}
-            styles={styles}
-            ui={ui}
-          />
-          <ActionButton
-            icon='flag-outline'
-            label='Zgłoś'
-            onPress={handleReport}
-            styles={styles}
-            ui={ui}
-          />
-          <ActionButton
-            icon='close-circle-outline'
-            label='Opuść'
-            onPress={handleLeave}
-            styles={styles}
-            ui={ui}
-          />
-        </View>
+        {!isViewOnly && (
+          <View style={styles.actionsContainer}>
+            <ActionButton
+              icon={isChatMuted ? 'chatbubbles' : 'chatbubbles-outline'}
+              label='Wycisz chat'
+              onPress={handleToggleChatMute}
+              muted={isChatMuted}
+              styles={styles}
+              ui={ui}
+            />
+            <ActionButton
+              icon={
+                isNotificationsMuted
+                  ? 'notifications-off'
+                  : 'notifications-outline'
+              }
+              label='Wycisz powiadomienia'
+              onPress={handleToggleNotificationsMute}
+              muted={isNotificationsMuted}
+              styles={styles}
+              ui={ui}
+            />
+            <ActionButton
+              icon='flag-outline'
+              label='Zgłoś'
+              onPress={handleReport}
+              styles={styles}
+              ui={ui}
+            />
+            <ActionButton
+              icon='close-circle-outline'
+              label='Opuść'
+              onPress={handleLeave}
+              styles={styles}
+              ui={ui}
+            />
+          </View>
+        )}
 
         {/* Organizer */}
         <Text style={styles.sectionLabel}>Organizator</Text>
@@ -683,5 +694,20 @@ const createStyles = (ui) => StyleSheet.create({
     color: COLORS.gray,
     textAlign: 'center',
     paddingVertical: ui.verticalScale(20),
+  },
+  viewOnlyBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: ui.spacing(8, 0.35),
+    backgroundColor: COLORS.backgroundSecondary,
+    borderRadius: ui.moderateScale(12, 0.35),
+    paddingVertical: ui.verticalScale(14),
+    marginBottom: ui.verticalScale(20),
+  },
+  viewOnlyText: {
+    fontSize: ui.scaleFont(13, 0.35),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.gray,
   },
 })

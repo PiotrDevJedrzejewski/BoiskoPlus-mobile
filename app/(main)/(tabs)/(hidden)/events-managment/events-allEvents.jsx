@@ -45,11 +45,11 @@ const EventsAllEvents = () => {
     eventsData
 
   const handleEventPress = (event, status) => {
-    if (status === 'owner') {
+    const isEnded = ['completed', 'cancelled', 'finished'].includes(event.eventStatus)
+    if (status === 'owner' && !isEnded) {
       router.push(`/(main)/(tabs)/(hidden)/edit-event?id=${event._id}`)
       return
     }
-
     router.push(`/(main)/(tabs)/(hidden)/single-event?id=${event._id}`)
   }
 

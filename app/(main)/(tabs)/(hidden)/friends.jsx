@@ -313,12 +313,12 @@ const createStyles = (ui) =>
 
     // ─── Sekcja zaproszeń ────────────────────────────────────────────────────
     pendingSection: {
-      maxHeight: SCREEN_HEIGHT * 0.3,
+      maxHeight: SCREEN_HEIGHT * 0.35,
       marginBottom: ui.verticalScale(20),
       backgroundColor: 'rgba(0, 0, 0, 0.15)',
       borderRadius: ui.moderateScale(12, 0.35),
       overflow: 'hidden',
-      paddingHorizontal: ui.spacing(8, 0.35),
+      paddingHorizontal: ui.spacing(12, 0.35),
       paddingTop: ui.verticalScale(10),
     },
     pendingList: {
@@ -345,7 +345,7 @@ const createStyles = (ui) =>
     },
     filterTab: {
       flex: 1,
-      paddingVertical: ui.verticalScale(6),
+      paddingVertical: ui.verticalScale(8),
       paddingHorizontal: ui.spacing(10, 0.35),
       borderRadius: ui.moderateScale(999, 0.35),
       borderWidth: 1,
