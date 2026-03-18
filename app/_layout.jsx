@@ -11,6 +11,7 @@ import ToastManager from 'toastify-react-native'
 // Importuj providery kontekstów
 import { AuthProvider } from '../context/AuthContext'
 import { DashboardProvider } from '../context/DashboardContext'
+import { FriendshipProvider } from '../context/FriendshipContext'
 import { NotificationProvider } from '../context/NotificationContext'
 import { SocketIoProvider } from '../context/SocketIoContext'
 
@@ -49,6 +50,7 @@ const Layout = () => {
           <NotificationProvider>
         <SocketIoProvider>
             <DashboardProvider>
+            <FriendshipProvider>
             <Stack
               screenOptions={{
                 headerStyle: { backgroundColor: COLORS.background },
@@ -77,6 +79,7 @@ const Layout = () => {
               <Stack.Screen name='(main)' options={{ headerShown: false }} />
             </Stack>
             <ToastManager />
+            </FriendshipProvider>
           </DashboardProvider>
       </SocketIoProvider>
         </NotificationProvider>

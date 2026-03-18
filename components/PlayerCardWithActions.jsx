@@ -1,49 +1,50 @@
-import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { COLORS } from '../constants/colors'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 import PlayerCard from './PlayerCard'
 
+const getChipStyles = (type, styles) => {
+  switch (type) {
+    case 'primary':
+      return { chip: styles.actionChipPrimary, text: styles.actionChipTextPrimary }
+    case 'secondary':
+      return { chip: styles.actionChipSecondary, text: styles.actionChipTextSecondary }
+    default:
+      return { chip: {}, text: {} }
+  }
+}
 
-
-const ActionButtons = ({ actions = [{ text: 'Press', type: 'primary', handler: () => {Alert.alert('Action pressed!')} }] }) => {
-    const ui = useResponsiveScale()
-	const styles = createStyles(ui)
-    return (
-	<View style={styles.buttonWrapper}>
-		{actions.map((action, index) => (
-			<TouchableOpacity
-                // every button diffrent action
-				key={action.text}
-				style={[
-					styles.actionChip,
-					action.type === 'primary' ? styles.actionChipPrimary : styles.actionChipSecondary,
-				]}
-				onPress={action.handler}
-				activeOpacity={0.8}
-			>
-				<Text
-					style={[
-						styles.actionChipText,
-						action.type === 'primary' ? styles.actionChipTextPrimary : styles.actionChipTextSecondary,
-					]}
-				>
-					{action.text}
-				</Text>
-			</TouchableOpacity>
-		))}
-	</View>
-)}
+const ActionButtons = ({ actions = [] }) => {
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+  return (
+    <View style={styles.buttonWrapper}>
+      {actions.map((action) => {
+        const { chip, text } = getChipStyles(action.type, styles)
+        return (
+          <TouchableOpacity
+            key={action.text}
+            style={[styles.actionChip, chip]}
+            onPress={action.handler}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.actionChipText, text]}>{action.text}</Text>
+          </TouchableOpacity>
+        )
+      })}
+    </View>
+  )
+}
 
 const PlayerCardWithActions = ({ player, actions = [] }) => {
-	const ui = useResponsiveScale()
-	const styles = createStyles(ui)
-
-	return (
-		<View style={styles.playerCardWrapper}>
-			<PlayerCard playerInfo={player} />
-			{actions.length > 0 ? <ActionButtons actions={actions} /> : null}
-		</View>
-	)
+  const ui = useResponsiveScale()
+  const styles = createStyles(ui)
+  return (
+    <View style={styles.playerCardWrapper}>
+      <PlayerCard playerInfo={player} />
+      {actions.length > 0 && <ActionButtons actions={actions} />}
+    </View>
+  )
 }
 
 export default PlayerCardWithActions
