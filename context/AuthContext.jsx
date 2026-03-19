@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import * as SecureStore from 'expo-secure-store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
+import Constants from 'expo-constants'
 import customFetch, {
   setAuthToken,
   removeAuthToken,
@@ -45,6 +46,14 @@ export const AuthProvider = ({ children }) => {
 
   //Nowy state dla asynchronizacji pomiędzy użytkownikiem a SecureStore
   const [isAuthChecked, setIsAuthChecked] = useState(false)
+
+  // Konfiguracja Google Sign-In raz przy starcie aplikacji
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: Constants.expoConfig?.extra?.googleWebClientId,
+      iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
+    })
+  }, [])
 
   const clearLocalStorageAndState = async () => {
     // Usuń lokalną sesję i dane cache aplikacji po wylogowaniu/usunięciu konta.

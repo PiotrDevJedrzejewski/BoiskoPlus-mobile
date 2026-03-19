@@ -21,6 +21,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { useNotification } from '../../../context/NotificationContext'
 import LottieView from 'lottie-react-native'
 import { useFonts } from 'expo-font'
+import { useLocalSearchParams } from 'expo-router'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const typing = require('../../../assets/utils/typing.json')
@@ -30,6 +31,7 @@ const Chat = () => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const { user } = useAuth()
+  const { openChatWith } = useLocalSearchParams()
   const {
     chatSocket,
     socket, // kompatybilność wsteczna
@@ -73,6 +75,7 @@ const Chat = () => {
   })
 
   const scrollViewRef = useRef(null)
+  const openChatWithHandledRef = useRef(null)
 
   // Ref do selectedRoom - używany w socket handlerach aby uniknąć stale closure
   // WZORZEC: Ref synchronizowany ze stanem eliminuje stale closures w socket handlerach.
@@ -439,6 +442,14 @@ const Chat = () => {
       Alert.alert('Błąd', 'Nie udało się utworzyć pokoju czatu')
     }
   }
+
+  // Auto-otwórz rozmowę gdy przybywamy z innego ekranu (np. profilu gracza)
+  useEffect(() => {
+    if (!openChatWith || loadingRooms || openChatWithHandledRef.current === openChatWith) return
+    openChatWithHandledRef.current = openChatWith
+    handleStartNewChat(openChatWith)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openChatWith, loadingRooms])
 
   // Powrót do listy pokojów
   const handleBackToList = () => {

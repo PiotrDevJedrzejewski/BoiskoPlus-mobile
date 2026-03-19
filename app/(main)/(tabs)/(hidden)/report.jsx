@@ -20,7 +20,7 @@ const Report = () => {
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
-  const { type, userId, eventId } = useLocalSearchParams()
+  const { type, userId, eventId, reportedNickName } = useLocalSearchParams()
 
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -160,14 +160,14 @@ const Report = () => {
           <Text style={styles.typeText}>{getTypeDisplayName()}</Text>
         </View>
 
-        {/* ID info (if available) */}
-        {(userId || eventId) && (
+        {/* Subject info (if available) */}
+        {(reportedNickName || eventId) && (
           <View style={styles.idContainer}>
             <Text style={styles.idLabel}>
-              {type === 'user' ? 'ID użytkownika:' : 'ID wydarzenia:'}
+              {type === 'user' ? 'Zgłaszany użytkownik:' : 'ID wydarzenia:'}
             </Text>
             <Text style={styles.idValue} numberOfLines={1}>
-              {userId || eventId}
+              {reportedNickName || eventId}
             </Text>
           </View>
         )}

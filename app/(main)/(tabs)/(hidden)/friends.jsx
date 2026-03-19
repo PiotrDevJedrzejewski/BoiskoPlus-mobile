@@ -157,7 +157,7 @@ const FriendsScreen = () => {
           </View>
         ) : (
           <>
-            {/* ─── Sekcja zaproszeń (max 30% ekranu) ─── */}
+            {/* ─── Sekcja zaproszeń (max 35% ekranu) ─── */}
             <View style={styles.pendingSection}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Zaproszenia</Text>
@@ -320,6 +320,7 @@ const createStyles = (ui) =>
       overflow: 'hidden',
       paddingHorizontal: ui.spacing(12, 0.35),
       paddingTop: ui.verticalScale(10),
+      paddingBottom: ui.verticalScale(8),
     },
     pendingList: {
       flexGrow: 0,

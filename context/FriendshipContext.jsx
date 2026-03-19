@@ -128,11 +128,49 @@ export const FriendshipProvider = ({ children }) => {
       })
     }
 
+    // userB zaakceptował / odrzucił zaproszenie userA
+    // respondedBy = ID userB (osoby której karta może być w searchResults userA)
+    const handleFriendRequestResponded = ({ friendshipID, action, respondedBy }) => {
+      if (!isMountedRef.current) return
+      setOutgoing((prev) => prev.filter((entry) => entry._id?.toString() !== friendshipID?.toString()))
+      if (action === 'accepted') {
+        // Odśwież listę znajomych — userA widzi nowego znajomego
+        fetchFriends()
+        // Karta userB w wyszukiwarce → "Znajomy ✓"
+        if (respondedBy) patchSearchResult(respondedBy, { status: 'accepted', friendshipID, direction: null })
+      } else {
+        // Odrzucone — resetuj kartę userB żeby userA mógł zaprosić ponownie
+        if (respondedBy) patchSearchResult(respondedBy, { status: 'none', friendshipID: null, direction: null })
+      }
+    }
+
+    // ktoś usunął znajomość / anulował zaproszenie (druga strona dostaje event)
+    // removedBy = ID osoby która usunęła (może być w searchResults odbiorcy eventu)
+    const handleFriendshipRemoved = ({ friendshipID, removedBy, wasStatus }) => {
+      if (!isMountedRef.current) return
+      if (wasStatus === 'accepted') {
+        // Usuń z listy znajomych
+        setFriends((prev) => prev.filter((entry) => entry.friendshipID?.toString() !== friendshipID?.toString()))
+        // Karta usuniętego znajomego w wyszukiwarce → "Dodaj"
+        if (removedBy) patchSearchResult(removedBy, { status: 'none', friendshipID: null, direction: null })
+      } else {
+        // Było pending — usuń z incoming (userB dostaje info że userA wycofał zaproszenie)
+        setIncoming((prev) => prev.filter((entry) => entry._id?.toString() !== friendshipID?.toString()))
+        setUnreadFriendRequestsCount((prev) => Math.max(0, prev - 1))
+        // Karta userA (który anulował) w wyszukiwarce userB → "Dodaj"
+        if (removedBy) patchSearchResult(removedBy, { status: 'none', friendshipID: null, direction: null })
+      }
+    }
+
     notificationSocket.on('friendRequest', handleFriendRequest)
+    notificationSocket.on('friendRequestResponded', handleFriendRequestResponded)
+    notificationSocket.on('friendshipRemoved', handleFriendshipRemoved)
     return () => {
       notificationSocket.off('friendRequest', handleFriendRequest)
+      notificationSocket.off('friendRequestResponded', handleFriendRequestResponded)
+      notificationSocket.off('friendshipRemoved', handleFriendshipRemoved)
     }
-  }, [notificationSocket])
+  }, [notificationSocket, fetchFriends, setUnreadFriendRequestsCount, patchSearchResult])
 
   // ─── Wyszukiwarka użytkowników ────────────────────────────────────────────
 
@@ -187,15 +225,25 @@ export const FriendshipProvider = ({ children }) => {
       const { data } = await customFetch.post(
         `/friendships/send/${recipientID}`
       )
-      const f = data.friendship
+      const friendship = data.friendship
       // Optimistic update w wynikach wyszukiwania
       patchSearchResult(recipientID, {
         status: 'pending',
-        friendshipID: f._id,
+        friendshipID: friendship._id,
         direction: 'outgoing',
       })
-      // Dodaj do outgoing z wypełnionym obiektem recipient
-      setOutgoing((prev) => [{ ...f, recipient: recipientData ?? f.recipient }, ...prev])
+      // Dodaj do outgoing, usuwając stary wpis dla tego samego odbiorcy lub tego samego _id
+      // (backend może zwrócić ten sam _id przy re-invite, co powoduje duplicate key w React)
+      setOutgoing((prev) => {
+        const recipientStr = recipientID?.toString()
+        const newIdStr = friendship._id?.toString()
+        const filtered = prev.filter(
+          (existingEntry) =>
+            existingEntry._id?.toString() !== newIdStr &&
+            (existingEntry.recipient?._id ?? existingEntry.recipient)?.toString() !== recipientStr
+        )
+        return [{ ...friendship, recipient: recipientData ?? friendship.recipient }, ...filtered]
+      })
       return data
     },
     [patchSearchResult]
@@ -210,11 +258,23 @@ export const FriendshipProvider = ({ children }) => {
       if (action === 'accepted') {
         await fetchFriends()
       }
-      setIncoming((prev) => prev.filter((f) => f._id.toString() !== friendshipID))
+      setIncoming((prev) => {
+        const item = prev.find((invite) => invite._id.toString() === friendshipID)
+        // Aktualizuj wyniki wyszukiwania dla nadawcy zaproszenia
+        if (item?.requester) {
+          const requesterID = (item.requester._id ?? item.requester).toString()
+          if (action === 'accepted') {
+            patchSearchResult(requesterID, { status: 'accepted', friendshipID, direction: null })
+          } else {
+            patchSearchResult(requesterID, { status: 'none', friendshipID: null, direction: null })
+          }
+        }
+        return prev.filter((invite) => invite._id.toString() !== friendshipID)
+      })
       setUnreadFriendRequestsCount((prev) => Math.max(0, prev - 1))
       return data
     },
-    [fetchFriends, setUnreadFriendRequestsCount]
+    [fetchFriends, setUnreadFriendRequestsCount, patchSearchResult]
   )
 
   const removeFriendship = useCallback(

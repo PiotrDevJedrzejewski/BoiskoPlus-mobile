@@ -14,7 +14,7 @@ const PlayerCard = ({ playerInfo, onPress }) => {
     if (onPress) {
       onPress()
     } else if (playerInfo?._id) {
-      router.push(`/(main)/(tabs)/(hidden)/profile-user?id=${playerInfo._id}`)
+      router.push(`/(main)/(tabs)/(hidden)/profile/profile-otherUser?id=${playerInfo._id}`)
     }
   }
 
