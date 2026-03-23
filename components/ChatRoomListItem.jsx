@@ -89,7 +89,7 @@ const ChatRoomListItem = ({
         )}
 
         {/* Avatar */}
-        <View style={styles.avatarWrapper}>
+        <View style={[styles.avatarWrapper, room.roomType === 'group' && styles.avatarGroupBorder]}>
           <Image source={avatar} style={styles.avatar} />
           {room.roomType === 'group' && (
             <View style={styles.gameTypeIconWrapper}>{gameTypeIcon}</View>
@@ -167,8 +167,8 @@ const createStyles = (ui) => StyleSheet.create({
   },
   avatarWrapper: {
     position: 'relative',
-    width: ui.scale(50),
-    height: ui.scale(50),
+    width: ui.scale(52),
+    height: ui.scale(52),
     marginRight: ui.spacing(12, 0.35),
   },
   avatar: {
@@ -178,9 +178,18 @@ const createStyles = (ui) => StyleSheet.create({
   },
   gameTypeIconWrapper: {
     position: 'absolute',
-    bottom: -ui.verticalScale(16),
-    right: -ui.spacing(16, 0.25),
-    transform: [{ scale: 0.5 }],
+    bottom: -ui.verticalScale(18),
+    right: -ui.spacing(18, 0.25),
+    transform: [{ scale: 0.55 }],
+    backgroundColor: "#292929",
+    borderRadius: ui.moderateScale(18, 0.35),
+    padding: ui.spacing(2, 0.35),
+    
+  },
+  avatarGroupBorder: {
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    borderRadius: ui.moderateScale(12, 0.35),
   },
   onlineStatus: {
     position: 'absolute',

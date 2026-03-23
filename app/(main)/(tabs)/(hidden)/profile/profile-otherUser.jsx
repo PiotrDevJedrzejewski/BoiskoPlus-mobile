@@ -48,14 +48,15 @@ const ProfileUser = () => {
       }
       setLoading(true)
       try {
-        const [userRes, friendshipRes] = await Promise.all([
+        const [userRes, statsRes, friendshipRes] = await Promise.all([
           customFetch.get(`/users/${id}`),
+          customFetch.get(`/user-stats/${id}`),
           customFetch.get(`/friendships/status/${id}`),
         ])
         const userData = userRes.data.user
         setUser(userData)
-        setUserStats(userData.userStats || { gamesPlayed: 0, eventsOrganized: 0, totalLikes: 0, points: 0 })
-        setIsLiked(userData.isLikedByCurrentUser || false)
+        setUserStats(statsRes.data.stats || { gamesPlayed: 0, eventsOrganized: 0, totalLikes: 0, points: 0 })
+        setIsLiked(statsRes.data.isLikedByCurrentUser || false)
         setFriendship(friendshipRes.data)
       } catch (err) {
         console.error('Błąd pobierania danych użytkownika:', err)

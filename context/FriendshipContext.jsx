@@ -12,6 +12,21 @@ import { useSocketIo } from './SocketIoContext'
 
 const FriendshipContext = createContext()
 
+// Pobiera statystyki dla listy userIds, zwraca Map: userId -> stats
+const fetchStatsMap = async (userIds) => {
+  if (!userIds.length) return {}
+  try {
+    const { data } = await customFetch.post('/user-stats/multiple', { userIds })
+    const map = {}
+    for (const stat of data.stats) {
+      if (stat.userID) map[stat.userID.toString()] = stat
+    }
+    return map
+  } catch {
+    return {}
+  }
+}
+
 export const FriendshipProvider = ({ children }) => {
   const { user, isAuthChecked } = useAuth()
   const { notificationSocket, setUnreadFriendRequestsCount, notificationConnectionState, ConnectionState } = useSocketIo()
@@ -53,7 +68,16 @@ export const FriendshipProvider = ({ children }) => {
     setFriendsError(null)
     try {
       const { data } = await customFetch.get('/friendships/friends')
-      if (isMountedRef.current) setFriends(data.friends)
+      const userIds = data.friends.map((f) => f.friend?._id?.toString()).filter(Boolean)
+      const statsMap = await fetchStatsMap(userIds)
+      const friendsWithStats = data.friends.map((f) => ({
+        ...f,
+        friend: {
+          ...f.friend,
+          userStats: statsMap[f.friend?._id?.toString()] || { gamesPlayed: 0, eventsOrganized: 0, totalLikes: 0 },
+        },
+      }))
+      if (isMountedRef.current) setFriends(friendsWithStats)
     } catch (err) {
       if (isMountedRef.current)
         setFriendsError(err?.response?.data?.msg || 'Błąd pobierania znajomych')
@@ -70,9 +94,20 @@ export const FriendshipProvider = ({ children }) => {
     setPendingError(null)
     try {
       const { data } = await customFetch.get('/friendships/pending')
+      const incomingIds = data.incoming.map((i) => (i.requester?._id ?? i.requester)?.toString()).filter(Boolean)
+      const outgoingIds = data.outgoing.map((o) => (o.recipient?._id ?? o.recipient)?.toString()).filter(Boolean)
+      const statsMap = await fetchStatsMap([...new Set([...incomingIds, ...outgoingIds])])
+      const incomingWithStats = data.incoming.map((i) => {
+        const uid = (i.requester?._id ?? i.requester)?.toString()
+        return { ...i, requester: { ...i.requester, userStats: statsMap[uid] || { gamesPlayed: 0, eventsOrganized: 0, totalLikes: 0 } } }
+      })
+      const outgoingWithStats = data.outgoing.map((o) => {
+        const uid = (o.recipient?._id ?? o.recipient)?.toString()
+        return { ...o, recipient: { ...o.recipient, userStats: statsMap[uid] || { gamesPlayed: 0, eventsOrganized: 0, totalLikes: 0 } } }
+      })
       if (isMountedRef.current) {
-        setIncoming(data.incoming)
-        setOutgoing(data.outgoing)
+        setIncoming(incomingWithStats)
+        setOutgoing(outgoingWithStats)
         // Cicha resync badge'a z DB (bez dźwięku) — poprawna wartość po re-logowaniu
         setUnreadFriendRequestsCount(data.incoming.length)
       }
@@ -188,8 +223,14 @@ export const FriendshipProvider = ({ children }) => {
     setSearchError(null)
     try {
       const { data } = await customFetch.get('/users/search', { params: { q } })
+      const userIds = data.users.map((u) => u._id?.toString()).filter(Boolean)
+      const statsMap = await fetchStatsMap(userIds)
+      const usersWithStats = data.users.map((u) => ({
+        ...u,
+        userStats: statsMap[u._id?.toString()] || { gamesPlayed: 0, eventsOrganized: 0, totalLikes: 0 },
+      }))
       if (isMountedRef.current) {
-        setSearchResults(data.users)
+        setSearchResults(usersWithStats)
         setSearchHasMore(data.hasMore)
       }
     } catch (err) {

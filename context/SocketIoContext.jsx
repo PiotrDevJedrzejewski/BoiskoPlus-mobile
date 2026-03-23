@@ -227,6 +227,40 @@ export const SocketIoProvider = ({ children }) => {
     }
   }, [notificationPlayer])
 
+  // ─────────────────────────────────────────────────
+  // HANDLER: Rozłącz wszystkie sockety i wyczyść stan
+  // Wywoływany przy wylogowaniu lub zmianie użytkownika
+  // ─────────────────────────────────────────────────
+
+  const disconnectSockets = useCallback(() => {
+    if (chatSocket) {
+      chatListenersRef.current.forEach((handler, event) => chatSocket.off(event, handler))
+      chatListenersRef.current.clear()
+      chatSocket.disconnect()
+      setChatSocket(null)
+      setChatConnectionState(ConnectionState.DISCONNECTED)
+    }
+    if (notificationSocket) {
+      notificationListenersRef.current.forEach((handler, event) => notificationSocket.off(event, handler))
+      notificationListenersRef.current.clear()
+      notificationSocket.disconnect()
+      setNotificationSocket(null)
+      setNotificationConnectionState(ConnectionState.DISCONNECTED)
+    }
+    joinedRoomsRef.current.clear()
+    setRoomsState([])
+    setUnreadEventsCount(0)
+    setUnreadEventsList([])
+    setUnreadFriendRequestsCount(0)
+    setOnlineUsers(new Set())
+  }, [chatSocket, notificationSocket])
+
+  // Ref z aktualną wersją disconnectSockets – unika stale closure w efektach
+  const disconnectSocketsRef = useRef(disconnectSockets)
+  useEffect(() => {
+    disconnectSocketsRef.current = disconnectSockets
+  }, [disconnectSockets])
+
   // ═════════════════════════════════════════════════
   // EFFECT: Inicjalizacja socketów
   // ═════════════════════════════════════════════════
@@ -244,37 +278,7 @@ export const SocketIoProvider = ({ children }) => {
       const isAuthenticated = user && user.userID && user.userID !== null
 
       if (!isAuthenticated) {
-        // User wylogowany - rozłącz sockety
-        if (chatSocket) {
-          for (const [event, handler] of chatListenersRef.current.entries()) {
-            chatSocket.off(event, handler)
-          }
-          chatListenersRef.current.clear()
-          chatSocket.disconnect()
-          setChatSocket(null)
-          setChatConnectionState(ConnectionState.DISCONNECTED)
-        }
-        if (notificationSocket) {
-          for (const [
-            event,
-            handler,
-          ] of notificationListenersRef.current.entries()) {
-            notificationSocket.off(event, handler)
-          }
-          notificationListenersRef.current.clear()
-          notificationSocket.disconnect()
-          setNotificationSocket(null)
-          setNotificationConnectionState(ConnectionState.DISCONNECTED)
-        }
-
-        // Reset state
-        joinedRoomsRef.current.clear()
-        setRoomsState([])
-        setUnreadEventsCount(0)
-        setUnreadEventsList([])
-        setUnreadFriendRequestsCount(0)
-        setOnlineUsers(new Set())
-
+        disconnectSocketsRef.current()
         return
       }
 
@@ -395,23 +399,33 @@ export const SocketIoProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.userID, isAuthChecked])
 
+  // ═════════════════════════════════════════════════
+  // EFFECT: Rozłącz sockety przy wylogowaniu
+  // Wykrywa przejście user?.userID: wartość → null/undefined
+  // niezależnie od stanu isAuthChecked (który też się zeruje przy logout)
+  // ═════════════════════════════════════════════════
+
+  const prevUserIdRef = useRef(user?.userID ?? null)
+  useEffect(() => {
+    const prevId = prevUserIdRef.current
+    const currentId = user?.userID ?? null
+    prevUserIdRef.current = currentId
+
+    if (prevId && !currentId) {
+      disconnectSocketsRef.current()
+    }
+  }, [user?.userID])
+
   // Osobny cleanup effect
   useEffect(() => {
     return () => {
       if (chatSocket) {
-        for (const [event, handler] of chatListenersRef.current.entries()) {
-          chatSocket.off(event, handler)
-        }
+        chatListenersRef.current.forEach((handler, event) => chatSocket.off(event, handler))
         chatListenersRef.current.clear()
         chatSocket.disconnect()
       }
       if (notificationSocket) {
-        for (const [
-          event,
-          handler,
-        ] of notificationListenersRef.current.entries()) {
-          notificationSocket.off(event, handler)
-        }
+        notificationListenersRef.current.forEach((handler, event) => notificationSocket.off(event, handler))
         notificationListenersRef.current.clear()
         notificationSocket.disconnect()
       }
@@ -1165,6 +1179,9 @@ export const SocketIoProvider = ({ children }) => {
       onlineUsers,
       isUserOnline,
 
+      // Rozłączenie (np. przy wylogowaniu z zewnętrznego kontekstu)
+      disconnectSockets,
+
       // Kompatybilność wsteczna z V1
       // (dla istniejącego kodu - deprecated, użyj chatSocket)
       socket: chatSocket,
@@ -1200,6 +1217,7 @@ export const SocketIoProvider = ({ children }) => {
       unsubscribeFromEvent,
       onlineUsers,
       isUserOnline,
+      disconnectSockets,
     ]
   )
 

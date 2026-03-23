@@ -158,8 +158,14 @@ const SingleEvent = () => {
         } else if (typeof event.createdBy === 'object') {
           userId = String(event.createdBy)
         }
-        const response = await customFetch.get(`/users/${userId}`)
-        setOwner(response.data.user)
+        const [userRes, statsRes] = await Promise.all([
+          customFetch.get(`/users/${userId}`),
+          customFetch.get(`/user-stats/${userId}`),
+        ])
+        setOwner({
+          ...userRes.data.user,
+          userStats: statsRes.data.stats || { gamesPlayed: 0, eventsOrganized: 0, totalLikes: 0 },
+        })
       } catch (error) {
         console.error('Błąd pobierania właściciela:', error)
       }

@@ -48,27 +48,27 @@ const Premium = () => {
             <View style={styles.featureItem}>
               <Ionicons name='infinite' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
               <Text style={styles.featureText}>
-                Nieograniczona liczba wydarzeń
+                ,
               </Text>
             </View>
 
             <View style={styles.featureItem}>
               <Ionicons
-                name='color-palette'
+                name='checkmark-circle'
                 size={ui.moderateScale(20, 0.35)}
                 color={COLORS.secondary}
               />
-              <Text style={styles.featureText}>Ekskluzywne motywy</Text>
+              <Text style={styles.featureText}>Odznaka Wspierającego</Text>
             </View>
 
             <View style={styles.featureItem}>
-              <Ionicons name='trophy' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
-              <Text style={styles.featureText}>Odznaka Premium w rankingu</Text>
+              <Ionicons name='arrow-up' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
+              <Text style={styles.featureText}>Pierwszeństwo w pozycjonowaniu</Text>
             </View>
 
             <View style={styles.featureItem}>
               <Ionicons name='analytics' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
-              <Text style={styles.featureText}>Zaawansowane statystyki</Text>
+              <Text style={styles.featureText}>,</Text>
             </View>
           </View>
         </View>
