@@ -37,6 +37,8 @@ const ShowMap = () => {
     flyToProvince,
     setShowMarkers,
     showMarkers,
+    showEvents,
+    setShowEvents,
     setIsInteractive,
     setOverlayOpacity,
     userLocation,
@@ -359,7 +361,7 @@ const ShowMap = () => {
 
         {/* Kontrolki na mapie */}
         <View style={styles.controlsContainer} pointerEvents='box-none'>
-          <Text style={styles.controlButtonTextLocation }>Znajdź</Text>
+          <Text style={styles.controlButtonTextLocation}>Znajdź</Text>
           <TouchableOpacity
             style={styles.controlButton}
             onPress={handleMyLocation}
@@ -368,6 +370,7 @@ const ShowMap = () => {
             <Ionicons name='locate' size={locateIconSize} color={COLORS.secondary} />
           </TouchableOpacity>
 
+          <Text style={styles.controlButtonTextAbove}>Boiska</Text>
           <TouchableOpacity
             style={styles.controlButton}
             onPress={() => setShowMarkers(!showMarkers)}
@@ -381,7 +384,19 @@ const ShowMap = () => {
             />
             <MaterialCommunityIcons name="soccer-field" size={fieldIconSize} color={COLORS.third} style={styles.controlIconField} />
           </TouchableOpacity>
-            <Text style={styles.controlButtonTextField }>Boiska</Text>
+
+          <Text style={styles.controlButtonTextAbove}>Mecze</Text>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => setShowEvents(!showEvents)}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name={showEvents ? 'calendar' : 'calendar-outline'}
+              size={eyeIconSize}
+              color={showEvents ? COLORS.secondary : '#999'}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -483,19 +498,16 @@ const createStyles = (ui) => StyleSheet.create({
   },
 
   controlButtonTextLocation: {
-    position: 'absolute',
-    top: -ui.verticalScale(20),
-    right: ui.spacing(7, 0.25),
     fontSize: ui.scaleFont(10, 0.25),
     color: COLORS.secondary,
     fontFamily: 'ObjectFont',
+    textAlign: 'center',
   },
-  controlButtonTextField: {
-    position: 'absolute',
-    bottom: -ui.verticalScale(20),
-    right: ui.spacing(5, 0.25),
+  controlButtonTextAbove: {
     fontSize: ui.scaleFont(10, 0.25),
     color: COLORS.secondary,
     fontFamily: 'ObjectFont',
+    textAlign: 'center',
+    marginTop: ui.verticalScale(4),
   },
 })

@@ -42,6 +42,9 @@ export const MapProvider = ({ children }) => {
   // Czy pokazywać markery dla predefiniowanych lokalizacji
   const [showMarkers, setShowMarkers] = useState(true)
 
+  // Czy pokazywać markery wydarzeń
+  const [showEvents, setShowEvents] = useState(true)
+
   // Opacity overlay (dla przyciemnienia tła)
   const [overlayOpacity, setOverlayOpacity] = useState(0.3)
 
@@ -218,6 +221,8 @@ export const MapProvider = ({ children }) => {
         mapRef,
         showMarkers,
         setShowMarkers,
+        showEvents,
+        setShowEvents,
         overlayOpacity,
         setOverlayOpacity,
         isInteractive,

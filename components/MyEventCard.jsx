@@ -91,9 +91,9 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
       case 'rejected':
         return <Entypo name="cross" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       case 'finished':
-        return <FontAwesome name="check" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
+        return <FontAwesome5 name="flag-checkered" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       case 'completed':
-        return <FontAwesome name="check" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
+        return <FontAwesome5 name="flag-checkered" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       case 'cancelled':
         return <Entypo name="cross" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       default:
@@ -227,6 +227,7 @@ const createStyles = (ui) => StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: ui.spacing(8, 0.35),
     marginTop: ui.verticalScale(4),
+    // backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   statusTextLabel: {
     fontSize: ui.scaleFont(12, 0.3),

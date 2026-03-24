@@ -39,7 +39,7 @@ const throttle = (func, delay) => {
 const MapboxMobile = () => {
   const { filteredEvents, mapTheme, userLocation, geolocationAccepted } =
     useDashboard()
-  const { mapRef, camera, showMarkers, setIsMapReady } = useMap()
+  const { mapRef, camera, showMarkers, showEvents, setIsMapReady } = useMap()
 
   // State dla wybranych elementów (musi być state bo wymaga re-renderu przy otwarciu modalu)
   const [selectedClusterEvents, setSelectedClusterEvents] = useState(null)
@@ -404,7 +404,7 @@ const MapboxMobile = () => {
         )}
 
         {/* Markery Eventów - renderowane z Supercluster */}
-        {eventClustersGeojson.features.length > 0 && (
+        {showEvents && eventClustersGeojson.features.length > 0 && (
           <Mapbox.ShapeSource
             id='events-source'
             shape={eventClustersGeojson}

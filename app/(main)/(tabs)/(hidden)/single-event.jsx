@@ -21,21 +21,24 @@ import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
 
 const ENDED_EVENT_STATUSES = ['completed', 'cancelled', 'finished']
 
-const ActionButton = ({ icon, label, onPress, muted = false, styles, ui }) => (
-  <TouchableOpacity
-    style={styles.actionButton}
-    onPress={onPress}
-    activeOpacity={0.7}
-  >
-    <Ionicons
-      name={icon}
-      size={ui.moderateScale(28, 0.35)}
-      color={muted ? COLORS.gray : COLORS.primary}
-    />
-    <Text style={[styles.actionButtonText, muted && styles.actionButtonMuted]}>
-      {label}
-    </Text>
-  </TouchableOpacity>
+const ActionButton = ({ icon, label, onPress, muted = false, disabled = false, styles, ui }) => (
+  <View style={styles.actionButtonWrapper}>
+    <TouchableOpacity
+      style={[styles.actionButton, disabled && styles.actionButtonDisabled]}
+      onPress={onPress}
+      activeOpacity={0.7}
+      disabled={disabled}
+    >
+      <Ionicons
+        name={icon}
+        size={ui.moderateScale(28, 0.35)}
+        color={muted || disabled ? COLORS.gray : COLORS.primary}
+      />
+      <Text style={[styles.actionButtonText, (muted || disabled) && styles.actionButtonMuted]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  </View>
 )
 
 const ExpandableSection = ({ title, expanded, onToggle, badge, children, styles, ui }) => (
@@ -434,7 +437,7 @@ const SingleEvent = () => {
                   ? 'notifications-off'
                   : 'notifications-outline'
               }
-              label='Wycisz powiadomienia'
+              label='Powiadomienia'
               onPress={handleToggleNotificationsMute}
               muted={isNotificationsMuted}
               styles={styles}
@@ -451,6 +454,7 @@ const SingleEvent = () => {
               icon='close-circle-outline'
               label='Opuść'
               onPress={handleLeave}
+              disabled={!['interested', 'accepted'].includes(userStatus) || statusLoading}
               styles={styles}
               ui={ui}
             />
@@ -626,11 +630,14 @@ const createStyles = (ui) => StyleSheet.create({
   },
   actionsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
     marginBottom: ui.verticalScale(24),
     paddingVertical: ui.verticalScale(12),
     backgroundColor: COLORS.backgroundSecondary,
     borderRadius: ui.moderateScale(12, 0.35),
+  },
+  actionButtonWrapper: {
+    flex: 1,
+    alignItems: 'center',
   },
   actionButton: {
     alignItems: 'center',
@@ -645,6 +652,9 @@ const createStyles = (ui) => StyleSheet.create({
   },
   actionButtonMuted: {
     color: COLORS.gray,
+  },
+  actionButtonDisabled: {
+    opacity: 0.4,
   },
   sectionLabel: {
     fontSize: ui.scaleFont(16, 0.35),
