@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
+import { Slider } from '@miblanchard/react-native-slider'
 import { COLORS } from '../constants/colors'
 import customFetch from '../assets/utils/customFetch'
 import { Toast } from 'toastify-react-native'
@@ -69,6 +70,7 @@ const defaultEventData = {
   paymentMethod: 'Na miejscu',
   eventDescription: '',
   phoneNumber: '',
+  ageRange: [0, 100],
   isParticipating: false,
   isPrivate: false,
   isRecurring: false,
@@ -454,6 +456,32 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         </View>
       </View>
 
+
+
+      {/* Wiek */}
+      <Text style={styles.label}>Wiek</Text>
+      <View style={styles.ageRangeContainer}>
+        <Text style={styles.ageRangeLabel}>
+          {0} – {100} lat
+        </Text>
+        <Slider
+          value={eventData.ageRange}
+          onValueChange={(value) => handleChange('ageRange', value)}
+          minimumValue={0}
+          maximumValue={100}
+          step={1}
+          minimumTrackTintColor={COLORS.secondary}
+          maximumTrackTintColor={COLORS.gray}
+          thumbTintColor={COLORS.secondary}
+          trackStyle={styles.sliderTrack}
+          thumbStyle={styles.sliderThumb}
+        />
+        <View style={styles.ageRangeLabels}>
+          <Text style={styles.ageRangeMinMax}>0</Text>
+          <Text style={styles.ageRangeMinMax}>100</Text>
+        </View>
+      </View>
+
       {/* Opis */}
       <Text style={styles.label}>Opis wydarzenia</Text>
       <TextInput
@@ -612,6 +640,41 @@ const createStyles = (ui) => StyleSheet.create({
   },
   submitButtonDisabled: {
     opacity: 0.6,
+  },
+  ageRangeContainer: {
+    marginBottom: ui.verticalScale(4),
+  },
+  ageRangeLabel: {
+    fontSize: ui.scaleFont(15, 0.35),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.secondary,
+    textAlign: 'center',
+    marginBottom: ui.verticalScale(4),
+  },
+  sliderTrack: {
+    height: ui.verticalScale(4),
+    borderRadius: 2,
+  },
+  sliderThumb: {
+    width: ui.scale(22),
+    height: ui.scale(22),
+    borderRadius: ui.scale(11),
+    backgroundColor: COLORS.secondary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  ageRangeLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: ui.verticalScale(2),
+  },
+  ageRangeMinMax: {
+    fontSize: ui.scaleFont(12, 0.3),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.gray,
   },
   submitButtonText: {
     fontSize: ui.scaleFont(18, 0.4),

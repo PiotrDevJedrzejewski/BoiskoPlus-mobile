@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Pressable,
   ActivityIndicator,
+  Animated,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Picker } from '@react-native-picker/picker'
@@ -26,6 +27,8 @@ import {
 import customFetch from '../../../assets/utils/customFetch'
 import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import LottieView from 'lottie-react-native'
+import spinnerData from '../../../assets/utils/spinner.json'
 
 const GAME_TYPES = [
   { label: 'Wybierz typ gry', value: '' },
@@ -62,6 +65,7 @@ const FindEvent = () => {
     region: '',
     distance: 5,
     gameType: '',
+    eventName: '',
   })
   const { filteredEvents, setFilteredEvents } = useDashboard()
   const [hasSearched, setHasSearched] = useState(false)
@@ -73,6 +77,8 @@ const FindEvent = () => {
   const isMountedRef = useRef(true)
   const suggestionsDebounceRef = useRef(null)
   const searchAbortControllerRef = useRef(null)
+  const loadingTimerRef = useRef(null)
+  const listOpacity = useRef(new Animated.Value(0)).current
 
   const headerIconSize = ui.moderateScale(26, 0.35)
   const actionIconSize = ui.moderateScale(26, 0.35)
@@ -87,6 +93,9 @@ const FindEvent = () => {
       }
       if (searchAbortControllerRef.current) {
         searchAbortControllerRef.current.abort()
+      }
+      if (loadingTimerRef.current) {
+        clearTimeout(loadingTimerRef.current)
       }
       setIsInteractive(false)
       setOverlayOpacity(0.3)
@@ -192,6 +201,10 @@ const FindEvent = () => {
   const handleSubmit = async () => {
     setLoading(true)
     setHasSearched(true)
+    if (loadingTimerRef.current) {
+      clearTimeout(loadingTimerRef.current)
+    }
+    listOpacity.setValue(0)
 
     if (searchAbortControllerRef.current) {
       searchAbortControllerRef.current.abort()
@@ -297,7 +310,16 @@ const FindEvent = () => {
         searchAbortControllerRef.current = null
       }
       if (isMountedRef.current) {
-        setLoading(false)
+        loadingTimerRef.current = setTimeout(() => {
+          if (isMountedRef.current) {
+            setLoading(false)
+            Animated.timing(listOpacity, {
+              toValue: 1,
+              duration: 600,
+              useNativeDriver: true,
+            }).start()
+          }
+        }, 700)
       }
     }
   }
@@ -356,6 +378,22 @@ const FindEvent = () => {
           onSuggestionClick={handleSuggestionClick}
         />
         </View>
+
+
+        {/* Szukaj po nazwie */}
+        {showAdvancedSearch && (
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.inputLocation}
+            placeholder='Nazwa wydarzenia...'
+            placeholderTextColor={COLORS.gray}
+            value={userInput.eventName}
+            onChangeText={(text) => setUserInput((prev) => ({ ...prev, eventName: text }))}
+            autoCorrect={false}
+            autoCapitalize='none'
+          />
+        </View>
+        )}
 
         {/* Typ gry i dystans i wiecej */}
         {showAdvancedSearch && (
@@ -420,8 +458,8 @@ const FindEvent = () => {
 
       {/* Lista wydarzeń - pokazywana gdy showList === true */}
       {showList && !loading && hasSearched && (
+        <Animated.View style={[styles.eventList, { opacity: listOpacity }]}>
         <ScrollView
-          style={styles.eventList}
           contentContainerStyle={styles.eventListContent}
           showsVerticalScrollIndicator={false}
           pointerEvents='auto'
@@ -443,6 +481,19 @@ const FindEvent = () => {
             </View>
           )}
         </ScrollView>
+        </Animated.View>
+      )}
+
+      {/* Spinner podczas wyszukiwania */}
+      {loading && (
+        <View style={styles.infoContainer}>
+          <LottieView
+            source={spinnerData}
+            autoPlay
+            loop
+            style={styles.spinnerLottie}
+          />
+        </View>
       )}
 
       {/* Info przed wyszukaniem */}
@@ -463,7 +514,7 @@ const FindEvent = () => {
       )}
 
       {/* Przycisk przełączania widoku lista/mapa */}
-      {hasSearched && !loading && (
+      {/* {hasSearched && !loading && (
         <View style={styles.controlsContainer} pointerEvents='box-none'>
           <TouchableOpacity
             style={styles.controlButton}
@@ -480,7 +531,7 @@ const FindEvent = () => {
             {showList ? 'Mapa' : 'Lista'}
           </Text>
         </View>
-      )}
+      )} */}
     </View>
   )
 }
@@ -649,6 +700,10 @@ const createStyles = (ui) => StyleSheet.create({
     color: COLORS.secondary,
     fontFamily: 'ObjectFont',
     marginTop: ui.verticalScale(4),
+  },
+  spinnerLottie: {
+    width: ui.moderateScale(180, 0.4),
+    height: ui.moderateScale(180, 0.4),
   },
 
 

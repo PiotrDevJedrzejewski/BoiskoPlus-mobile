@@ -22,6 +22,7 @@ import {
 import customFetch from '../../../assets/utils/customFetch'
 import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Toast } from 'toastify-react-native'
 import { getCurrentLocation } from '../../../assets/utils/getUserLocation'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
@@ -379,7 +380,7 @@ const ShowMap = () => {
             <Ionicons
               name={showMarkers ? 'eye' : 'eye-off'}
               size={eyeIconSize}
-              color={COLORS.secondary}
+              color={showMarkers ? COLORS.secondary : '#999'}
               style={styles.controlIconEye}
             />
             <MaterialCommunityIcons name="soccer-field" size={fieldIconSize} color={COLORS.third} style={styles.controlIconField} />
@@ -391,8 +392,8 @@ const ShowMap = () => {
             onPress={() => setShowEvents(!showEvents)}
             activeOpacity={0.8}
           >
-            <Ionicons
-              name={showEvents ? 'calendar' : 'calendar-outline'}
+            <MaterialIcons
+              name={showEvents ? 'location-on' : 'location-off'}
               size={eyeIconSize}
               color={showEvents ? COLORS.secondary : '#999'}
             />
