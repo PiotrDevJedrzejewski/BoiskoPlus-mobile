@@ -12,7 +12,8 @@ export default function HiddenLayout() {
         headerTitleStyle: {
           fontFamily: 'Montserrat-Bold',
         },
-        headerShown: false, // Drawer ma swój header
+        headerShown: false,
+        gestureEnabled: false,
         contentStyle: {
           backgroundColor: COLORS.background,
         },

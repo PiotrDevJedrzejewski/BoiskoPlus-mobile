@@ -15,7 +15,7 @@ function MapBackground() {
       style={styles.mapBackground}
       pointerEvents={isInteractive ? 'auto' : 'none'}
     >
-      <MapboxMobile />
+      <MapboxMobile isInteractive={isInteractive} />
       {/* Overlay dla przyciemnienia gdy mapa nieinteraktywna */}
       {!isInteractive && overlayOpacity > 0 && (
         <View
@@ -45,7 +45,9 @@ function CustomTabBar() {
   const { totalUnreadMessages } = useSocketIo()
 
   const handlePress = (path) => {
-    router.push(`/(main)/(tabs)/${path}`)
+    // navigate zamiast push - nie dodaje duplikatów do historii nawigacji
+    // dzięki temu swipe z lewej nie cofa przez historię tabów
+    router.navigate(`/(main)/(tabs)/${path}`)
   }
 
   // Sprawdzamy czy dany tab jest aktywny

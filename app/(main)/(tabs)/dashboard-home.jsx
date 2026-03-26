@@ -49,6 +49,18 @@ const DashboardHome = () => {
                 desc='Przeglądaj dostępne gry i zapisuj się na mecze'
                 onPress={() => handleCardPress('/(main)/(tabs)/find-event')}
               />
+                            <CardDashboard
+                icon={
+                  <Ionicons
+                    name='map-sharp'
+                    size={cardIconSize}
+                    color={COLORS.secondary}
+                  />
+                }
+                title='Pokaż Mapę'
+                desc='Zobacz dostępne boiska i swoje lokalizacje na mapie'
+                onPress={() => handleCardPress('/(main)/(tabs)/show-map')}                            
+              />
               <CardDashboard
                 icon={
                   <MaterialCommunityIcons
@@ -79,32 +91,21 @@ const DashboardHome = () => {
                   )
                 }
               />
-              <CardDashboard
-                icon={
-                  <Ionicons
-                    name='settings-sharp'
-                    size={cardIconSize}
-                    color={COLORS.secondary}
-                  />
-                }
-                title='Ustawienia'
-                desc='Dostosuj swoje preferencje i powiadomienia'
-                onPress={() =>
-                  handleCardPress('/(main)/(tabs)/(hidden)/settings')
-                }
-              />
+
               {/* Przycisk Pokaż Mapę */}
               <Pressable
                 style={styles.mapButton}
-                onPress={() => handleCardPress('/(main)/(tabs)/show-map')}
+                 onPress={() =>
+                  handleCardPress('/(main)/(tabs)/(hidden)/settings')
+                }
               >
                 <Ionicons
-                  name='map'
+                  name='settings-sharp'
                   size={mapIconSize}
                   color={COLORS.secondary}
                   style={styles.mapIcon}
                 />
-                <Text style={styles.mapButtonText}>Pokaż Mapę</Text>
+                <Text style={styles.mapButtonText}>Ustawienia</Text>
               </Pressable>
             </View>
           </BlurView>

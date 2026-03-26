@@ -1,6 +1,5 @@
 import { Drawer } from 'expo-router/drawer'
 import { useRouter } from 'expo-router'
-import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import HeaderDrawer from '../../components/HeaderDrawer'
 import CustomDrawerContent from '../../components/CustomDrawerContent'
 import { MapProvider } from '../../context/MapContext'
@@ -18,7 +17,6 @@ const MainLayout = () => {
 
   return (
     <MapProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
         <Drawer
           screenOptions={{
             drawerStyle: {
@@ -27,7 +25,9 @@ const MainLayout = () => {
             },
             header: () => <HeaderDrawer />,
             sceneContainerStyle: { backgroundColor: 'transparent' },
+            swipeEnabled: true,
           }}
+          
           drawerContent={(props) => <CustomDrawerContent {...props} />}
         >
           <Drawer.Screen
@@ -39,7 +39,6 @@ const MainLayout = () => {
             }}
           />
         </Drawer>
-      </GestureHandlerRootView>
     </MapProvider>
   )
 }

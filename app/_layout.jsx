@@ -6,6 +6,7 @@ import HeaderStack from '../components/HeaderStack'
 import LottieView from 'lottie-react-native'
 import spinner from '../assets/utils/spinner.json'
 import { View } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import ToastManager from 'toastify-react-native'
 
 // Importuj providery kontekstów
@@ -46,6 +47,7 @@ const Layout = () => {
   }
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <AuthProvider>
           <NotificationProvider>
         <SocketIoProvider>
@@ -59,6 +61,7 @@ const Layout = () => {
                   fontSize: 16,
                 },
                 header: (props) => <HeaderStack {...props} />,
+                gestureEnabled: false,
               }}
             >
               {/* Public screens */}
@@ -76,7 +79,7 @@ const Layout = () => {
                 options={{ headerShown: true }}
               />
               {/* Protected screens */}
-              <Stack.Screen name='(main)' options={{ headerShown: false }} />
+              <Stack.Screen name='(main)' options={{ headerShown: false, gestureEnabled: false }} />
             </Stack>
             <ToastManager />
             </FriendshipProvider>
@@ -84,6 +87,7 @@ const Layout = () => {
       </SocketIoProvider>
         </NotificationProvider>
     </AuthProvider>
+    </GestureHandlerRootView>
   )
 }
 export default Layout

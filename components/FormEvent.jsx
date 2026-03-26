@@ -120,7 +120,11 @@ const parsePredefinedPlace = (predefinedPlace) => {
 }
 
 const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, eventId = null }) => {
-  const [eventData, setEventData] = useState(initialData || defaultEventData)
+  const [eventData, setEventData] = useState(
+    initialData
+      ? { ...initialData, ageRange: initialData.ageRange ?? [0, 100] }
+      : defaultEventData
+  )
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const ui = useResponsiveScale()
@@ -462,7 +466,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
       <Text style={styles.label}>Wiek</Text>
       <View style={styles.ageRangeContainer}>
         <Text style={styles.ageRangeLabel}>
-          {0} – {100} lat
+          {eventData.ageRange?.[0] ?? 0} – {eventData.ageRange?.[1] ?? 100} lat
         </Text>
         <Slider
           value={eventData.ageRange}

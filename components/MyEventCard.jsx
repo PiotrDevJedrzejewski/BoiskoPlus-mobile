@@ -12,7 +12,6 @@ import { useResponsiveScale } from '../assets/utils/scaleUI.UX';
 
 
 
-
 const MyEventCard = ({ event, status, onPress, statusData }) => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
@@ -74,6 +73,23 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
         return 'Zakończone'
       case 'cancelled':
         return 'Anulowane'
+      default:
+        return ''
+    }
+  }
+
+    const getLevelLabel = (level) => {
+    switch (level) {
+      case 'beginner':
+        return 'Junior'
+      case 'intermediate':
+        return 'Mid'
+      case 'advanced':
+        return 'High'
+      case 'professional':
+        return 'Pro'
+      case 'other':
+        return 'All'
       default:
         return ''
     }
@@ -191,7 +207,16 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
               size={ui.moderateScale(14, 0.3)}
               color={COLORS.secondary}
             />
-            <Text style={styles.footerText}>{event.level} </Text>
+            <Text style={styles.footerText}>{getLevelLabel(event.level)} </Text>
+          </View>
+          <View style={styles.footerItem}>
+           
+            <MaterialCommunityIcons
+              name='human-cane'
+              size={ui.moderateScale(14, 0.3)}
+              color={COLORS.secondary}
+            />
+            <Text style={styles.footerText}>{event.ageRange?.[0] ?? 0} – {event.ageRange?.[1] ?? 100} lat</Text>
           </View>
           <View style={styles.footerItem}>
             <Ionicons name='people' size={ui.moderateScale(14, 0.3)} color={COLORS.secondary} />

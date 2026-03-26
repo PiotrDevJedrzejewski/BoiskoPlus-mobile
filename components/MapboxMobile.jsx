@@ -36,7 +36,7 @@ const throttle = (func, delay) => {
   }
 }
 
-const MapboxMobile = () => {
+const MapboxMobile = ({ isInteractive = true }) => {
   const { filteredEvents, mapTheme, userLocation, geolocationAccepted } =
     useDashboard()
   const { mapRef, camera, showMarkers, showEvents, setIsMapReady } = useMap()
@@ -325,6 +325,12 @@ const MapboxMobile = () => {
         attributionEnabled={false}
         compassEnabled={false}
         scaleBarEnabled={false}
+        // Wyłącz natywne gesture recognizery mapy gdy mapa jest w tle
+        // pointerEvents='none' na View-wrapperze nie wystarczy dla natywnych gestów Mapbox
+        scrollEnabled={isInteractive}
+        pitchEnabled={isInteractive}
+        rotateEnabled={isInteractive}
+        zoomEnabled={isInteractive}
         onDidFinishLoadingMap={handleMapLoad}
         onRegionIsChanging={handleRegionChange}
       >

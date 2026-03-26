@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { LinearGradient } from 'expo-linear-gradient'
 import { COLORS } from '../constants/colors'
 import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
@@ -18,12 +19,27 @@ const FindEventListElement = ({ event, onPress }) => {
 
   const icon = getGameTypeIcon(event.gameType)
 
+  const getLevelLabel = (level) => {
+    switch (level) {
+      case 'beginner': return 'Junior'
+      case 'intermediate': return 'Mid'
+      case 'advanced': return 'High'
+      case 'professional': return 'Pro'
+      case 'other': return 'All'
+      default: return level ?? ''
+    }
+  }
+
   return (
     <TouchableOpacity
       style={styles.element}
       onPress={onPress}
       activeOpacity={0.8}
     >
+      <LinearGradient
+        colors={[COLORS.gradientStart, COLORS.gradientEnd]}
+        style={styles.gradient}
+      >
       {/* Ikona i typ gry */}
       <View style={styles.iconWrapper}>
         <Text style={styles.gameType}>{event.gameType?.toUpperCase()}</Text>
@@ -73,13 +89,22 @@ const FindEventListElement = ({ event, onPress }) => {
             size={ui.moderateScale(16, 0.35)}
             color={COLORS.secondary}
           />
-          <Text style={styles.infoText}>{event.level}</Text>
+          <Text style={styles.infoText}>{getLevelLabel(event.level)}</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <MaterialCommunityIcons
+            name='human-cane'
+            size={ui.moderateScale(16, 0.35)}
+            color={COLORS.secondary}
+          />
+          <Text style={styles.infoText}>{event.ageRange?.[0] ?? 0}–{event.ageRange?.[1] ?? 100} lat</Text>
         </View>
         <View style={styles.infoItem}>
           <Ionicons name='people' size={ui.moderateScale(16, 0.35)} color={COLORS.secondary} />
           <Text style={styles.infoText}>{event.playerCount}</Text>
         </View>
       </View>
+      </LinearGradient>
     </TouchableOpacity>
   )
 }
@@ -88,10 +113,12 @@ export default FindEventListElement
 
 const createStyles = (ui) => StyleSheet.create({
   element: {
-    backgroundColor: COLORS.backgroundSecondary,
     borderRadius: ui.moderateScale(16, 0.35),
     marginBottom: ui.verticalScale(16),
     overflow: 'hidden',
+  },
+  gradient: {
+    borderRadius: ui.moderateScale(16, 0.35),
   },
   elementLoading: {
     backgroundColor: COLORS.backgroundSecondary,

@@ -49,6 +49,7 @@ const GAME_TYPES = [
 
 const SUGGESTIONS_DEBOUNCE_MS = 80
 const SUGGESTIONS_LIMIT = 30
+const EVENT_NAME_MAX = 50
 
 const FindEvent = () => {
   const router = useRouter()
@@ -74,10 +75,14 @@ const FindEvent = () => {
   const [suggestions, setSuggestions] = useState([])
   const [suggestionSelected, setSuggestionSelected] = useState(false)
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
   const isMountedRef = useRef(true)
   const suggestionsDebounceRef = useRef(null)
   const searchAbortControllerRef = useRef(null)
   const loadingTimerRef = useRef(null)
+  const lastSearchParamsRef = useRef(null)
   const listOpacity = useRef(new Animated.Value(0)).current
 
   const headerIconSize = ui.moderateScale(26, 0.35)
@@ -201,6 +206,8 @@ const FindEvent = () => {
   const handleSubmit = async () => {
     setLoading(true)
     setHasSearched(true)
+    setCurrentPage(1)
+    setHasMore(false)
     if (loadingTimerRef.current) {
       clearTimeout(loadingTimerRef.current)
     }
@@ -252,14 +259,20 @@ const FindEvent = () => {
     }
 
     try {
-      const response = await customFetch.post('/football-events/search', {
+      const searchParams = {
         latitude: finalLatitude,
         longitude: finalLongitude,
         Country: userLocation.Country || 'Poland',
         region: finalRegion,
         City: finalCity,
         distance: userInput.distance,
-      }, {
+        eventName: userInput.eventName?.trim() || undefined,
+        page: 1,
+        limit: 50,
+      }
+      lastSearchParamsRef.current = searchParams
+
+      const response = await customFetch.post('/football-events/search', searchParams, {
         signal: abortController.signal,
       })
       
@@ -269,6 +282,8 @@ const FindEvent = () => {
       }
 
       setFilteredEvents(response.data)
+      setHasMore(response.data.hasMore || false)
+      setCurrentPage(1)
       
       // Logika centrowania mapy w zależności od liczby znalezionych eventów
       if (events.length === 0) {
@@ -344,6 +359,38 @@ const FindEvent = () => {
     router.push(`/(main)/(tabs)/(hidden)/single-event?id=${eventId}`)
   }
 
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore || !lastSearchParamsRef.current) return
+
+    setLoadingMore(true)
+    const nextPage = currentPage + 1
+
+    try {
+      const response = await customFetch.post('/football-events/search', {
+        ...lastSearchParamsRef.current,
+        page: nextPage,
+      })
+
+      if (!isMountedRef.current) return
+
+      const newEvents = response.data.events || []
+      setFilteredEvents((prev) => ({
+        ...response.data,
+        events: [...(prev?.events || []), ...newEvents],
+      }))
+      setHasMore(response.data.hasMore || false)
+      setCurrentPage(nextPage)
+    } catch (err) {
+      if (err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') return
+      console.error('Błąd ładowania więcej:', err)
+      Toast.error('Nie udało się załadować więcej wydarzeń', 'top')
+    } finally {
+      if (isMountedRef.current) {
+        setLoadingMore(false)
+      }
+    }
+  }
+
   return (
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
@@ -383,15 +430,27 @@ const FindEvent = () => {
         {/* Szukaj po nazwie */}
         {showAdvancedSearch && (
         <View style={styles.inputRow}>
+          <View style={styles.eventNameWrapper}>
           <TextInput
             style={styles.inputLocation}
             placeholder='Nazwa wydarzenia...'
             placeholderTextColor={COLORS.gray}
             value={userInput.eventName}
-            onChangeText={(text) => setUserInput((prev) => ({ ...prev, eventName: text }))}
+            maxLength={EVENT_NAME_MAX}
+            onChangeText={(text) => {
+              if (text.length <= EVENT_NAME_MAX) {
+                setUserInput((prev) => ({ ...prev, eventName: text }))
+              }
+            }}
             autoCorrect={false}
             autoCapitalize='none'
           />
+          {userInput.eventName.length > 0 && (
+            <Text style={styles.eventNameCounter}>
+              {userInput.eventName.length}/{EVENT_NAME_MAX}
+            </Text>
+          )}
+          </View>
         </View>
         )}
 
@@ -418,19 +477,22 @@ const FindEvent = () => {
             </Picker>
           </View>
               
-          <TextInput
-            style={styles.inputDistance}
-            placeholder='km'
-            placeholderTextColor={COLORS.gray}
-            keyboardType='numeric'
-            value={userInput.distance.toString()}
-            onChangeText={(text) => {
-              let value = parseInt(text) || 1
-              if (value < 1) value = 1
-              if (value > 50) value = 50
-              setUserInput((prev) => ({ ...prev, distance: value }))
-            }}
-          />
+          <View style={styles.distanceWrapper}>
+            <TextInput
+              style={styles.inputDistance}
+              placeholder='1'
+              placeholderTextColor={COLORS.gray}
+              keyboardType='numeric'
+              value={userInput.distance.toString()}
+              onChangeText={(text) => {
+                let value = parseInt(text) || 1
+                if (value < 1) value = 1
+                if (value > 50) value = 50
+                setUserInput((prev) => ({ ...prev, distance: value }))
+              }}
+            />
+            <Text style={styles.kmLabel}>km</Text>
+          </View>
         </View>
         )}
 
@@ -479,6 +541,22 @@ const FindEvent = () => {
                 Brak wydarzeń spełniających kryteria
               </Text>
             </View>
+          )}
+          {hasMore && !loadingMore && (
+            <TouchableOpacity
+              style={styles.loadMoreButton}
+              onPress={handleLoadMore}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.loadMoreText}>Załaduj więcej</Text>
+            </TouchableOpacity>
+          )}
+          {loadingMore && (
+            <ActivityIndicator
+              size='small'
+              color={COLORS.secondary}
+              style={{ marginVertical: ui.verticalScale(16) }}
+            />
           )}
         </ScrollView>
         </Animated.View>
@@ -579,6 +657,19 @@ const createStyles = (ui) => StyleSheet.create({
     fontFamily: 'Lato-Regular',
     color: COLORS.background,
   },
+  eventNameWrapper: {
+    position: 'relative',
+  },
+  eventNameCounter: {
+    position: 'absolute',
+    right: ui.spacing(10, 0.25),
+    top: '50%',
+    transform: [{ translateY: '-50%' }],
+    fontSize: ui.scaleFont(11, 0.25),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.gray,
+    pointerEvents: 'none',
+  },
   pickerWrapper: {
     flex: 1,
     backgroundColor: COLORS.white,
@@ -597,17 +688,32 @@ const createStyles = (ui) => StyleSheet.create({
     fontSize: ui.scaleFont(16, 0.35),
     color: COLORS.background,
   },
+  distanceWrapper: {
+    position: 'relative',
+    width: ui.scale(70),
+    justifyContent: 'center',
+  },
   inputDistance: {
     backgroundColor: COLORS.white,
     borderRadius: ui.controlRadius,
     minHeight: ui.controlMinHeight,
-    width: ui.scale(70),
-    paddingHorizontal: ui.controlPaddingHorizontal,
+    width: '100%',
+    paddingLeft: ui.controlPaddingHorizontal,
+    paddingRight: ui.scale(26),
     paddingVertical: ui.controlPaddingVertical,
     fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.background,
     textAlign: 'center',
+  },
+  kmLabel: {
+    position: 'absolute',
+    right: ui.spacing(10, 0.25),
+    alignSelf: 'center',
+    fontSize: ui.scaleFont(12, 0.3),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.gray,
+    pointerEvents: 'none',
   },
   searchButton: {
     backgroundColor: COLORS.secondary,
@@ -654,6 +760,20 @@ const createStyles = (ui) => StyleSheet.create({
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
     textAlign: 'center',
+  },
+  loadMoreButton: {
+    backgroundColor: COLORS.secondary,
+    borderRadius: ui.controlRadius,
+    minHeight: ui.controlMinHeight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: ui.verticalScale(8),
+    marginBottom: ui.verticalScale(16),
+  },
+  loadMoreText: {
+    fontSize: ui.scaleFont(16, 0.35),
+    fontFamily: 'ObjectFont',
+    color: COLORS.background,
   },
   infoContainer: {
     flex: 1,

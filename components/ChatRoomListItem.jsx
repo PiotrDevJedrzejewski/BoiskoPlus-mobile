@@ -149,7 +149,8 @@ const createStyles = (ui) => StyleSheet.create({
   },
   notification: {
     position: 'absolute',
-    top: '50%',
+    //70 ugly fix
+    top: '70%',
     right: ui.spacing(40, 0.45),
     backgroundColor: 'red',
     borderRadius: ui.moderateScale(12.5, 0.3),

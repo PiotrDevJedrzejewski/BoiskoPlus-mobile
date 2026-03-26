@@ -45,12 +45,12 @@ const Premium = () => {
               <Text style={styles.featureText}>Brak reklam</Text>
             </View>
 
-            <View style={styles.featureItem}>
+            {/* <View style={styles.featureItem}>
               <Ionicons name='infinite' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
               <Text style={styles.featureText}>
                 ,
               </Text>
-            </View>
+            </View> */}
 
             <View style={styles.featureItem}>
               <Ionicons
@@ -65,11 +65,11 @@ const Premium = () => {
               <Ionicons name='arrow-up' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
               <Text style={styles.featureText}>Pierwszeństwo w pozycjonowaniu</Text>
             </View>
-
+{/* 
             <View style={styles.featureItem}>
               <Ionicons name='analytics' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
               <Text style={styles.featureText}>,</Text>
-            </View>
+            </View> */}
           </View>
         </View>
       </ScrollView>

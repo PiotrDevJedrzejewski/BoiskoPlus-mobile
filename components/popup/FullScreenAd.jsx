@@ -62,7 +62,7 @@ const FullScreenAd = ({ visible, onClose, onPremiumPress }) => {
           >
             <Ionicons name='diamond' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
             <Text style={styles.premiumText}>
-              Męczą Cię reklamy? Kup premium za 9.99zł + VAT
+              Zostań wspierającym i korzystaj  bez reklam! Kliknij, aby dowiedzieć się więcej.
             </Text>
           </TouchableOpacity>
 
