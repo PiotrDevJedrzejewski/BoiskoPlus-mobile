@@ -49,6 +49,14 @@ export default {
       'expo-web-browser',
       '@react-native-google-signin/google-signin',
       [
+        'expo-notifications',
+        {
+          icon: './assets/images/BoiskoPlusKonceptArt.jpg',
+          color: '#1DB954',
+          defaultChannel: 'default',
+        },
+      ],
+      [
         '@rnmapbox/maps',
         {
           RNMapboxMapsDownloadToken:
