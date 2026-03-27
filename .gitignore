@@ -18,6 +18,9 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+# Firebase Admin SDK credentials (NEVER commit)
+*firebase-adminsdk*.json
+
 # Metro
 .metro-health-check*
 
@@ -35,6 +38,8 @@ yarn-error.*
 .env*.local
 
 # Google OAuth credentials (SECURITY - DO NOT COMMIT)
+
+*firebase-adminsdk*.json
 client_*.plist
 client_secret_*.json
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   StyleSheet,
   Text,
@@ -130,6 +130,16 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
 
+  const postalPart2Ref = useRef(null)
+  const [postalPart1, setPostalPart1] = useState(() => {
+    const code = initialData?.address?.postalCode || ''
+    return code.split('-')[0] || ''
+  })
+  const [postalPart2, setPostalPart2] = useState(() => {
+    const code = initialData?.address?.postalCode || ''
+    return code.split('-')[1] || ''
+  })
+
   // Wypełnij formularz danymi z predefined place (orlika)
   useEffect(() => {
     if (predefinedPlace && mode === 'add') {
@@ -145,6 +155,10 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
             postalCode: parsedAddress.postalCode,
           },
         }))
+        const code = parsedAddress.postalCode || ''
+        const parts = code.includes('-') ? code.split('-') : [code.slice(0, 2), code.slice(2)]
+        setPostalPart1(parts[0] || '')
+        setPostalPart2(parts[1] || '')
       }
     }
   }, [predefinedPlace, mode])
@@ -167,13 +181,6 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
     }
   }
 
-  const handlePostalCodeChange = (value) => {
-    // Pozwól tylko cyfry i myślnik, max 6 znaków
-    if (/^[\d-]{0,6}$/.test(value)) {
-      handleChange('address.postalCode', value)
-    }
-  }
-
   const validateForm = () => {
     if (!eventData.eventName.trim()) {
       Alert.alert('Błąd', 'Podaj nazwę wydarzenia')
@@ -191,7 +198,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
       Alert.alert('Błąd', 'Podaj ulicę')
       return false
     }
-    if (!/^\d{2}-\d{3}$/.test(eventData.address.postalCode)) {
+    if (!/^\d{2}-\d{3}$/.test(`${postalPart1}-${postalPart2}`)) {
       Alert.alert('Błąd', 'Kod pocztowy musi być w formacie XX-XXX')
       return false
     }
@@ -211,14 +218,16 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         startDateTime.getTime() + parseInt(eventData.duration) * 60000
       )
 
+      const postalCode = `${postalPart1}-${postalPart2}`
       let dataToSend = {
         ...eventData,
+        address: { ...eventData.address, postalCode },
         duration: parseInt(eventData.duration),
         playerCount: parseInt(eventData.playerCount),
         price: parseInt(eventData.price),
         startDateTime: startDateTime.toISOString(),
         endDateTime: endDateTime.toISOString(),
-        addressString: `${eventData.address.street} ${eventData.address.addressNumber}, ${eventData.address.city}, ${eventData.address.postalCode}`,
+        addressString: `${eventData.address.street} ${eventData.address.addressNumber}, ${eventData.address.city}, ${postalCode}`,
       }
 
       if (dataToSend.price === 0) {
@@ -229,6 +238,8 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         await customFetch.post('/football-events', dataToSend)
         Toast.success('Wydarzenie zostało dodane pomyślnie!', 'top')
         setEventData(defaultEventData)
+        setPostalPart1('')
+        setPostalPart2('')
         // Nawigacja powrót po dodaniu
         setTimeout(() => {
           router.replace('/(main)/(tabs)/(hidden)/events-managment/events-owner')
@@ -375,14 +386,35 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
 
       {/* Kod pocztowy */}
       <Text style={styles.label}>Kod pocztowy</Text>
-      <TextInput
-        style={[styles.input, styles.postalCodeInput]}
-        value={eventData.address.postalCode}
-        onChangeText={handlePostalCodeChange}
-        placeholder='XX-XXX'
-        placeholderTextColor={COLORS.gray}
-        maxLength={6}
-      />
+      <View style={styles.postalCodeWrapper}>
+        <TextInput
+          style={[styles.input, styles.postalPart1Input]}
+          value={postalPart1}
+          onChangeText={(value) => {
+            const digits = value.replace(/\D/g, '').slice(0, 2)
+            setPostalPart1(digits)
+            if (digits.length === 2) postalPart2Ref.current?.focus()
+          }}
+          keyboardType='numeric'
+          placeholder='XX'
+          placeholderTextColor={COLORS.gray}
+          maxLength={2}
+        />
+        <Text style={styles.postalSeparator}>-</Text>
+        <TextInput
+          ref={postalPart2Ref}
+          style={[styles.input, styles.postalPart2Input]}
+          value={postalPart2}
+          onChangeText={(value) => {
+            const digits = value.replace(/\D/g, '').slice(0, 3)
+            setPostalPart2(digits)
+          }}
+          keyboardType='numeric'
+          placeholder='XXX'
+          placeholderTextColor={COLORS.gray}
+          maxLength={3}
+        />
+      </View>
 
       {/* Typ boiska */}
       <Text style={styles.label}>Typ boiska</Text>
@@ -587,8 +619,23 @@ const createStyles = (ui) => StyleSheet.create({
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
   },
-  postalCodeInput: {
-    width: ui.scale(150),
+  postalCodeWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: ui.spacing(8, 0.35),
+  },
+  postalPart1Input: {
+    width: ui.scale(60),
+    textAlign: 'center',
+  },
+  postalSeparator: {
+    fontSize: ui.scaleFont(20, 0.4),
+    color: COLORS.primary,
+    fontFamily: 'Montserrat-Bold',
+  },
+  postalPart2Input: {
+    width: ui.scale(80),
+    textAlign: 'center',
   },
   textArea: {
     minHeight: ui.verticalScale(100),

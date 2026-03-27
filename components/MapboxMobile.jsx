@@ -4,8 +4,8 @@ import Mapbox from '@rnmapbox/maps'
 import Supercluster from 'supercluster'
 import { useDashboard } from '../context/DashboardContext'
 import { useMap } from '../context/MapContext'
-import EventMarkerEventList from './EventMarkerEventList'
-import EventMarkerEventCreate from './EventMarkerEventCreate'
+import EventMarkerEventList from './popup/EventMarkerEventList'
+import EventMarkerEventCreate from './popup/EventMarkerEventCreate'
 
 // Konfiguracja Mapbox (wymaga custom buildu)
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN || '')

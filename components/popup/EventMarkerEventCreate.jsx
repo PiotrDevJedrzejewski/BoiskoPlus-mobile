@@ -4,13 +4,14 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   ScrollView,
   Modal,
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { COLORS } from '../constants/colors'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const EventMarkerEventCreate = ({ orlikData, onClose }) => {
   const router = useRouter()
@@ -39,12 +40,10 @@ const EventMarkerEventCreate = ({ orlikData, onClose }) => {
       animationType='fade'
       onRequestClose={onClose}
     >
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <View style={styles.container}>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback>
+            <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>
@@ -103,8 +102,10 @@ const EventMarkerEventCreate = ({ orlikData, onClose }) => {
               Kliknij "Stwórz" aby utworzyć wydarzenie w wybranym miejscu
             </Text>
           </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </TouchableOpacity>
+      </TouchableWithoutFeedback>
     </Modal>
   )
 }
@@ -114,7 +115,7 @@ export default EventMarkerEventCreate
 const createStyles = (ui) => StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: ui.spacing(20, 0.45),

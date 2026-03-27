@@ -2,16 +2,16 @@ import 'dotenv/config'
 
 export default {
   expo: {
-    name: 'BoiskoPlus-mobile',
+    name: 'Boisko+',
     slug: 'boiskoplus',
-    version: '1.0.1',
+    version: '1.0.2',
     orientation: 'portrait',
-    icon: './assets/images/BoiskoPlusKonceptArt.jpg',
+    icon: './assets/images/boiskoSplash.png',
     scheme: 'boiskoplusmobile',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
     splash: {
-      image: './assets/images/BoiskoPlusKonceptArt.jpg',
+      image: './assets/images/Boisko+ConceptArt.png',
       resizeMode: 'contain',
       backgroundColor: '#ffffff',
     },
@@ -26,7 +26,7 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/images/BoiskoPlusKonceptArt.jpg',
+        foregroundImage: './assets/images/boiskoSplash.png',
         backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,
@@ -51,7 +51,7 @@ export default {
       [
         'expo-notifications',
         {
-          icon: './assets/images/BoiskoPlusKonceptArt.jpg',
+          icon: './assets/images/boiskoSplash.png',
           color: '#1DB954',
           defaultChannel: 'default',
         },
@@ -59,6 +59,7 @@ export default {
       [
         '@rnmapbox/maps',
         {
+          RNMapboxMapsPublicToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
           RNMapboxMapsDownloadToken:
             process.env.EXPO_PUBLIC_MAPBOX_DOWNLOAD_TOKEN,
         },

@@ -4,14 +4,31 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   ScrollView,
   Modal,
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { COLORS } from '../constants/colors'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
-// import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
+import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+
+const getLevelLabel = (level) => {
+  switch (level) {
+    case 'beginner':
+      return 'Junior'
+    case 'intermediate':
+      return 'Mid'
+    case 'advanced':
+      return 'High'
+    case 'professional':
+      return 'Pro'
+    case 'other':
+      return 'All'
+    default:
+      return ''
+  }
+}
 
 const EventMarkerEventList = ({ events, onClose }) => {
   const router = useRouter()
@@ -19,14 +36,13 @@ const EventMarkerEventList = ({ events, onClose }) => {
   const styles = createStyles(ui)
 
   const handleEventPress = (eventId) => {
-    onClose();
+    onClose()
     // hack - w modalu pushowanie jest w innym stacku, a replace powoduje błąd w single-event, timeout pozwala na zamknięcie modala przed nawigacją
     setTimeout(() => {
-      router.push(`/(main)/(tabs)/(hidden)/single-event?id=${eventId}`);
-    }, 100);
+      router.push(`/(main)/(tabs)/(hidden)/single-event?id=${eventId}`)
+    }, 100)
   }
 
-  // Mniejsza wersja ikony dla listy
   const getSmallGameTypeIcon = (gameType) => {
     const iconMap = {
       football: (
@@ -102,14 +118,14 @@ const EventMarkerEventList = ({ events, onClose }) => {
       cards: (
         <MaterialCommunityIcons
           name='cards'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
       'board games': (
         <MaterialCommunityIcons
           name='chess-knight'
-          size={28}
+          size={ui.moderateScale(28, 0.35)}
           color={COLORS.secondary}
         />
       ),
@@ -128,12 +144,10 @@ const EventMarkerEventList = ({ events, onClose }) => {
       animationType='fade'
       onRequestClose={onClose}
     >
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <View style={styles.container}>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback>
+            <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>
@@ -169,30 +183,31 @@ const EventMarkerEventList = ({ events, onClose }) => {
                   <Text style={styles.eventName} numberOfLines={1}>
                     {event.eventName}
                   </Text>
+                  <Text style={styles.eventAddress} numberOfLines={1}>
+                    {event.addressString}
+                  </Text>
+
+                  {/* Szczegóły */}
                   <View style={styles.detailsRow}>
                     <View style={styles.detailItem}>
-                      <MaterialCommunityIcons
-                        name='cash'
-                        size={ui.moderateScale(14, 0.3)}
-                        color={COLORS.secondary}
-                      />
-                      <Text style={styles.detailText}>{event.price}zł</Text>
-                    </View>
-                    <View style={styles.detailItem}>
-                      <Ionicons
-                        name='time'
-                        size={ui.moderateScale(14, 0.3)}
-                        color={COLORS.secondary}
-                      />
+                      <Ionicons name='time' size={ui.moderateScale(13, 0.3)} color={COLORS.secondary} />
                       <Text style={styles.detailText}>{event.duration}min</Text>
                     </View>
                     <View style={styles.detailItem}>
-                      <Ionicons
-                        name='people'
-                        size={ui.moderateScale(14, 0.3)}
-                        color={COLORS.secondary}
-                      />
+                      <MaterialCommunityIcons name='cash' size={ui.moderateScale(13, 0.3)} color={COLORS.secondary} />
+                      <Text style={styles.detailText}>{event.price}zł</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                      <Ionicons name='people' size={ui.moderateScale(13, 0.3)} color={COLORS.secondary} />
                       <Text style={styles.detailText}>{event.playerCount}</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                      <Ionicons name='speedometer-outline' size={ui.moderateScale(13, 0.3)} color={COLORS.secondary} />
+                      <Text style={styles.detailText}>{getLevelLabel(event.level)}</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                      <MaterialCommunityIcons name='human-cane' size={ui.moderateScale(13, 0.3)} color={COLORS.secondary} />
+                      <Text style={styles.detailText}>{event.ageRange?.[0] ?? 0}–{event.ageRange?.[1] ?? 100}l</Text>
                     </View>
                   </View>
                 </View>
@@ -206,8 +221,10 @@ const EventMarkerEventList = ({ events, onClose }) => {
               </TouchableOpacity>
             ))}
           </ScrollView>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </TouchableOpacity>
+      </TouchableWithoutFeedback>
     </Modal>
   )
 }
@@ -217,7 +234,7 @@ export default EventMarkerEventList
 const createStyles = (ui) => StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: ui.spacing(20, 0.45),
@@ -274,23 +291,32 @@ const createStyles = (ui) => StyleSheet.create({
   },
   infoSection: {
     flex: 1,
-    marginRight: ui.spacing(8, 0.35),
+    marginRight: ui.spacing(5, 0.35),
   },
   eventName: {
     fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
+    marginBottom: ui.verticalScale(2),
+  },
+  eventAddress: {
+    fontSize: ui.scaleFont(11, 0.3),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.primary,
+    opacity: 0.7,
+    fontStyle: 'italic',
     marginBottom: ui.verticalScale(6),
   },
   detailsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: ui.spacing(12, 0.35),
+    gap: ui.spacing(12, 0.3),
+    marginBottom: ui.verticalScale(4),
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: ui.spacing(4, 0.25),
+    gap: ui.spacing(6, 0.25),
   },
   detailText: {
     fontSize: ui.scaleFont(12, 0.3),
