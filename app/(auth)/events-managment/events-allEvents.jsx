@@ -9,11 +9,11 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../../constants/colors'
-import { useDashboard } from '../../../../../context/DashboardContext'
-import FilterButton from '../../../../../components/FilterButton'
-import MyEventCard from '../../../../../components/MyEventCard'
-import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../../constants/colors'
+import { useDashboard } from '../../../context/DashboardContext'
+import FilterButton from '../../../components/FilterButton'
+import MyEventCard from '../../../components/MyEventCard'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const FILTER_DOT_COUNT = 3
 
@@ -47,10 +47,10 @@ const EventsAllEvents = () => {
   const handleEventPress = (event, status) => {
     const isEnded = ['completed', 'cancelled', 'finished'].includes(event.eventStatus)
     if (status === 'owner' && !isEnded) {
-      router.push(`/(main)/(tabs)/(hidden)/edit-event?id=${event._id}`)
+      router.push(`/(auth)/edit-event?id=${event._id}`)
       return
     }
-    router.push(`/(main)/(tabs)/(hidden)/single-event?id=${event._id}`)
+    router.push(`/(auth)/single-event?id=${event._id}`)
   }
 
   const filteredOwnerEvents = myEventsOwner.filter((event) => {
@@ -96,7 +96,7 @@ const EventsAllEvents = () => {
         <TouchableOpacity
           style={styles.backButton}
           onPress={() =>
-            router.push('/(main)/(tabs)/(hidden)/events-managment/events-dashboard')
+            router.push('/(auth)/events-managment/events-dashboard')
           }
           activeOpacity={0.8}
         >

@@ -30,7 +30,7 @@ const Home = () => {
   // Przekieruj zalogowanego użytkownika do dashboard
   useEffect(() => {
     if (!loading && user) {
-      router.replace('/(main)/(tabs)/dashboard-home')
+      router.replace('/(auth)/(map-screens)/dashboard-home')
     }
   }, [user, loading])
 

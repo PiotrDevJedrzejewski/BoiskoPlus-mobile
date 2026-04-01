@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../../../../constants/colors'
-import FormEvent from '../../../../components/FormEvent'
+import { COLORS } from '../../constants/colors'
+import FormEvent from '../../components/FormEvent'
 import { useLocalSearchParams } from 'expo-router'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const AddEvent = () => {
   const ui = useResponsiveScale()

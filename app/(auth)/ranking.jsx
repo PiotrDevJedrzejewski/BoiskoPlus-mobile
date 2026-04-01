@@ -11,11 +11,11 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Picker } from '@react-native-picker/picker'
-import { COLORS } from '../../../../constants/colors'
-import customFetch from '../../../../assets/utils/customFetch'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../constants/colors'
+import customFetch from '../../assets/utils/customFetch'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
-const defaultAvatar = require('../../../../assets/images/defaultAvatar.png')
+const defaultAvatar = require('../../assets/images/defaultAvatar.png')
 
 const SORT_OPTIONS = [
   { label: 'Punkty', value: 'points' },

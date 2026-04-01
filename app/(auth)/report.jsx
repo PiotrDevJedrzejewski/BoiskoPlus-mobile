@@ -13,8 +13,8 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { COLORS } from '../../../../constants/colors'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const Report = () => {
   const router = useRouter()

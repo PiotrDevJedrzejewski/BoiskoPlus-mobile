@@ -356,7 +356,7 @@ const FindEvent = () => {
 
   const handleEventPress = (eventId) => {
     // Nawigacja do szczegółów wydarzenia
-    router.push(`/(main)/(tabs)/(hidden)/single-event?id=${eventId}`)
+    router.push(`/(auth)/single-event?id=${eventId}`)
   }
 
   const handleLoadMore = async () => {

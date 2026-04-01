@@ -10,14 +10,14 @@ import {
 } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { COLORS } from '../../../../constants/colors'
-import PlayerCard from '../../../../components/PlayerCard'
-import ConfirmModal from '../../../../components/popup/ConfirmModal'
-import FullScreenAd from '../../../../components/popup/FullScreenAd'
-import customFetch from '../../../../assets/utils/customFetch'
-import { useDashboard } from '../../../../context/DashboardContext'
-import { useNotification } from '../../../../context/NotificationContext'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../constants/colors'
+import PlayerCard from '../../components/PlayerCard'
+import ConfirmModal from '../../components/popup/ConfirmModal'
+import FullScreenAd from '../../components/popup/FullScreenAd'
+import customFetch from '../../assets/utils/customFetch'
+import { useDashboard } from '../../context/DashboardContext'
+import { useNotification } from '../../context/NotificationContext'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const ENDED_EVENT_STATUSES = ['completed', 'cancelled', 'finished']
 
@@ -343,7 +343,7 @@ const SingleEvent = () => {
 
   const handleReport = () => {
     router.push({
-      pathname: '/(main)/(tabs)/(hidden)/report',
+      pathname: '/(auth)/report',
       params: { type: 'event', reportedEventId: eventID },
     })
   }
@@ -524,7 +524,7 @@ const SingleEvent = () => {
       <FullScreenAd
         visible={showAd}
         onClose={handleAfterAd}
-        onPremiumPress={() => router.push('/(main)/(tabs)/(hidden)/premium')}
+        onPremiumPress={() => router.push('/(auth)/premium')}
       />
 
       <ConfirmModal

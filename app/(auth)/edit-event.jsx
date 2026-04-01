@@ -10,12 +10,12 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { COLORS } from '../../../../constants/colors'
-import FormEvent from '../../../../components/FormEvent'
-import EditEventUserCard from '../../../../components/EditEventUserCard'
-import ConfirmModal from '../../../../components/popup/ConfirmModal'
-import customFetch from '../../../../assets/utils/customFetch'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../constants/colors'
+import FormEvent from '../../components/FormEvent'
+import EditEventUserCard from '../../components/EditEventUserCard'
+import ConfirmModal from '../../components/popup/ConfirmModal'
+import customFetch from '../../assets/utils/customFetch'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const StatBadge = ({ count, label, color, styles }) => (
   <View style={[styles.statBadge, { borderColor: color }]}>

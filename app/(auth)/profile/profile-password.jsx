@@ -13,9 +13,9 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../../constants/colors'
-import { useAuth } from '../../../../../context/AuthContext'
-import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../../constants/colors'
+import { useAuth } from '../../../context/AuthContext'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const ProfilePassword = () => {
   const router = useRouter()

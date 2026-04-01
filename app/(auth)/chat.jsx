@@ -12,19 +12,19 @@ import {
   Alert,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../../../constants/colors'
-import ChatRoomListItem from '../../../components/ChatRoomListItem'
-import ChatMessageBox from '../../../components/ChatMessageBox'
-import customFetch from '../../../assets/utils/customFetch'
-import { useSocketIo } from '../../../context/SocketIoContext'
-import { useAuth } from '../../../context/AuthContext'
-import { useNotification } from '../../../context/NotificationContext'
+import { COLORS } from '../../constants/colors'
+import ChatRoomListItem from '../../components/ChatRoomListItem'
+import ChatMessageBox from '../../components/ChatMessageBox'
+import customFetch from '../../assets/utils/customFetch'
+import { useSocketIo } from '../../context/SocketIoContext'
+import { useAuth } from '../../context/AuthContext'
+import { useNotification } from '../../context/NotificationContext'
 import LottieView from 'lottie-react-native'
 import { useFonts } from 'expo-font'
 import { useLocalSearchParams } from 'expo-router'
-import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
-const typing = require('../../../assets/utils/typing.json')
+const typing = require('../../assets/utils/typing.json')
 const CUSTOM_TAB_BAR_HEIGHT = 60
 
 const Chat = () => {
@@ -71,7 +71,7 @@ const Chat = () => {
   const typingTimeoutRef = useRef({})
 
   const [fontsLoaded] = useFonts({
-    ObjectFont: require('../../../assets/fonts/object.ttf'),
+    ObjectFont: require('../../assets/fonts/object.ttf'),
   })
 
   const scrollViewRef = useRef(null)

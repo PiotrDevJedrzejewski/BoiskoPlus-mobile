@@ -24,12 +24,12 @@ const NotificationsModal = ({
 
   const handleNavigateToChat = () => {
     onClose()
-    router.push('/(main)/(tabs)/chat')
+    router.push('/(auth)/chat')
   }
 
   const handleNavigateToEvents = () => {
     onClose()
-    router.push('/(main)/(tabs)/(hidden)/events-managment/events-allEvents')
+    router.push('/(auth)/events-managment/events-allEvents')
   }
 
   return (

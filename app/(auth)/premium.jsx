@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { COLORS } from '../../../../constants/colors'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const Premium = () => {
   const ui = useResponsiveScale()

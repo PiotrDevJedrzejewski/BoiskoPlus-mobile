@@ -10,10 +10,10 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../../../../constants/colors'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
-import { useFriendship } from '../../../../context/FriendshipContext'
-import PlayerCardWithActions from '../../../../components/PlayerCardWithActions'
+import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useFriendship } from '../../context/FriendshipContext'
+import PlayerCardWithActions from '../../components/PlayerCardWithActions'
 
 const SEARCH_DEBOUNCE_MS = 300
 const SCREEN_HEIGHT = Dimensions.get('window').height

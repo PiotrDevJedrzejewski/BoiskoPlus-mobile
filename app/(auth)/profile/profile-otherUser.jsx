@@ -11,12 +11,12 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { COLORS } from '../../../../../constants/colors'
-import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
-import { useAuth } from '../../../../../context/AuthContext'
-import customFetch from '../../../../../assets/utils/customFetch'
+import { COLORS } from '../../../constants/colors'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { useAuth } from '../../../context/AuthContext'
+import customFetch from '../../../assets/utils/customFetch'
 
-const defaultAvatar = require('../../../../../assets/images/defaultAvatar.png')
+const defaultAvatar = require('../../../assets/images/defaultAvatar.png')
 
 const StatItem = ({ label, value, styles }) => (
   <View style={styles.statItem}>
@@ -161,12 +161,12 @@ const ProfileUser = () => {
   }
 
   const handleChat = () => {
-    router.push({ pathname: '/(main)/(tabs)/chat', params: { openChatWith: user._id } })
+    router.push({ pathname: '/(auth)/chat', params: { openChatWith: user._id } })
   }
 
   const handleReport = () => {
     router.push({
-      pathname: '/(main)/(tabs)/(hidden)/report',
+      pathname: '/(auth)/report',
       params: { type: 'user', userId: user._id, reportedNickName: user.nickName },
     })
   }

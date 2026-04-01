@@ -10,11 +10,11 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../../constants/colors'
-import { useAuth } from '../../../../../context/AuthContext'
-import ConfirmModal from '../../../../../components/popup/ConfirmModal'
-import ProfileAvatarSection from '../../../../../components/profile/ProfileAvatarSection'
-import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../../constants/colors'
+import { useAuth } from '../../../context/AuthContext'
+import ConfirmModal from '../../../components/popup/ConfirmModal'
+import ProfileAvatarSection from '../../../components/profile/ProfileAvatarSection'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const StatItem = ({ label, value, styles }) => (
   <View style={styles.statItem}>
@@ -46,11 +46,11 @@ const Profile = () => {
   }
 
   const handleEditProfile = () => {
-    router.push('/(main)/(tabs)/(hidden)/profile/profile-edit')
+    router.push('/(auth)/profile/profile-edit')
   }
 
   const handleChangePassword = () => {
-    router.push('/(main)/(tabs)/(hidden)/profile/profile-password')
+    router.push('/(auth)/profile/profile-password')
   }
 
   const handleDeleteAccount = () => {

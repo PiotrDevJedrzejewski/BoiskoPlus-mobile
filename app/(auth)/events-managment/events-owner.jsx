@@ -9,22 +9,18 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../../constants/colors'
-import { useDashboard } from '../../../../../context/DashboardContext'
-import MyEventCard from '../../../../../components/MyEventCard'
-import { parseEventDate } from '../../../../../assets/utils/eventsApi'
-import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../../constants/colors'
+import { useDashboard } from '../../../context/DashboardContext'
+import MyEventCard from '../../../components/MyEventCard'
+import { parseEventDate } from '../../../assets/utils/eventsApi'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
-const OTHER_USER_STATUSES = ['rejected', 'finished', 'cancelled']
-const OTHER_OWNER_STATUSES = ['completed', 'cancelled', 'finished']
-
-const EventsOther = () => {
+const EventsOwner = () => {
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const [ownerEvents, setOwnerEvents] = useState([])
-  const [otherUserEvents, setOtherUserEvents] = useState([])
 
   const backIconSize = ui.moderateScale(28, 0.35)
   const headerIconSize = ui.moderateScale(26, 0.35)
@@ -35,19 +31,22 @@ const EventsOther = () => {
   }, [refreshEventsData])
 
   useEffect(() => {
-    const ownerFiltered = eventsData.ownerEvents
-      .filter((event) => OTHER_OWNER_STATUSES.includes(event.eventStatus))
-      .sort((a, b) => parseEventDate(b) - parseEventDate(a))
-
-    const userFiltered = eventsData.userEvents
-      .filter((item) => item.eventID && OTHER_USER_STATUSES.includes(item.status))
-      .sort((a, b) => parseEventDate(b.eventID) - parseEventDate(a.eventID))
-
-    setOwnerEvents(ownerFiltered)
-    setOtherUserEvents(userFiltered)
-  }, [eventsData.ownerEvents, eventsData.userEvents])
+    const sorted = [...eventsData.ownerEvents].sort(
+      (a, b) => parseEventDate(b) - parseEventDate(a)
+    )
+    setOwnerEvents(sorted)
+  }, [eventsData.ownerEvents])
 
   const { loading, error } = eventsData
+
+  const openEvent = (event) => {
+    const isEnded = ['completed', 'cancelled', 'finished'].includes(event.eventStatus)
+    if (isEnded) {
+      router.push(`/(auth)/single-event?id=${event._id}`)
+      return
+    }
+    router.push(`/(auth)/edit-event?id=${event._id}`)
+  }
 
   return (
     <View style={styles.container}>
@@ -55,14 +54,14 @@ const EventsOther = () => {
         <TouchableOpacity
           style={styles.backButton}
           onPress={() =>
-            router.push('/(main)/(tabs)/(hidden)/events-managment/events-dashboard')
+            router.push('/(auth)/events-managment/events-dashboard')
           }
           activeOpacity={0.8}
         >
           <Ionicons name='arrow-back' size={backIconSize} color={COLORS.primary} />
         </TouchableOpacity>
-        <Ionicons name='archive-outline' size={headerIconSize} color={COLORS.secondary} />
-        <Text style={styles.headerText}>Historia</Text>
+        <Ionicons name='person' size={headerIconSize} color={COLORS.secondary} />
+        <Text style={styles.headerText}>Eventy Właściciela</Text>
       </View>
 
       {loading && (
@@ -91,43 +90,19 @@ const EventsOther = () => {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         >
-          {ownerEvents.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Twoje zakończone i anulowane</Text>
-              {ownerEvents.map((event) => (
-                <MyEventCard
-                  key={event._id}
-                  event={event}
-                  status={event.eventStatus || 'owner'}
-                  onPress={() =>
-                    router.push(`/(main)/(tabs)/(hidden)/single-event?id=${event._id}`)
-                  }
-                />
-              ))}
-            </View>
-          )}
+          {ownerEvents.map((event) => (
+            <MyEventCard
+              key={event._id}
+              event={event}
+              status='owner'
+              onPress={() => openEvent(event)}
+            />
+          ))}
 
-          {otherUserEvents.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Uczestnictwo: odrzucone i zamknięte</Text>
-              {otherUserEvents.map((item) => (
-                <MyEventCard
-                  key={item._id}
-                  event={item.eventID}
-                  status={item.status}
-                  statusData={item}
-                  onPress={() =>
-                    router.push(`/(main)/(tabs)/(hidden)/single-event?id=${item.eventID._id}`)
-                  }
-                />
-              ))}
-            </View>
-          )}
-
-          {ownerEvents.length === 0 && otherUserEvents.length === 0 && (
+          {ownerEvents.length === 0 && (
             <View style={styles.centered}>
               <Ionicons name='calendar-outline' size={stateIconSize} color={COLORS.gray} />
-              <Text style={styles.emptyText}>Brak eventów z pozostałymi statusami</Text>
+              <Text style={styles.emptyText}>Nie masz jeszcze swoich eventów</Text>
             </View>
           )}
         </ScrollView>
@@ -136,7 +111,7 @@ const EventsOther = () => {
   )
 }
 
-export default EventsOther
+export default EventsOwner
 
 const createStyles = (ui) => StyleSheet.create({
   container: {
@@ -161,11 +136,10 @@ const createStyles = (ui) => StyleSheet.create({
     justifyContent: 'center',
   },
   headerText: {
-    fontSize: ui.scaleFont(22, 0.45),
+    fontSize: ui.scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
     marginLeft: ui.spacing(12, 0.35),
-    textAlign: 'center',
   },
   list: {
     flex: 1,
@@ -173,15 +147,6 @@ const createStyles = (ui) => StyleSheet.create({
   listContent: {
     padding: ui.spacing(16),
     paddingBottom: ui.verticalScale(32),
-  },
-  section: {
-    marginBottom: ui.verticalScale(24),
-  },
-  sectionTitle: {
-    fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
-    marginBottom: ui.verticalScale(12),
   },
   centered: {
     flex: 1,
