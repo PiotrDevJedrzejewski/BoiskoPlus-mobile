@@ -43,6 +43,12 @@ const POLAND_BOUNDS = {
   sw: [14.07, 49.0],  // południowo-zachodni róg
 }
 
+// Opóźnienie (ms) po ostatnim ruchu mapy, po którym markery zostają ponownie wyświetlone
+const MARKER_VISIBILITY_DELAY_MS = 400
+
+// Minimalny odstęp między aktualizacjami klastrów podczas ruchu mapy
+const CLUSTER_UPDATE_THROTTLE_MS = 500
+
 const MapboxMobile = ({ isInteractive = true }) => {
   const { filteredEvents, mapTheme } = useDashboard()
   const { mapRef, camera, showMarkers, showEvents, setIsMapReady, userLocation } = useMap()
@@ -51,6 +57,10 @@ const MapboxMobile = ({ isInteractive = true }) => {
   // State dla wybranych elementów (musi być state bo wymaga re-renderu przy otwarciu modalu)
   const [selectedClusterEvents, setSelectedClusterEvents] = useState(null)
   const [selectedPlace, setSelectedPlace] = useState(null)
+
+  // State ruchu mapy - markery znikają podczas przesuwania, wracają po zatrzymaniu
+  const [isMoving, setIsMoving] = useState(false)
+  const movingTimeoutRef = useRef(null)
   
   // Dane orlików - state bo ładowane asynchronicznie i triggerują inicjalizację supercluster
   const [predefinedPlaces, setPredefinedPlaces] = useState([])
@@ -125,9 +135,18 @@ const MapboxMobile = ({ isInteractive = true }) => {
 
   // Throttled wersja updateClusters - max 1 wywołanie na 500ms
   const throttledUpdateClusters = useMemo(
-    () => throttle(updateClusters, 500),
+    () => throttle(updateClusters, CLUSTER_UPDATE_THROTTLE_MS),
     [updateClusters]
   )
+
+  // Czyszczenie timera ruchu przy odmontowaniu komponentu
+  useEffect(() => {
+    return () => {
+      if (movingTimeoutRef.current) {
+        clearTimeout(movingTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // Załaduj dane predefiniowanych miejsc (Orliki) z lokalnego pliku JSON
   useEffect(() => {
@@ -226,8 +245,15 @@ const MapboxMobile = ({ isInteractive = true }) => {
         zoom,
       }
       
-      // Throttled update klastrów
-      throttledUpdateClusters()
+      // Ukryj markery podczas ruchu mapy
+      setIsMoving(true)
+      if (movingTimeoutRef.current) {
+        clearTimeout(movingTimeoutRef.current)
+      }
+      movingTimeoutRef.current = setTimeout(() => {
+        setIsMoving(false)
+        throttledUpdateClusters()
+      }, MARKER_VISIBILITY_DELAY_MS)
     }
   }, [throttledUpdateClusters])
 
@@ -376,8 +402,8 @@ const MapboxMobile = ({ isInteractive = true }) => {
             </Mapbox.MarkerView>
           )}
 
-        {/* Markery Orlików - renderowane z Supercluster */}
-        {showMarkers && orlikClustersGeojson.features.length > 0 && (
+        {/* Markery Orlików - renderowane z Supercluster, ukryte podczas ruchu mapy */}
+        {showMarkers && !isMoving && orlikClustersGeojson.features.length > 0 && (
           <Mapbox.ShapeSource
             id='predefined-places-source'
             shape={orlikClustersGeojson}
@@ -419,8 +445,8 @@ const MapboxMobile = ({ isInteractive = true }) => {
           </Mapbox.ShapeSource>
         )}
 
-        {/* Markery Eventów - renderowane z Supercluster */}
-        {showEvents && eventClustersGeojson.features.length > 0 && (
+        {/* Markery Eventów - renderowane z Supercluster, ukryte podczas ruchu mapy */}
+        {showEvents && !isMoving && eventClustersGeojson.features.length > 0 && (
           <Mapbox.ShapeSource
             id='events-source'
             shape={eventClustersGeojson}

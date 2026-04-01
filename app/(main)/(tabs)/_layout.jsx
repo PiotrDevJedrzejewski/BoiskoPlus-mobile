@@ -104,10 +104,14 @@ export default function TabsLayout() {
   // Sprawdź czy jesteśmy w ukrytych ekranach (hidden) - tam nie pokazujemy TabBar
   const isHiddenScreen = pathname.includes('(hidden)')
 
+  // Mapa jako tło tylko dla ekranów które jej używają (nie dla czatu i ekranów ukrytych)
+  const isChatScreen = pathname.includes('/chat')
+  const shouldShowMap = !isHiddenScreen && !isChatScreen
+
   return (
     <View style={styles.container} pointerEvents='box-none'>
-      {/* 1. Mapa jako tło (zawsze na samym dole) */}
-      <MapBackground />
+      {/* 1. Mapa jako tło (tylko dla ekranów używających mapy) */}
+      {shouldShowMap && <MapBackground />}
 
       {/* 2. Slot renderuje aktualny ekran */}
       <View style={styles.contentContainer} pointerEvents='box-none'>
