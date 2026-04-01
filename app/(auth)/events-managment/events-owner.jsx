@@ -27,10 +27,17 @@ const EventsOwner = () => {
   const stateIconSize = ui.moderateScale(58, 0.3)
 
   useEffect(() => {
+    console.log('[EventsOwner] MOUNTED')
+    return () => console.log('[EventsOwner] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[EventsOwner] useEffect: refreshEventsData')
     refreshEventsData().catch(() => {})
   }, [refreshEventsData])
 
   useEffect(() => {
+    console.log('[EventsOwner] useEffect: eventsData.ownerEvents changed')
     const sorted = [...eventsData.ownerEvents].sort(
       (a, b) => parseEventDate(b) - parseEventDate(a)
     )

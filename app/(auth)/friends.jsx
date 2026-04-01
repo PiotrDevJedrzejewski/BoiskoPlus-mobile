@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import {
   ActivityIndicator,
   Dimensions,
@@ -21,6 +21,11 @@ const SCREEN_HEIGHT = Dimensions.get('window').height
 const FriendsScreen = () => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
+
+  useEffect(() => {
+    console.log('[FriendsScreen] MOUNTED')
+    return () => console.log('[FriendsScreen] UNMOUNTED')
+  }, [])
 
   const {
     friends,

@@ -41,6 +41,12 @@ const ProfileUser = () => {
   const [friendshipLoading, setFriendshipLoading] = useState(false)
 
   useEffect(() => {
+    console.log('[ProfileUser] MOUNTED')
+    return () => console.log('[ProfileUser] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[ProfileUser] useEffect: id changed')
     const fetchUserData = async () => {
       if (!id) {
         setLoading(false)

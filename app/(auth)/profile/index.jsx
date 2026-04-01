@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -37,6 +37,11 @@ const Profile = () => {
     refetchUser,
     loading: authLoading,
   } = useAuth()
+
+  useEffect(() => {
+    console.log('[Profile] MOUNTED')
+    return () => console.log('[Profile] UNMOUNTED')
+  }, [])
 
   const stats = userStats || {
     gamesPlayed: 0,

@@ -106,6 +106,12 @@ const ProfileEdit = () => {
   const isInitialLoading = useMemo(() => authLoading || !user, [authLoading, user])
 
   useEffect(() => {
+    console.log('[ProfileEdit] MOUNTED')
+    return () => console.log('[ProfileEdit] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[ProfileEdit] useEffect: user changed')
     if (!user) return
 
     setFormData({

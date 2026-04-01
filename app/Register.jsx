@@ -58,6 +58,12 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState([false, false])
 
   useEffect(() => {
+    console.log('[Register] MOUNTED')
+    return () => console.log('[Register] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[Register] useEffect: GoogleSignin configure')
     GoogleSignin.configure({
       webClientId: Constants.expoConfig?.extra?.googleWebClientId,
       iosClientId: Constants.expoConfig?.extra?.googleIosClientId,

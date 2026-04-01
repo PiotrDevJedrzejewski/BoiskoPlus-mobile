@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useEffect } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { Stack, Redirect, useRouter, usePathname } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -86,6 +86,11 @@ function CustomTabBar() {
 export default function AuthLayout() {
   const router = useRouter()
   const { user, isAuthChecked } = useAuth()
+
+  useEffect(() => {
+    console.log('[AuthLayout] MOUNTED')
+    return () => console.log('[AuthLayout] UNMOUNTED')
+  }, [])
 
   // Auth guard — redirect to home if not authenticated
   if (isAuthChecked && !user) {

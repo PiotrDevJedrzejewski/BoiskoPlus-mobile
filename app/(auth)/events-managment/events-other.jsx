@@ -31,10 +31,17 @@ const EventsOther = () => {
   const stateIconSize = ui.moderateScale(58, 0.3)
 
   useEffect(() => {
+    console.log('[EventsOther] MOUNTED')
+    return () => console.log('[EventsOther] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[EventsOther] useEffect: refreshEventsData')
     refreshEventsData().catch(() => {})
   }, [refreshEventsData])
 
   useEffect(() => {
+    console.log('[EventsOther] useEffect: eventsData changed')
     const ownerFiltered = eventsData.ownerEvents
       .filter((event) => OTHER_OWNER_STATUSES.includes(event.eventStatus))
       .sort((a, b) => parseEventDate(b) - parseEventDate(a))

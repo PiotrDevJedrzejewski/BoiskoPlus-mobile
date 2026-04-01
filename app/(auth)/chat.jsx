@@ -77,16 +77,23 @@ const Chat = () => {
   const scrollViewRef = useRef(null)
   const openChatWithHandledRef = useRef(null)
 
+  useEffect(() => {
+    console.log('[Chat] MOUNTED')
+    return () => console.log('[Chat] UNMOUNTED')
+  }, [])
+
   // Ref do selectedRoom - używany w socket handlerach aby uniknąć stale closure
   // WZORZEC: Ref synchronizowany ze stanem eliminuje stale closures w socket handlerach.
   // Użyj tego wzorca dla każdej wartości stanu, która jest używana w długożyjących event listenerach.
   const selectedRoomRef = useRef(null)
   useEffect(() => {
+    console.log('[Chat] useEffect: selectedRoom changed')
     selectedRoomRef.current = selectedRoom
   }, [selectedRoom])
 
   // Pobierz pokoje czatu przy załadowaniu
   useEffect(() => {
+    console.log('[Chat] useEffect: user changed (fetchChatRooms)')
     const fetchChatRooms = async () => {
       setLoadingRooms(true)
       try {
@@ -106,6 +113,7 @@ const Chat = () => {
 
   // Pobierz uczestników wydarzeń użytkownika
   useEffect(() => {
+    console.log('[Chat] useEffect: user changed (fetchEventParticipants)')
     const fetchEventParticipants = async () => {
       setLoadingParticipants(true)
       try {
@@ -125,9 +133,8 @@ const Chat = () => {
 
   // Obsługa nowych wiadomości z socket
   useEffect(() => {
+    console.log('[Chat] useEffect: chatSocket changed (newMessage)')
     if (!chatSocket) return
-
-    const handleNewMessage = (msg) => {
       const currentRoom = selectedRoomRef.current
 
       // Dodaj wiadomość tylko jeśli jesteśmy w tym pokoju
@@ -156,9 +163,8 @@ const Chat = () => {
 
   // Obsługa nowych pokojów z socket
   useEffect(() => {
+    console.log('[Chat] useEffect: chatSocket/user._id/joinRoom changed')
     if (!chatSocket) return
-
-    const handleNewChatRoom = (data) => {
       if (data.userId === user?._id) {
         setChatRooms((prevRooms) => {
           const roomExists = prevRooms.some(
@@ -181,9 +187,8 @@ const Chat = () => {
 
   // Obsługa usuwania z pokojów
   useEffect(() => {
+    console.log('[Chat] useEffect: chatSocket/user._id/leaveRoom changed')
     if (!chatSocket) return
-
-    const handleRemovedFromChatRoom = (data) => {
       if (data.userId === user?._id) {
         setChatRooms((prevRooms) =>
           prevRooms.filter((room) => room.roomId !== data.roomId)
@@ -209,9 +214,8 @@ const Chat = () => {
 
   // Obsługa typing indicator (ref-based - bez re-subscribe)
   useEffect(() => {
+    console.log('[Chat] useEffect: chatSocket/user._id changed (typing)')
     if (!chatSocket) return
-
-    const handleUserTyping = (data) => {
       const roomId = data.roomId
       const userId = data.userId || data.userID || data.user_id
       const currentRoom = selectedRoomRef.current
@@ -287,12 +291,14 @@ const Chat = () => {
 
   // Reset activeRoomId przy odmontowaniu
   useEffect(() => {
+    console.log('[Chat] useEffect: reset activeRoomId')
     return () => {
       setActiveRoomId(null)
     }
   }, [setActiveRoomId])
 
   useEffect(() => {
+    console.log('[Chat] useEffect: keyboard listeners')
     const showEvent =
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
     const hideEvent =
@@ -317,6 +323,7 @@ const Chat = () => {
 
   // Scroll do końca przy nowych wiadomościach
   useEffect(() => {
+    console.log('[Chat] useEffect: messages/isInitialLoad/isNearBottom changed')
     if (isInitialLoad) {
       scrollViewRef.current?.scrollToEnd({ animated: false })
       setIsInitialLoad(false)
@@ -445,6 +452,7 @@ const Chat = () => {
 
   // Auto-otwórz rozmowę gdy przybywamy z innego ekranu (np. profilu gracza)
   useEffect(() => {
+    console.log('[Chat] useEffect: openChatWith/loadingRooms changed')
     if (!openChatWith || loadingRooms || openChatWithHandledRef.current === openChatWith) return
     openChatWithHandledRef.current = openChatWith
     handleStartNewChat(openChatWith)

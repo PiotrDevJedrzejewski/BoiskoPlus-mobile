@@ -38,6 +38,12 @@ const EventsAllEvents = () => {
   const [filtersContentWidth, setFiltersContentWidth] = useState(0)
 
   useEffect(() => {
+    console.log('[EventsAllEvents] MOUNTED')
+    return () => console.log('[EventsAllEvents] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[EventsAllEvents] useEffect: refreshEventsData')
     refreshEventsData().catch(() => {})
   }, [refreshEventsData])
 

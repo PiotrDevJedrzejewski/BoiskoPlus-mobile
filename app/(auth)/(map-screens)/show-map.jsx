@@ -70,6 +70,12 @@ const ShowMap = () => {
   const fieldIconSize = ui.moderateScale(56, 0.35)
 
   useEffect(() => {
+    console.log('[ShowMap] MOUNTED')
+    return () => console.log('[ShowMap] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[ShowMap] useEffect: cleanup refs')
     return () => {
       isMountedRef.current = false
       if (suggestionsDebounceRef.current) {
@@ -96,6 +102,7 @@ const ShowMap = () => {
 
   // Aktualizuj podpowiedzi - tylko gdy użytkownik aktywnie wpisuje
   useEffect(() => {
+    console.log('[ShowMap] useEffect: cityInput/suggestionSelected changed')
     if (suggestionsDebounceRef.current) {
       clearTimeout(suggestionsDebounceRef.current)
     }

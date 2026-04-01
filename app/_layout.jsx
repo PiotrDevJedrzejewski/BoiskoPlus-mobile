@@ -8,11 +8,17 @@ import spinner from '../assets/utils/spinner.json'
 import { View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import ToastManager from 'toastify-react-native'
+import { useEffect } from 'react'
 
 // Only AuthProvider at root — all other providers scoped to (auth) layout
 import { AuthProvider } from '../context/AuthContext'
 
 const Layout = () => {
+  useEffect(() => {
+    console.log('[Layout] MOUNTED')
+    return () => console.log('[Layout] UNMOUNTED')
+  }, [])
+
   const [fontsLoaded] = useFonts({
     'Montserrat-Bold': require('../assets/fonts/Montserrat-Bold.ttf'),
     'Montserrat-Regular': require('../assets/fonts/Montserrat-Regular.ttf'),

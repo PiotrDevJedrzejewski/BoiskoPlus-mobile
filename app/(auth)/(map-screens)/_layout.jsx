@@ -1,5 +1,6 @@
 import { View, StyleSheet } from 'react-native'
 import { Slot } from 'expo-router'
+import { useEffect } from 'react'
 import LottieView from 'lottie-react-native'
 import { MapProvider, useMap } from '../../../context/MapContext'
 import { COLORS } from '../../../constants/colors'
@@ -48,6 +49,11 @@ function MapLoadingScreen() {
 }
 
 export default function MapScreensLayout() {
+  useEffect(() => {
+    console.log('[MapScreensLayout] MOUNTED')
+    return () => console.log('[MapScreensLayout] UNMOUNTED')
+  }, [])
+
   return (
     <MapProvider>
       <View style={styles.container} pointerEvents='box-none'>

@@ -27,10 +27,17 @@ const EventsActive = () => {
   const stateIconSize = ui.moderateScale(58, 0.3)
 
   useEffect(() => {
+    console.log('[EventsActive] MOUNTED')
+    return () => console.log('[EventsActive] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[EventsActive] useEffect: refreshEventsData')
     refreshEventsData().catch(() => {})
   }, [refreshEventsData])
 
   useEffect(() => {
+    console.log('[EventsActive] useEffect: eventsData.userEvents changed')
     const filtered = eventsData.userEvents
       .filter(
         (item) => item.eventID && ['accepted', 'interested'].includes(item.status)

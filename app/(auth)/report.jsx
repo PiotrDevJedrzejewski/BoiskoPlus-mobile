@@ -29,6 +29,12 @@ const Report = () => {
   const maxLength = 500
 
   useEffect(() => {
+    console.log('[Report] MOUNTED')
+    return () => console.log('[Report] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[Report] useEffect: type changed')
     // Sprawdź czy mamy prawidłowy typ
     if (!type || !['user', 'event', 'bug'].includes(type)) {
       Alert.alert('Błąd', 'Nieprawidłowy typ zgłoszenia', [

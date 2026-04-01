@@ -1,11 +1,17 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { useEffect } from 'react'
 import { COLORS } from '../../constants/colors'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const Premium = () => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
+
+  useEffect(() => {
+    console.log('[Premium] MOUNTED')
+    return () => console.log('[Premium] UNMOUNTED')
+  }, [])
 
   return (
     <View style={styles.container} pointerEvents='box-none'>

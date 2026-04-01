@@ -26,8 +26,14 @@ const Settings = () => {
     consentsLoading 
   } = useAuth()
 
+  useEffect(() => {
+    console.log('[Settings] MOUNTED')
+    return () => console.log('[Settings] UNMOUNTED')
+  }, [])
+
   // Load location from AsyncStorage on mount
   useEffect(() => {
+    console.log('[Settings] useEffect: loadLocation')
     const loadLocation = async () => {
       try {
         const stored = await AsyncStorage.getItem(LOCATION_STORAGE_KEY)

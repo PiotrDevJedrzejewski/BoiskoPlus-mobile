@@ -77,6 +77,12 @@ const EventsDashboard = () => {
   ]
 
   useEffect(() => {
+    console.log('[EventsDashboard] MOUNTED')
+    return () => console.log('[EventsDashboard] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[EventsDashboard] useEffect: refreshEventsData')
     refreshEventsData().catch(() => {})
   }, [refreshEventsData])
 

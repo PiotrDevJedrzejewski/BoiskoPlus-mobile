@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -22,6 +22,11 @@ const ProfilePassword = () => {
   const { changePassword } = useAuth()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
+
+  useEffect(() => {
+    console.log('[ProfilePassword] MOUNTED')
+    return () => console.log('[ProfilePassword] UNMOUNTED')
+  }, [])
 
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({

@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useEffect } from 'react'
 import { COLORS } from '../../constants/colors'
 import FormEvent from '../../components/FormEvent'
 import { useLocalSearchParams } from 'expo-router'
@@ -10,6 +11,11 @@ const AddEvent = () => {
   const styles = createStyles(ui)
   const params = useLocalSearchParams()
   const predefinedPlace = params.predefinedPlace ? JSON.parse(params.predefinedPlace) : null
+
+  useEffect(() => {
+    console.log('[AddEvent] MOUNTED')
+    return () => console.log('[AddEvent] UNMOUNTED')
+  }, [])
 
   return (
     <View style={styles.container} pointerEvents='box-none'>

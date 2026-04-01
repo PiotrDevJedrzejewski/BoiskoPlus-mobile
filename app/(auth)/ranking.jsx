@@ -125,8 +125,14 @@ const Ranking = () => {
     }
   }
 
+  useEffect(() => {
+    console.log('[Ranking] MOUNTED')
+    return () => console.log('[Ranking] UNMOUNTED')
+  }, [])
+
   // Pobierz dane przy montowaniu i zmianie sortowania
   useEffect(() => {
+    console.log('[Ranking] useEffect: sortBy changed')
     fetchLeaderboard(sortBy)
   }, [sortBy])
 

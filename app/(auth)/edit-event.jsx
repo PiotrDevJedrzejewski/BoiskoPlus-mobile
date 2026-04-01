@@ -44,8 +44,14 @@ const EditEvent = () => {
   const acceptedCount = users.filter((u) => u.status === 'accepted').length
   const rejectedCount = users.filter((u) => u.status === 'rejected').length
 
+  useEffect(() => {
+    console.log('[EditEvent] MOUNTED')
+    return () => console.log('[EditEvent] UNMOUNTED')
+  }, [])
+
   // Pobierz dane wydarzenia
   useEffect(() => {
+    console.log('[EditEvent] useEffect: id changed (fetchEvent)')
     const fetchEvent = async () => {
       try {
         const response = await customFetch.get(`/football-events/${id}`)
@@ -61,6 +67,7 @@ const EditEvent = () => {
 
   // Pobierz listę użytkowników powiązanych z wydarzeniem
   useEffect(() => {
+    console.log('[EditEvent] useEffect: id changed (fetchUsers)')
     const fetchUsers = async () => {
       setLoading(true)
       try {

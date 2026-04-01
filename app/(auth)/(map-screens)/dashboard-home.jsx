@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native'
 import { useRouter } from 'expo-router'
+import { useEffect } from 'react'
 import { COLORS } from '../../../constants/colors'
 import CardDashboard from '../../../components/CardDashboard'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
@@ -11,6 +12,11 @@ const DashboardHome = () => {
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
+
+  useEffect(() => {
+    console.log('[DashboardHome] MOUNTED')
+    return () => console.log('[DashboardHome] UNMOUNTED')
+  }, [])
 
   const cardIconSize = ui.moderateScale(50, 0.35)
   const mapIconSize = ui.moderateScale(24, 0.35)
