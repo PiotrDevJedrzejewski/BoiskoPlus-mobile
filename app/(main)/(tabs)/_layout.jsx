@@ -1,10 +1,11 @@
 import { Slot, useRouter, usePathname } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { COLORS } from '../../../constants/colors'
 import { useMap } from '../../../context/MapContext'
 import MapboxMobile from '../../../components/MapboxMobile'
-import { useSocketIo } from '../../../context/SocketIoContext'
+import { useChat } from '../../../context/ChatContext'
 
 // Komponent tła mapy
 function MapBackground() {
@@ -42,7 +43,8 @@ const TABS = [
 function CustomTabBar() {
   const router = useRouter()
   const pathname = usePathname()
-  const { totalUnreadMessages } = useSocketIo()
+  const { totalUnreadMessages } = useChat()
+  const insets = useSafeAreaInsets()
 
   const handlePress = (path) => {
     // navigate zamiast push - nie dodaje duplikatów do historii nawigacji
@@ -57,7 +59,7 @@ function CustomTabBar() {
   }
 
   return (
-    <View style={styles.tabBar}>
+    <View style={[styles.tabBar, { paddingBottom: Math.max(8, insets.bottom) }]}>
       {TABS.map((tab) => {
         const active = isTabActive(tab.path)
         return (
@@ -141,8 +143,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.backgroundSecondary,
     borderTopColor: COLORS.background,
     borderTopWidth: 2,
-    height: 60,
-    paddingBottom: 8,
     paddingTop: 8,
     paddingHorizontal: 10,
     zIndex: 10,

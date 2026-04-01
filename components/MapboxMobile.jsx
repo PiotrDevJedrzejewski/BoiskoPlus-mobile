@@ -4,6 +4,7 @@ import Mapbox from '@rnmapbox/maps'
 import Supercluster from 'supercluster'
 import { useDashboard } from '../context/DashboardContext'
 import { useMap } from '../context/MapContext'
+import { useAuth } from '../context/AuthContext'
 import EventMarkerEventList from './popup/EventMarkerEventList'
 import EventMarkerEventCreate from './popup/EventMarkerEventCreate'
 
@@ -36,10 +37,16 @@ const throttle = (func, delay) => {
   }
 }
 
+// Granice Polski - ograniczenie mapy do tego regionu
+const POLAND_BOUNDS = {
+  ne: [24.15, 54.85], // północno-wschodni róg
+  sw: [14.07, 49.0],  // południowo-zachodni róg
+}
+
 const MapboxMobile = ({ isInteractive = true }) => {
-  const { filteredEvents, mapTheme, userLocation, geolocationAccepted } =
-    useDashboard()
-  const { mapRef, camera, showMarkers, showEvents, setIsMapReady } = useMap()
+  const { filteredEvents, mapTheme } = useDashboard()
+  const { mapRef, camera, showMarkers, showEvents, setIsMapReady, userLocation } = useMap()
+  const { consents } = useAuth()
 
   // State dla wybranych elementów (musi być state bo wymaga re-renderu przy otwarciu modalu)
   const [selectedClusterEvents, setSelectedClusterEvents] = useState(null)
@@ -116,9 +123,9 @@ const MapboxMobile = ({ isInteractive = true }) => {
     }
   }, [showMarkers])
 
-  // Throttled wersja updateClusters - max 1 wywołanie na 100ms
+  // Throttled wersja updateClusters - max 1 wywołanie na 500ms
   const throttledUpdateClusters = useMemo(
-    () => throttle(updateClusters, 100),
+    () => throttle(updateClusters, 500),
     [updateClusters]
   )
 
@@ -334,13 +341,16 @@ const MapboxMobile = ({ isInteractive = true }) => {
         onDidFinishLoadingMap={handleMapLoad}
         onRegionIsChanging={handleRegionChange}
       >
-        {/* Kamera sterowana przez MapContext */}
+        {/* Kamera sterowana przez MapContext + ograniczenie do granic Polski */}
         <Mapbox.Camera
           key={camera._key}
           zoomLevel={camera.zoomLevel}
           centerCoordinate={camera.centerCoordinate}
           animationMode='flyTo'
           animationDuration={1000}
+          maxBounds={POLAND_BOUNDS}
+          minZoomLevel={5}
+          maxZoomLevel={18}
         />
 
         {/* Definicje obrazków używanych jako ikony markerów */}
@@ -353,7 +363,7 @@ const MapboxMobile = ({ isInteractive = true }) => {
         />
 
         {/* Marker lokalizacji użytkownika */}
-        {geolocationAccepted &&
+        {consents?.locationAccepted &&
           userLocation.latitude &&
           userLocation.longitude && (
             <Mapbox.MarkerView

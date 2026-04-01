@@ -6,14 +6,16 @@ import { DrawerActions } from '@react-navigation/native'
 import LogoBoiskoPlus from '../assets/images/LogoBoiskoPlus.png'
 import { COLORS } from '../constants/colors'
 import { Ionicons } from '@expo/vector-icons'
-import { useSocketIo } from '../context/SocketIoContext'
+import { useChat } from '../context/ChatContext'
+import { useNotificationsSocket } from '../context/NotificationsSocketContext'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 import QuickNavModal from './popup/QuickNavModal'
 
 const HeaderDrawer = () => {
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
-  const { unreadEventsCount, unreadFriendRequestsCount, totalUnreadMessages } = useSocketIo()
+  const { totalUnreadMessages } = useChat()
+  const { unreadEventsCount, unreadFriendRequestsCount } = useNotificationsSocket()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const [quickNavVisible, setQuickNavVisible] = useState(false)

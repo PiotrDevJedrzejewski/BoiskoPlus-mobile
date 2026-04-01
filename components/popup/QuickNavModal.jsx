@@ -9,7 +9,8 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../../constants/colors'
-import { useSocketIo } from '../../context/SocketIoContext'
+import { useChat } from '../../context/ChatContext'
+import { useNotificationsSocket } from '../../context/NotificationsSocketContext'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const QuickNavModal = ({ visible, onClose }) => {
@@ -17,8 +18,9 @@ const QuickNavModal = ({ visible, onClose }) => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
 
-  const { unreadFriendRequestsCount, unreadEventsCount, totalUnreadMessages } =
-    useSocketIo()
+  const { totalUnreadMessages } = useChat()
+  const { unreadFriendRequestsCount, unreadEventsCount } =
+    useNotificationsSocket()
 
   const navigate = (path) => {
     onClose()

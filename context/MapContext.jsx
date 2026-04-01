@@ -5,6 +5,7 @@ import {
   useRef,
   useCallback,
   useEffect,
+  useMemo,
 } from 'react'
 import { useAuth } from './AuthContext'
 import { checkSystemLocationPermissions } from '../assets/utils/getUserLocation'
@@ -215,32 +216,48 @@ export const MapProvider = ({ children }) => {
     return false
   }, [flyTo, getProvinceCoordinates])
 
+  const contextValue = useMemo(
+    () => ({
+      mapRef,
+      showMarkers,
+      setShowMarkers,
+      showEvents,
+      setShowEvents,
+      overlayOpacity,
+      setOverlayOpacity,
+      isInteractive,
+      setIsInteractive,
+      isMapReady,
+      setIsMapReady,
+      camera,
+      setCamera,
+      flyTo,
+      flyToProvince,
+      getProvinceCoordinates,
+      mapComponent,
+      setMapComponent,
+      userLocation,
+      setUserLocation,
+      setStartLocation,
+    }),
+    [
+      showMarkers,
+      showEvents,
+      overlayOpacity,
+      isInteractive,
+      isMapReady,
+      camera,
+      flyTo,
+      flyToProvince,
+      getProvinceCoordinates,
+      mapComponent,
+      userLocation,
+      setStartLocation,
+    ]
+  )
+
   return (
-    <MapContext.Provider
-      value={{
-        mapRef,
-        showMarkers,
-        setShowMarkers,
-        showEvents,
-        setShowEvents,
-        overlayOpacity,
-        setOverlayOpacity,
-        isInteractive,
-        setIsInteractive,
-        isMapReady,
-        setIsMapReady,
-        camera,
-        setCamera,
-        flyTo,
-        flyToProvince,
-        getProvinceCoordinates,
-        mapComponent,
-        setMapComponent,
-        userLocation,
-        setUserLocation,
-        setStartLocation,
-      }}
-    >
+    <MapContext.Provider value={contextValue}>
       {children}
     </MapContext.Provider>
   )
