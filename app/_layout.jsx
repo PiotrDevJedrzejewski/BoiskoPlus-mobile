@@ -14,7 +14,9 @@ import { AuthProvider } from '../context/AuthContext'
 import { DashboardProvider } from '../context/DashboardContext'
 import { FriendshipProvider } from '../context/FriendshipContext'
 import { NotificationProvider } from '../context/NotificationContext'
-import { SocketIoProvider } from '../context/SocketIoContext'
+import { SocketConnectionProvider } from '../context/SocketConnectionContext'
+import { ChatProvider } from '../context/ChatContext'
+import { NotificationsSocketProvider } from '../context/NotificationsSocketContext'
 
 const Layout = () => {
   const [fontsLoaded] = useFonts({
@@ -50,7 +52,9 @@ const Layout = () => {
     <GestureHandlerRootView style={{ flex: 1 }}>
     <AuthProvider>
           <NotificationProvider>
-        <SocketIoProvider>
+        <SocketConnectionProvider>
+          <ChatProvider>
+            <NotificationsSocketProvider>
             <DashboardProvider>
             <FriendshipProvider>
             <Stack
@@ -84,7 +88,9 @@ const Layout = () => {
             <ToastManager />
             </FriendshipProvider>
           </DashboardProvider>
-      </SocketIoProvider>
+            </NotificationsSocketProvider>
+          </ChatProvider>
+        </SocketConnectionProvider>
         </NotificationProvider>
     </AuthProvider>
     </GestureHandlerRootView>

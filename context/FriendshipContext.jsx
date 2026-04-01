@@ -8,7 +8,8 @@ import {
 } from 'react'
 import customFetch from '../assets/utils/customFetch'
 import { useAuth } from './AuthContext'
-import { useSocketIo } from './SocketIoContext'
+import { useSocketConnection, ConnectionState } from './SocketConnectionContext'
+import { useNotificationsSocket } from './NotificationsSocketContext'
 
 const FriendshipContext = createContext()
 
@@ -29,7 +30,8 @@ const fetchStatsMap = async (userIds) => {
 
 export const FriendshipProvider = ({ children }) => {
   const { user, isAuthChecked } = useAuth()
-  const { notificationSocket, setUnreadFriendRequestsCount, notificationConnectionState, ConnectionState } = useSocketIo()
+  const { notificationSocket, notificationConnectionState } = useSocketConnection()
+  const { setUnreadFriendRequestsCount } = useNotificationsSocket()
 
   // Czy pierwsze połączenie już odbyło się (login-fetch obsługuje badge same’)
   const initialConnectDoneRef = useRef(false)

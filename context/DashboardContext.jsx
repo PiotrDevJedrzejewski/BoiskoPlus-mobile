@@ -9,7 +9,7 @@ import {
 } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import customFetch from '../assets/utils/customFetch'
-import { useSocketIo } from './SocketIoContext'
+import { useNotificationsSocket } from './NotificationsSocketContext'
 import { useAuth } from './AuthContext'
 
 const DashboardContext = createContext()
@@ -18,7 +18,7 @@ const DashboardContext = createContext()
 const EVENTS_MIN_REFRESH_MS = 20 * 1000
 
 export const DashboardProvider = ({ children }) => {
-  const { lastStatusUpdate } = useSocketIo()
+  const { lastStatusUpdate } = useNotificationsSocket()
   const { user, isAuthChecked } = useAuth()
   const [filteredEvents, setFilteredEvents] = useState({
     center: { latitude: null, longitude: null },

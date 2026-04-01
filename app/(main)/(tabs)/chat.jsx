@@ -16,21 +16,22 @@ import { COLORS } from '../../../constants/colors'
 import ChatRoomListItem from '../../../components/ChatRoomListItem'
 import ChatMessageBox from '../../../components/ChatMessageBox'
 import customFetch from '../../../assets/utils/customFetch'
-import { useSocketIo } from '../../../context/SocketIoContext'
+import { useChat } from '../../../context/ChatContext'
 import { useAuth } from '../../../context/AuthContext'
 import { useNotification } from '../../../context/NotificationContext'
 import LottieView from 'lottie-react-native'
 import { useFonts } from 'expo-font'
 import { useLocalSearchParams } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const typing = require('../../../assets/utils/typing.json')
-const CUSTOM_TAB_BAR_HEIGHT = 60
 
 const Chat = () => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const { user } = useAuth()
+  const insets = useSafeAreaInsets()
   const { openChatWith } = useLocalSearchParams()
   const {
     chatSocket,
@@ -45,7 +46,7 @@ const Chat = () => {
     sendTyping,
     sendStopTyping,
     isUserOnline,
-  } = useSocketIo()
+  } = useChat()
   const { muteChatRoom, unmuteChatRoom } = useNotification()
 
   const [filterType, setFilterType] = useState('all') // all | private | group
@@ -591,7 +592,8 @@ const Chat = () => {
   }
 
   const typingText = getTypingText()
-  const tabBarHeight = ui.verticalScale(CUSTOM_TAB_BAR_HEIGHT)
+  // Tab bar: paddingTop(8) + content(~44) + paddingBottom(max(8, insets.bottom))
+  const tabBarHeight = 8 + 44 + Math.max(8, insets.bottom)
   const inputBottomOffset = Math.max(0, keyboardHeight - tabBarHeight)
   const headerIconSize = ui.moderateScale(26, 0.35)
   const filterIconSize = ui.moderateScale(14, 0.3)

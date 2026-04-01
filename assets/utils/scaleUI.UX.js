@@ -137,18 +137,31 @@ export const spacing = (size, factor) =>
 
 // Hook jest wygodniejszy wewnątrz komponentu, kiedy chcesz np. warunkowo reagować
 // na isCompactDevice albo korzystać z aktualnych metryk po zmianie orientacji.
-export const useResponsiveScale = () => {
-	const windowMetrics = useWindowDimensions()
+//
+// WAŻNE: Aplikacja jest zablokowana w trybie portrait (screenOrientation="portrait"
+// w AndroidManifest.xml), więc wymiary ekranu nigdy się naprawdę nie zmieniają.
+// Jedyny powód zmiany window.height to klawiatura (adjustResize w AndroidManifest).
+// Używanie useWindowDimensions() powodowało, że 50+ komponentów przebudowywało
+// StyleSheet.create() przy KAŻDYM otwarciu/zamknięciu klawiatury.
+//
+// Fix: Używamy Dimensions.get('screen') raz — screen dimensions nie zmieniają się
+// z klawiaturą. fontScale pobieramy z useWindowDimensions() (zmiana dostępności).
+const initialScreenMetrics = Dimensions.get('screen')
+const stableMetrics = createResponsiveScale(initialScreenMetrics)
 
-	return useMemo(
-		() => createResponsiveScale(windowMetrics),
-		[
-			windowMetrics.width,
-			windowMetrics.height,
-			windowMetrics.scale,
-			windowMetrics.fontScale,
-		]
-	)
+export const useResponsiveScale = () => {
+	const { fontScale } = useWindowDimensions()
+
+	return useMemo(() => {
+		// Przelicz tylko gdy fontScale się zmieni (accessibility)
+		if (fontScale !== initialScreenMetrics.fontScale) {
+			return createResponsiveScale({
+				...initialScreenMetrics,
+				fontScale,
+			})
+		}
+		return stableMetrics
+	}, [fontScale])
 }
 
 // Krótka ściąga użycia:
