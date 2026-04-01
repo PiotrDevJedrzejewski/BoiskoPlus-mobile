@@ -95,6 +95,10 @@ const ConnectionState = {
 // =====================================================
 
 export const SocketIoProvider = ({ children }) => {
+  const renderCountRef = useRef(0)
+  renderCountRef.current += 1
+  console.log('[SocketIoContext] render #' + renderCountRef.current)
+
   const { user, isAuthChecked } = useAuth()
   const { shouldShowNotification } = useNotification()
 
@@ -150,6 +154,12 @@ export const SocketIoProvider = ({ children }) => {
   // Ref do activeRoomId - używany w handlerach socket aby uniknąć stale closure
   const activeRoomIdRef = useRef(null)
   useEffect(() => {
+    console.log('[SocketIoContext] MOUNTED')
+    return () => console.log('[SocketIoContext] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[SocketIoContext] useEffect: activeRoomId changed')
     activeRoomIdRef.current = activeRoomId
   }, [activeRoomId])
 
@@ -258,6 +268,7 @@ export const SocketIoProvider = ({ children }) => {
   // Ref z aktualną wersją disconnectSockets – unika stale closure w efektach
   const disconnectSocketsRef = useRef(disconnectSockets)
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: disconnectSockets changed')
     disconnectSocketsRef.current = disconnectSockets
   }, [disconnectSockets])
 
@@ -266,6 +277,7 @@ export const SocketIoProvider = ({ children }) => {
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: user/isAuthChecked changed (init sockets)')
     isMountedRef.current = true
 
     const initSockets = async () => {
@@ -407,6 +419,7 @@ export const SocketIoProvider = ({ children }) => {
 
   const prevUserIdRef = useRef(user?.userID ?? null)
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: user changed (detect logout)')
     const prevId = prevUserIdRef.current
     const currentId = user?.userID ?? null
     prevUserIdRef.current = currentId
@@ -418,6 +431,7 @@ export const SocketIoProvider = ({ children }) => {
 
   // Osobny cleanup effect
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: chatSocket/notificationSocket changed (cleanup)')
     return () => {
       if (chatSocket) {
         chatListenersRef.current.forEach((handler, event) => chatSocket.off(event, handler))
@@ -439,6 +453,7 @@ export const SocketIoProvider = ({ children }) => {
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: chatSocket/chatConnectionState/user changed (fetch and join rooms)')
     if (!chatSocket || chatConnectionState !== ConnectionState.CONNECTED) return
     if (!user?.userID) return
 
@@ -528,6 +543,7 @@ export const SocketIoProvider = ({ children }) => {
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: user/notificationSocket/notificationConnectionState changed (fetch unread events)')
     if (!user?.userID) {
       setUnreadEventsCount(0)
       setUnreadEventsList([])
@@ -594,16 +610,19 @@ export const SocketIoProvider = ({ children }) => {
   // Ref do shouldShowNotification - unikamy re-subscribe przy każdym renderze NotificationContext
   const shouldShowNotificationRef = useRef(shouldShowNotification)
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: shouldShowNotification changed')
     shouldShowNotificationRef.current = shouldShowNotification
   }, [shouldShowNotification])
 
   // Ref do user._id - stabilna referencja
   const userIdRef = useRef(user?._id)
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: user._id changed')
     userIdRef.current = user?._id
   }, [user?._id])
 
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: chatSocket changed (new message listener)')
     if (!chatSocket) return
 
     const handleNewMessage = (msg) => {
@@ -649,9 +668,8 @@ export const SocketIoProvider = ({ children }) => {
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: chatSocket/chatConnectionState changed (online users tracking)')
     if (!chatSocket || chatConnectionState !== ConnectionState.CONNECTED) return
-
-    // Pobierz aktualną listę online users przy połączeniu
     chatSocket.emit('getOnlineUsers', (result) => {
       if (result.success) {
         safeSetState(() => {
@@ -694,6 +712,7 @@ export const SocketIoProvider = ({ children }) => {
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: notificationSocket changed (status update listener)')
     if (!notificationSocket) return
 
     const handleStatusUpdate = (data) => {
@@ -767,6 +786,7 @@ export const SocketIoProvider = ({ children }) => {
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
+    console.log('[SocketIoContext] useEffect: notificationSocket changed (friend request listener)')
     if (!notificationSocket) return
 
     const handleFriendRequest = (data) => {

@@ -28,6 +28,10 @@ const fetchStatsMap = async (userIds) => {
 }
 
 export const FriendshipProvider = ({ children }) => {
+  const renderCountRef = useRef(0)
+  renderCountRef.current += 1
+  console.log('[FriendshipContext] render #' + renderCountRef.current)
+
   const { user, isAuthChecked } = useAuth()
   const { notificationSocket, setUnreadFriendRequestsCount, notificationConnectionState, ConnectionState } = useSocketIo()
 
@@ -54,6 +58,12 @@ export const FriendshipProvider = ({ children }) => {
 
   const isMountedRef = useRef(true)
   useEffect(() => {
+    console.log('[FriendshipContext] MOUNTED')
+    return () => console.log('[FriendshipContext] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[FriendshipContext] useEffect: mount/unmount isMountedRef (mount-only)')
     isMountedRef.current = true
     return () => {
       isMountedRef.current = false
@@ -122,6 +132,7 @@ export const FriendshipProvider = ({ children }) => {
   // ─── Ładowanie przy starcie ───────────────────────────────────────────────
 
   useEffect(() => {
+    console.log('[FriendshipContext] useEffect: isAuthChecked/user changed')
     if (!isAuthChecked || !user?.userID) return
     initialConnectDoneRef.current = false // reset przy zmianie usera
     fetchFriends()
@@ -133,6 +144,7 @@ export const FriendshipProvider = ({ children }) => {
   // robimy cichy HTTP-fetch żeby badge odzwierciedlał prawdę z DB.
 
   useEffect(() => {
+    console.log('[FriendshipContext] useEffect: notificationConnectionState/user changed')
     if (!user?.userID) return
     if (notificationConnectionState !== ConnectionState.CONNECTED) return
 
@@ -149,6 +161,7 @@ export const FriendshipProvider = ({ children }) => {
   // ─── Real-time: nowe zaproszenie przez socket ─────────────────────────────
 
   useEffect(() => {
+    console.log('[FriendshipContext] useEffect: notificationSocket changed')
     if (!notificationSocket) return
 
     const handleFriendRequest = (friendshipData) => {

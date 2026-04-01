@@ -128,6 +128,10 @@ const getDeviceId = () => {
 
 
 export const NotificationProvider = ({ children }) => {
+  const renderCountRef = useRef(0)
+  renderCountRef.current += 1
+  console.log('[NotificationContext] render #' + renderCountRef.current)
+
   const { user, isAuthChecked } = useAuth()
   const [preferences, setPreferences] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -144,6 +148,12 @@ export const NotificationProvider = ({ children }) => {
   // EFFECT: Setup notification channels (Android)
   // ─────────────────────────────────────────────────
   useEffect(() => {
+    console.log('[NotificationContext] MOUNTED')
+    return () => console.log('[NotificationContext] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[NotificationContext] useEffect: setup notification channels (mount-only)')
     setupNotificationChannels()
   }, [])
 
@@ -151,6 +161,7 @@ export const NotificationProvider = ({ children }) => {
   // EFFECT: Rejestracja push tokenu przy logowaniu
   // ─────────────────────────────────────────────────
   useEffect(() => {
+    console.log('[NotificationContext] useEffect: isAuthChecked/user changed (register push token)')
     const registerPushToken = async () => {
       if (!isAuthChecked || !user?.userID) return
 
@@ -181,6 +192,7 @@ export const NotificationProvider = ({ children }) => {
   // EFFECT: Sprawdź status uprawnień
   // ─────────────────────────────────────────────────
   useEffect(() => {
+    console.log('[NotificationContext] useEffect: check push permissions (mount-only)')
     const checkPermissions = async () => {
       const { status } = await Notifications.getPermissionsAsync()
       setPushPermissionStatus(status)
@@ -206,6 +218,7 @@ export const NotificationProvider = ({ children }) => {
   // Nawigacja do odpowiedniego ekranu
   // ─────────────────────────────────────────────────
   useEffect(() => {
+    console.log('[NotificationContext] useEffect: setup notification tap listener (mount-only)')
     // Handler dla tapu w powiadomienie (app w tle lub zamknięta)
     notificationResponseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
@@ -240,6 +253,7 @@ export const NotificationProvider = ({ children }) => {
   // Pobierz preferencje powiadomień przy starcie
   // ─────────────────────────────────────────────────
   useEffect(() => {
+    console.log('[NotificationContext] useEffect: isAuthChecked changed (fetch preferences)')
     const fetchPreferences = async () => {
       // Nie wykonuj zapytania jeśli user nie jest zalogowany
       if (!isAuthChecked || !user?.userID) {
@@ -288,6 +302,7 @@ export const NotificationProvider = ({ children }) => {
 
   // Cache preferencje w AsyncStorage
   useEffect(() => {
+    console.log('[NotificationContext] useEffect: preferences changed (cache to AsyncStorage)')
     const cachePreferences = async () => {
       if (preferences) {
         try {
