@@ -39,7 +39,7 @@ const EventMarkerEventList = ({ events, onClose }) => {
     onClose()
     // hack - w modalu pushowanie jest w innym stacku, a replace powoduje błąd w single-event, timeout pozwala na zamknięcie modala przed nawigacją
     setTimeout(() => {
-      router.push(`/(main)/(tabs)/(hidden)/single-event?id=${eventId}`)
+      router.push(`/(auth)/single-event?id=${eventId}`)
     }, 100)
   }
 

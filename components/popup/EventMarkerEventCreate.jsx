@@ -26,7 +26,7 @@ const EventMarkerEventCreate = ({ orlikData, onClose }) => {
     onClose()
     // Przekazanie całego obiektu orlika jako JSON string
     router.push({
-      pathname: '/(main)/(tabs)/(hidden)/add-event',
+      pathname: '/(auth)/add-event',
       params: {
         predefinedPlace: JSON.stringify(place),
       },

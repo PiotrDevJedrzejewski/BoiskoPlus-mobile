@@ -27,10 +27,16 @@ const Home = () => {
     ObjectFont: require('../assets/fonts/object.ttf'),
   })
 
+  useEffect(() => {
+    console.log('[Home] MOUNTED')
+    return () => console.log('[Home] UNMOUNTED')
+  }, [])
+
   // Przekieruj zalogowanego użytkownika do dashboard
   useEffect(() => {
+    console.log('[Home] useEffect: user/loading changed')
     if (!loading && user) {
-      router.replace('/(main)/(tabs)/dashboard-home')
+      router.replace('/(auth)/(map-screens)/dashboard-home')
     }
   }, [user, loading])
 

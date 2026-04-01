@@ -10,10 +10,10 @@ import { useEffect } from 'react'
 import { useRouter } from 'expo-router'
 import { Ionicons, MaterialIcons } from '@expo/vector-icons'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
-import { COLORS } from '../../../../../constants/colors'
-import CardDashboard from '../../../../../components/CardDashboard'
-import { useDashboard } from '../../../../../context/DashboardContext'
-import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../../constants/colors'
+import CardDashboard from '../../../components/CardDashboard'
+import { useDashboard } from '../../../context/DashboardContext'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const EventsDashboard = () => {
   const router = useRouter()
@@ -26,7 +26,7 @@ const EventsDashboard = () => {
       key: 'all-events',
       title: 'Wszystkie wydarzenia',
       desc: 'Lista wszystkich Twoich wydarzeń, niezależnie od statusu.',
-      route: '/(main)/(tabs)/(hidden)/events-managment/events-allEvents',
+      route: '/(auth)/events-managment/events-allEvents',
       icon: (
         <MaterialIcons
           name='emoji-events'
@@ -39,7 +39,7 @@ const EventsDashboard = () => {
       key: 'active-events',
       title: 'Aktywne wydarzenia',
       desc: 'Sprawdź czy zostałeś dodany do wydarzenia',
-      route: '/(main)/(tabs)/(hidden)/events-managment/events-active',
+      route: '/(auth)/events-managment/events-active',
       icon: (
         <Ionicons
           name='calendar-sharp'
@@ -52,7 +52,7 @@ const EventsDashboard = () => {
       key: 'owner-events',
       title: 'Edytuj wydarzenia',
       desc: '+Dodaj, -usuń gracza lub edytuj swoje wydarzenie.',
-      route: '/(main)/(tabs)/(hidden)/events-managment/events-owner',
+      route: '/(auth)/events-managment/events-owner',
       icon: (
         <FontAwesome5
           name='tools'
@@ -65,7 +65,7 @@ const EventsDashboard = () => {
       key: 'other-events',
       title: 'Historia wydarzeń',
       desc: 'Przeglądaj zakończone wydarzenia i ich szczegóły.',
-      route: '/(main)/(tabs)/(hidden)/events-managment/events-other',
+      route: '/(auth)/events-managment/events-other',
       icon: (
         <Ionicons
           name='archive'
@@ -77,6 +77,12 @@ const EventsDashboard = () => {
   ]
 
   useEffect(() => {
+    console.log('[EventsDashboard] MOUNTED')
+    return () => console.log('[EventsDashboard] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[EventsDashboard] useEffect: refreshEventsData')
     refreshEventsData().catch(() => {})
   }, [refreshEventsData])
 
@@ -85,7 +91,7 @@ const EventsDashboard = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.push('/(main)/(tabs)/dashboard-home')}
+          onPress={() => router.push('/(auth)/(map-screens)/dashboard-home')}
           activeOpacity={0.8}
         >
           <Ionicons name='arrow-back' size={ui.moderateScale(28, 0.35)} color={COLORS.primary} />

@@ -31,21 +31,21 @@ const QuickNavModal = ({ visible, onClose }) => {
       label: 'Znajomi',
       icon: 'people',
       count: unreadFriendRequestsCount,
-      path: '/(main)/(tabs)/(hidden)/friends',
+      path: '/(auth)/friends',
     },
     {
       key: 'events',
       label: 'Eventy',
       icon: 'calendar',
       count: unreadEventsCount,
-      path: '/(main)/(tabs)/(hidden)/my-events',
+      path: '/(auth)/my-events',
     },
     {
       key: 'chat',
       label: 'Chat',
       icon: 'chatbubbles',
       count: totalUnreadMessages,
-      path: '/(main)/(tabs)/chat',
+      path: '/(auth)/chat',
     },
   ]
 

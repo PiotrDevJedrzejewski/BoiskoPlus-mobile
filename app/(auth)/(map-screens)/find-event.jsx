@@ -91,6 +91,12 @@ const FindEvent = () => {
   const floatingIconSize = ui.moderateScale(24, 0.35)
 
   useEffect(() => {
+    console.log('[FindEvent] MOUNTED')
+    return () => console.log('[FindEvent] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[FindEvent] useEffect: cleanup refs')
     return () => {
       isMountedRef.current = false
       if (suggestionsDebounceRef.current) {
@@ -109,6 +115,7 @@ const FindEvent = () => {
 
   // Ustaw początkową lokalizację z userLocation
   useEffect(() => {
+    console.log('[FindEvent] useEffect: userLocation/consents.locationAccepted changed')
     if (consents.locationAccepted && userLocation.City) {
       setUserInput((prev) => ({
         ...prev,
@@ -123,6 +130,7 @@ const FindEvent = () => {
 
   // Aktualizuj podpowiedzi - tylko gdy użytkownik aktywnie wpisuje
   useEffect(() => {
+    console.log('[FindEvent] useEffect: userInput.City/suggestionSelected changed')
     if (suggestionsDebounceRef.current) {
       clearTimeout(suggestionsDebounceRef.current)
     }
@@ -169,6 +177,7 @@ const FindEvent = () => {
 
   // Aktualizuj UI gdy filteredEvents zmieni się z innego ekranu
   useEffect(() => {
+    console.log('[FindEvent] useEffect: filteredEvents changed')
     if (filteredEvents && filteredEvents.events && filteredEvents.events.length > 0) {
       setHasSearched(true)
     }
@@ -176,6 +185,7 @@ const FindEvent = () => {
 
   // Filtrowanie po gameType
   useEffect(() => {
+    console.log('[FindEvent] useEffect: filteredEvents/userInput.gameType changed')
     if (filteredEvents && filteredEvents.events) {
       if (userInput.gameType && userInput.gameType !== '') {
         const filtered = filteredEvents.events.filter(
@@ -194,6 +204,7 @@ const FindEvent = () => {
 
   // Sterowanie mapą i overlayem przez state
   useEffect(() => {
+    console.log('[FindEvent] useEffect: showList changed')
     if (showList) {
       setIsInteractive(false)
       setOverlayOpacity(0.3)
@@ -356,7 +367,7 @@ const FindEvent = () => {
 
   const handleEventPress = (eventId) => {
     // Nawigacja do szczegółów wydarzenia
-    router.push(`/(main)/(tabs)/(hidden)/single-event?id=${eventId}`)
+    router.push(`/(auth)/single-event?id=${eventId}`)
   }
 
   const handleLoadMore = async () => {

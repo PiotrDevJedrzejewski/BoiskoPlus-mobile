@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native'
 import { useRouter } from 'expo-router'
+import { useEffect } from 'react'
 import { COLORS } from '../../../constants/colors'
 import CardDashboard from '../../../components/CardDashboard'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
@@ -11,6 +12,11 @@ const DashboardHome = () => {
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
+
+  useEffect(() => {
+    console.log('[DashboardHome] MOUNTED')
+    return () => console.log('[DashboardHome] UNMOUNTED')
+  }, [])
 
   const cardIconSize = ui.moderateScale(50, 0.35)
   const mapIconSize = ui.moderateScale(24, 0.35)
@@ -47,7 +53,7 @@ const DashboardHome = () => {
                 }
                 title='Znajdź Grę'
                 desc='Przeglądaj dostępne gry i zapisuj się na mecze'
-                onPress={() => handleCardPress('/(main)/(tabs)/find-event')}
+                onPress={() => handleCardPress('/(auth)/(map-screens)/find-event')}
               />
                             <CardDashboard
                 icon={
@@ -59,7 +65,7 @@ const DashboardHome = () => {
                 }
                 title='Pokaż Mapę'
                 desc='Zobacz dostępne boiska i swoje lokalizacje na mapie'
-                onPress={() => handleCardPress('/(main)/(tabs)/show-map')}                            
+                onPress={() => handleCardPress('/(auth)/(map-screens)/show-map')}                            
               />
               <CardDashboard
                 icon={
@@ -72,7 +78,7 @@ const DashboardHome = () => {
                 title='Stwórz Grę'
                 desc='Zaproponuj nową grę i zaproś znajomych'
                 onPress={() =>
-                  handleCardPress('/(main)/(tabs)/(hidden)/add-event')
+                  handleCardPress('/(auth)/add-event')
                 }
               />
               <CardDashboard
@@ -87,7 +93,7 @@ const DashboardHome = () => {
                 desc='Zarządzaj swoimi grami i sprawdzaj statystyki'
                 onPress={() =>
                   handleCardPress(
-                    '/(main)/(tabs)/(hidden)/events-managment/events-dashboard'
+                    '/(auth)/events-managment/events-dashboard'
                   )
                 }
               />
@@ -96,7 +102,7 @@ const DashboardHome = () => {
               <Pressable
                 style={styles.mapButton}
                  onPress={() =>
-                  handleCardPress('/(main)/(tabs)/(hidden)/settings')
+                  handleCardPress('/(auth)/settings')
                 }
               >
                 <Ionicons

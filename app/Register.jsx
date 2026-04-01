@@ -58,6 +58,12 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState([false, false])
 
   useEffect(() => {
+    console.log('[Register] MOUNTED')
+    return () => console.log('[Register] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[Register] useEffect: GoogleSignin configure')
     GoogleSignin.configure({
       webClientId: Constants.expoConfig?.extra?.googleWebClientId,
       iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
@@ -92,7 +98,7 @@ const Register = () => {
 
         console.log('[Google Auth] User exists, logging in...')
         Toast.success('Zalogowano pomyślnie przez Google!')
-        router.replace('/(main)/(tabs)/dashboard-home')
+        router.replace('/(auth)/(map-screens)/dashboard-home')
       } catch (loginError) {
         if (loginError.response?.status === 401 || loginError.response?.status === 404) {
           console.log('[Google Auth] User not found, redirecting to complete registration')

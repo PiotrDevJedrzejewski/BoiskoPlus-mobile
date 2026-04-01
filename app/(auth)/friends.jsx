@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import {
   ActivityIndicator,
   Dimensions,
@@ -10,10 +10,10 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../../../../constants/colors'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
-import { useFriendship } from '../../../../context/FriendshipContext'
-import PlayerCardWithActions from '../../../../components/PlayerCardWithActions'
+import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useFriendship } from '../../context/FriendshipContext'
+import PlayerCardWithActions from '../../components/PlayerCardWithActions'
 
 const SEARCH_DEBOUNCE_MS = 300
 const SCREEN_HEIGHT = Dimensions.get('window').height
@@ -21,6 +21,11 @@ const SCREEN_HEIGHT = Dimensions.get('window').height
 const FriendsScreen = () => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
+
+  useEffect(() => {
+    console.log('[FriendsScreen] MOUNTED')
+    return () => console.log('[FriendsScreen] UNMOUNTED')
+  }, [])
 
   const {
     friends,

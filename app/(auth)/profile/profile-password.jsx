@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -13,15 +13,20 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../../constants/colors'
-import { useAuth } from '../../../../../context/AuthContext'
-import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../../constants/colors'
+import { useAuth } from '../../../context/AuthContext'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const ProfilePassword = () => {
   const router = useRouter()
   const { changePassword } = useAuth()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
+
+  useEffect(() => {
+    console.log('[ProfilePassword] MOUNTED')
+    return () => console.log('[ProfilePassword] UNMOUNTED')
+  }, [])
 
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({

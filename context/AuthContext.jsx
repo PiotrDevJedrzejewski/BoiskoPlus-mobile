@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import * as SecureStore from 'expo-secure-store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
@@ -28,6 +28,10 @@ const defaultConsents = {
 }
 
 export const AuthProvider = ({ children }) => {
+  const renderCountRef = useRef(0)
+  renderCountRef.current += 1
+  console.log('[AuthContext] render #' + renderCountRef.current)
+
   // Początkowo null - inne konteksty sprawdzają user?.userID
   const [user, setUser] = useState(null)
   const [userStats, setUserStats] = useState(null) // Statystyki użytkownika
@@ -49,6 +53,12 @@ export const AuthProvider = ({ children }) => {
 
   // Konfiguracja Google Sign-In raz przy starcie aplikacji
   useEffect(() => {
+    console.log('[AuthContext] MOUNTED')
+    return () => console.log('[AuthContext] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[AuthContext] useEffect: setup Google Sign-In (mount-only)')
     GoogleSignin.configure({
       webClientId: Constants.expoConfig?.extra?.googleWebClientId,
       iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
@@ -92,7 +102,7 @@ export const AuthProvider = ({ children }) => {
         setUserStats(userStatsResponse.data.stats)
         setIsAuthChecked(true)
         setLoading(false)
-        router.replace('/(main)/(tabs)/dashboard-home')
+        router.replace('/(auth)/(map-screens)/dashboard-home')
         return
       } else {
         setUser(null)
@@ -111,6 +121,7 @@ export const AuthProvider = ({ children }) => {
 
   // Sprawdź czy użytkownik był zalogowany przy starcie aplikacji
   useEffect(() => {
+    console.log('[AuthContext] useEffect: check auth on startup (mount-only)')
     const userWasLoggedIn = async () => {
       return await authorized()
     }
@@ -119,6 +130,7 @@ export const AuthProvider = ({ children }) => {
 
   // Wczytaj zapisane zgody z urządzenia
   useEffect(() => {
+    console.log('[AuthContext] useEffect: load consents (mount-only)')
     const loadConsents = async () => {
       setConsentsLoading(true)
       try {
@@ -140,6 +152,7 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   useEffect(() => {
+    console.log('[AuthContext] useEffect: consentsLoading/consents changed')
     if (!consentsLoading && consents) {
       setPendingConsents({
         rulesAccepted: !!consents.rulesAccepted,

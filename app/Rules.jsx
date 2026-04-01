@@ -1,10 +1,16 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native'
 import { COLORS } from '../constants/colors'
+import { useEffect } from 'react'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const Rules = () => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
+
+  useEffect(() => {
+    console.log('[Rules] MOUNTED')
+    return () => console.log('[Rules] UNMOUNTED')
+  }, [])
 
   return (
     <ScrollView style={styles.rulesContainer}>

@@ -1,28 +1,23 @@
 import { useState } from 'react'
 import { Image, Text, View, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useNavigation } from 'expo-router'
-import { DrawerActions } from '@react-navigation/native'
 import LogoBoiskoPlus from '../assets/images/LogoBoiskoPlus.png'
 import { COLORS } from '../constants/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { useSocketIo } from '../context/SocketIoContext'
+import { useDrawer } from '../context/DrawerContext'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 import QuickNavModal from './popup/QuickNavModal'
 
 const HeaderDrawer = () => {
   const insets = useSafeAreaInsets()
-  const navigation = useNavigation()
+  const { openDrawer } = useDrawer()
   const { unreadEventsCount, unreadFriendRequestsCount, totalUnreadMessages } = useSocketIo()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const [quickNavVisible, setQuickNavVisible] = useState(false)
 
   const totalBadge = unreadEventsCount + unreadFriendRequestsCount + totalUnreadMessages
-
-  const openDrawer = () => {
-    navigation.dispatch(DrawerActions.openDrawer())
-  }
 
   return (
     <>

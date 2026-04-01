@@ -36,6 +36,12 @@ const Login = () => {
   })
 
   useEffect(() => {
+    console.log('[Login] MOUNTED')
+    return () => console.log('[Login] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[Login] useEffect: GoogleSignin configure')
     GoogleSignin.configure({
       webClientId: Constants.expoConfig?.extra?.googleWebClientId,
       iosClientId: Constants.expoConfig?.extra?.googleIosClientId,

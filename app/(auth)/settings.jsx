@@ -1,20 +1,23 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { StyleSheet, Text, View, ScrollView, Alert } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../constants/colors'
-import { useMap } from '../../../../context/MapContext'
-import { useAuth } from '../../../../context/AuthContext'
-import { checkSystemLocationPermissions } from '../../../../assets/utils/getUserLocation'
-import SettingSection from '../../../../components/settingsComponents/SettingSection'
-import SettingRow from '../../../../components/settingsComponents/SettingRow'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { COLORS } from '../../constants/colors'
+import { useAuth } from '../../context/AuthContext'
+import { checkSystemLocationPermissions } from '../../assets/utils/getUserLocation'
+import SettingSection from '../../components/settingsComponents/SettingSection'
+import SettingRow from '../../components/settingsComponents/SettingRow'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+
+const LOCATION_STORAGE_KEY = 'bp_user_location_v1'
+const LOCATION_THROTTLE_KEY = 'last_location_request_time'
 
 const Settings = () => {
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
-  const { userLocation, setStartLocation } = useMap()
+  const [userLocation, setUserLocation] = useState(null)
   const { 
     consents, 
     updateConsents, 
@@ -22,6 +25,23 @@ const Settings = () => {
     setSystemPermissionsGeo, 
     consentsLoading 
   } = useAuth()
+
+  useEffect(() => {
+    console.log('[Settings] MOUNTED')
+    return () => console.log('[Settings] UNMOUNTED')
+  }, [])
+
+  // Load location from AsyncStorage on mount
+  useEffect(() => {
+    console.log('[Settings] useEffect: loadLocation')
+    const loadLocation = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(LOCATION_STORAGE_KEY)
+        if (stored) setUserLocation(JSON.parse(stored))
+      } catch {}
+    }
+    loadLocation()
+  }, [])
 
   // Ustawienia powiadomień
   const [chatNotifications, setChatNotifications] = useState(true)
@@ -57,9 +77,14 @@ const Settings = () => {
           text: 'Usuń',
           style: 'destructive',
           onPress: async () => {
-            // Zresetuj lokalizację do domyślnej (cała Polska)
-            await setStartLocation(false)
-            Alert.alert('Sukces', 'Lokalizacja została usunięta')
+            try {
+              await AsyncStorage.removeItem(LOCATION_STORAGE_KEY)
+              await AsyncStorage.removeItem(LOCATION_THROTTLE_KEY)
+              setUserLocation(null)
+              Alert.alert('Sukces', 'Lokalizacja została usunięta')
+            } catch {
+              Alert.alert('Błąd', 'Nie udało się usunąć lokalizacji')
+            }
           },
         },
       ]

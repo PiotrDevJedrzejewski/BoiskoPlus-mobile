@@ -1,15 +1,21 @@
 import { StyleSheet, Text, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../../../../constants/colors'
-import FormEvent from '../../../../components/FormEvent'
+import { useEffect } from 'react'
+import { COLORS } from '../../constants/colors'
+import FormEvent from '../../components/FormEvent'
 import { useLocalSearchParams } from 'expo-router'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const AddEvent = () => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const params = useLocalSearchParams()
   const predefinedPlace = params.predefinedPlace ? JSON.parse(params.predefinedPlace) : null
+
+  useEffect(() => {
+    console.log('[AddEvent] MOUNTED')
+    return () => console.log('[AddEvent] UNMOUNTED')
+  }, [])
 
   return (
     <View style={styles.container} pointerEvents='box-none'>

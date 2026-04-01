@@ -18,6 +18,10 @@ const DashboardContext = createContext()
 const EVENTS_MIN_REFRESH_MS = 20 * 1000
 
 export const DashboardProvider = ({ children }) => {
+  const renderCountRef = useRef(0)
+  renderCountRef.current += 1
+  console.log('[DashboardContext] render #' + renderCountRef.current)
+
   const { lastStatusUpdate } = useSocketIo()
   const { user, isAuthChecked } = useAuth()
   const [filteredEvents, setFilteredEvents] = useState({
@@ -50,11 +54,18 @@ export const DashboardProvider = ({ children }) => {
   const isMountedRef = useRef(true)
 
   useEffect(() => {
+    console.log('[DashboardContext] MOUNTED')
+    return () => console.log('[DashboardContext] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[DashboardContext] useEffect: eventsData changed')
     eventsDataRef.current = eventsData
   }, [eventsData])
 
 
   useEffect(() => {
+    console.log('[DashboardContext] useEffect: mount/unmount isMountedRef (mount-only)')
     isMountedRef.current = true
     return () => {
       isMountedRef.current = false
@@ -66,6 +77,7 @@ export const DashboardProvider = ({ children }) => {
 
   // Wczytaj motyw mapy z AsyncStorage
   useEffect(() => {
+    console.log('[DashboardContext] useEffect: load map theme (mount-only)')
     const loadMapTheme = async () => {
       try {
         const savedMapTheme = await AsyncStorage.getItem('mapTheme')
@@ -167,6 +179,7 @@ export const DashboardProvider = ({ children }) => {
 
   
   useEffect(() => {
+    console.log('[DashboardContext] useEffect: isAuthChecked/user/refreshEventsData changed')
     // dependency array: [refreshEventsData] oznacza uruchomienie przy mount
     // oraz gdy referencja funkcji by się zmieniła.
     // Tu referencja jest stabilna (useCallback + []), więc efekt wykona się raz.
@@ -177,6 +190,7 @@ export const DashboardProvider = ({ children }) => {
 
 
   useEffect(() => {
+    console.log('[DashboardContext] useEffect: lastStatusUpdate/isAuthChecked/user changed')
     // Ten efekt reaguje TYLKO na sygnał socketa o zmianie statusu eventu.
     // Wtedy wymuszamy force=true, aby nie czekać na throttle 20s.
     if (!isAuthChecked || !user?.userID || !lastStatusUpdate) return

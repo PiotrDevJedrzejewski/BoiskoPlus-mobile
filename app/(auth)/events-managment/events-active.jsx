@@ -9,44 +9,45 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../../constants/colors'
-import { useDashboard } from '../../../../../context/DashboardContext'
-import MyEventCard from '../../../../../components/MyEventCard'
-import { parseEventDate } from '../../../../../assets/utils/eventsApi'
-import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../../constants/colors'
+import { useDashboard } from '../../../context/DashboardContext'
+import MyEventCard from '../../../components/MyEventCard'
+import { parseEventDate } from '../../../assets/utils/eventsApi'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
-const EventsOwner = () => {
+const EventsActive = () => {
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
-  const [ownerEvents, setOwnerEvents] = useState([])
+  const [activeEvents, setActiveEvents] = useState([])
 
   const backIconSize = ui.moderateScale(28, 0.35)
   const headerIconSize = ui.moderateScale(26, 0.35)
   const stateIconSize = ui.moderateScale(58, 0.3)
 
   useEffect(() => {
+    console.log('[EventsActive] MOUNTED')
+    return () => console.log('[EventsActive] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[EventsActive] useEffect: refreshEventsData')
     refreshEventsData().catch(() => {})
   }, [refreshEventsData])
 
   useEffect(() => {
-    const sorted = [...eventsData.ownerEvents].sort(
-      (a, b) => parseEventDate(b) - parseEventDate(a)
-    )
-    setOwnerEvents(sorted)
-  }, [eventsData.ownerEvents])
+    console.log('[EventsActive] useEffect: eventsData.userEvents changed')
+    const filtered = eventsData.userEvents
+      .filter(
+        (item) => item.eventID && ['accepted', 'interested'].includes(item.status)
+      )
+      .sort((a, b) => parseEventDate(a.eventID) - parseEventDate(b.eventID))
+
+    setActiveEvents(filtered)
+  }, [eventsData.userEvents])
 
   const { loading, error } = eventsData
-
-  const openEvent = (event) => {
-    const isEnded = ['completed', 'cancelled', 'finished'].includes(event.eventStatus)
-    if (isEnded) {
-      router.push(`/(main)/(tabs)/(hidden)/single-event?id=${event._id}`)
-      return
-    }
-    router.push(`/(main)/(tabs)/(hidden)/edit-event?id=${event._id}`)
-  }
 
   return (
     <View style={styles.container}>
@@ -54,15 +55,19 @@ const EventsOwner = () => {
         <TouchableOpacity
           style={styles.backButton}
           onPress={() =>
-            router.push('/(main)/(tabs)/(hidden)/events-managment/events-dashboard')
+            router.push('/(auth)/events-managment/events-dashboard')
           }
           activeOpacity={0.8}
         >
           <Ionicons name='arrow-back' size={backIconSize} color={COLORS.primary} />
         </TouchableOpacity>
-        <Ionicons name='person' size={headerIconSize} color={COLORS.secondary} />
-        <Text style={styles.headerText}>Eventy Właściciela</Text>
+        <Ionicons name='time' size={headerIconSize} color={COLORS.secondary} />
+        <Text style={styles.headerText}>Aktywne</Text>
       </View>
+
+      <Text style={styles.infoText}>
+        Lista posortowana po dacie wydarzenia (od najbliższego).
+      </Text>
 
       {loading && (
         <View style={styles.centered}>
@@ -90,19 +95,22 @@ const EventsOwner = () => {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         >
-          {ownerEvents.map((event) => (
+          {activeEvents.map((item) => (
             <MyEventCard
-              key={event._id}
-              event={event}
-              status='owner'
-              onPress={() => openEvent(event)}
+              key={item._id}
+              event={item.eventID}
+              status={item.status}
+              statusData={item}
+              onPress={() =>
+                router.push(`/(auth)/single-event?id=${item.eventID._id}`)
+              }
             />
           ))}
 
-          {ownerEvents.length === 0 && (
+          {activeEvents.length === 0 && (
             <View style={styles.centered}>
               <Ionicons name='calendar-outline' size={stateIconSize} color={COLORS.gray} />
-              <Text style={styles.emptyText}>Nie masz jeszcze swoich eventów</Text>
+              <Text style={styles.emptyText}>Brak zaakceptowanych i zainteresowanych</Text>
             </View>
           )}
         </ScrollView>
@@ -111,14 +119,14 @@ const EventsOwner = () => {
   )
 }
 
-export default EventsOwner
+export default EventsActive
 
 const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
-    header: {
+   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -136,10 +144,21 @@ const createStyles = (ui) => StyleSheet.create({
     justifyContent: 'center',
   },
   headerText: {
-    fontSize: ui.scaleFont(24, 0.45),
+    fontSize: ui.scaleFont(22, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
     marginLeft: ui.spacing(12, 0.35),
+    textAlign: 'center',
+  },
+  infoText: {
+    fontSize: ui.scaleFont(13, 0.35),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.primary,
+    opacity: 0.8,
+    textAlign: 'center',
+    paddingHorizontal: ui.spacing(16),
+    paddingTop: ui.verticalScale(10),
+    paddingBottom: ui.verticalScale(2),
   },
   list: {
     flex: 1,

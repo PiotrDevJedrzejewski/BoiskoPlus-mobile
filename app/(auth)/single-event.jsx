@@ -10,14 +10,14 @@ import {
 } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { COLORS } from '../../../../constants/colors'
-import PlayerCard from '../../../../components/PlayerCard'
-import ConfirmModal from '../../../../components/popup/ConfirmModal'
-import FullScreenAd from '../../../../components/popup/FullScreenAd'
-import customFetch from '../../../../assets/utils/customFetch'
-import { useDashboard } from '../../../../context/DashboardContext'
-import { useNotification } from '../../../../context/NotificationContext'
-import { useResponsiveScale } from '../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../constants/colors'
+import PlayerCard from '../../components/PlayerCard'
+import ConfirmModal from '../../components/popup/ConfirmModal'
+import FullScreenAd from '../../components/popup/FullScreenAd'
+import customFetch from '../../assets/utils/customFetch'
+import { useDashboard } from '../../context/DashboardContext'
+import { useNotification } from '../../context/NotificationContext'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const ENDED_EVENT_STATUSES = ['completed', 'cancelled', 'finished']
 
@@ -96,8 +96,14 @@ const SingleEvent = () => {
   const [showAd, setShowAd] = useState(false)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
 
+  useEffect(() => {
+    console.log('[SingleEvent] MOUNTED')
+    return () => console.log('[SingleEvent] UNMOUNTED')
+  }, [])
+
   // Pobierz wydarzenie
   useEffect(() => {
+    console.log('[SingleEvent] useEffect: eventID/filteredEvents changed')
     const fetchEvent = async () => {
       setLoading(true)
       try {
@@ -126,6 +132,7 @@ const SingleEvent = () => {
 
   // Pobierz status użytkownika dla wydarzenia
   useEffect(() => {
+    console.log('[SingleEvent] useEffect: eventID changed (fetchStatus)')
     if (!eventID) return
     setStatusLoading(true)
 
@@ -151,6 +158,7 @@ const SingleEvent = () => {
 
   // Pobierz informacje o właścicielu wydarzenia
   useEffect(() => {
+    console.log('[SingleEvent] useEffect: event changed (fetchOwnerInfo)')
     if (!event?.createdBy) return
 
     const fetchOwnerInfo = async () => {
@@ -179,9 +187,8 @@ const SingleEvent = () => {
 
   // Pobierz zaakceptowanych uczestników
   useEffect(() => {
+    console.log('[SingleEvent] useEffect: eventID changed (fetchAcceptedPlayers)')
     if (!eventID) return
-
-    const fetchAcceptedPlayers = async () => {
       setPlayersLoading(true)
       try {
         const response = await customFetch.get(
@@ -229,6 +236,7 @@ const SingleEvent = () => {
 
   // Sprawdzanie czy chat i event są wyciszone
   useEffect(() => {
+    console.log('[SingleEvent] useEffect: preferences/eventID changed')
     if (!preferences || !eventID) return
 
     const chatRoomId = `group_${eventID}`
@@ -343,7 +351,7 @@ const SingleEvent = () => {
 
   const handleReport = () => {
     router.push({
-      pathname: '/(main)/(tabs)/(hidden)/report',
+      pathname: '/(auth)/report',
       params: { type: 'event', reportedEventId: eventID },
     })
   }
@@ -524,7 +532,7 @@ const SingleEvent = () => {
       <FullScreenAd
         visible={showAd}
         onClose={handleAfterAd}
-        onPremiumPress={() => router.push('/(main)/(tabs)/(hidden)/premium')}
+        onPremiumPress={() => router.push('/(auth)/premium')}
       />
 
       <ConfirmModal

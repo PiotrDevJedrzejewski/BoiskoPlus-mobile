@@ -8,15 +8,17 @@ import spinner from '../assets/utils/spinner.json'
 import { View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import ToastManager from 'toastify-react-native'
+import { useEffect } from 'react'
 
-// Importuj providery kontekstów
+// Only AuthProvider at root — all other providers scoped to (auth) layout
 import { AuthProvider } from '../context/AuthContext'
-import { DashboardProvider } from '../context/DashboardContext'
-import { FriendshipProvider } from '../context/FriendshipContext'
-import { NotificationProvider } from '../context/NotificationContext'
-import { SocketIoProvider } from '../context/SocketIoContext'
 
 const Layout = () => {
+  useEffect(() => {
+    console.log('[Layout] MOUNTED')
+    return () => console.log('[Layout] UNMOUNTED')
+  }, [])
+
   const [fontsLoaded] = useFonts({
     'Montserrat-Bold': require('../assets/fonts/Montserrat-Bold.ttf'),
     'Montserrat-Regular': require('../assets/fonts/Montserrat-Regular.ttf'),
@@ -48,45 +50,28 @@ const Layout = () => {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-    <AuthProvider>
-          <NotificationProvider>
-        <SocketIoProvider>
-            <DashboardProvider>
-            <FriendshipProvider>
-            <Stack
-              screenOptions={{
-                headerStyle: { backgroundColor: COLORS.background },
-                headerTintColor: COLORS.secondary,
-                headerTitleStyle: {
-                  fontSize: 16,
-                },
-                header: (props) => <HeaderStack {...props} />,
-                gestureEnabled: false,
-              }}
-            >
-              {/* Public screens */}
-              <Stack.Screen name='index' options={{ headerShown: true }} />
-              <Stack.Screen
-                name='login'
-                options={{ headerShown: true}}
-              />
-              <Stack.Screen
-                name='register'
-                options={{ headerShown: true }}
-              />
-              <Stack.Screen
-                name='rules'
-                options={{ headerShown: true }}
-              />
-              {/* Protected screens */}
-              <Stack.Screen name='(main)' options={{ headerShown: false, gestureEnabled: false }} />
-            </Stack>
-            <ToastManager />
-            </FriendshipProvider>
-          </DashboardProvider>
-      </SocketIoProvider>
-        </NotificationProvider>
-    </AuthProvider>
+      <AuthProvider>
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: COLORS.background },
+            headerTintColor: COLORS.secondary,
+            headerTitleStyle: {
+              fontSize: 16,
+            },
+            header: (props) => <HeaderStack {...props} />,
+            gestureEnabled: false,
+          }}
+        >
+          {/* Public screens */}
+          <Stack.Screen name='index' options={{ headerShown: true }} />
+          <Stack.Screen name='login' options={{ headerShown: true }} />
+          <Stack.Screen name='register' options={{ headerShown: true }} />
+          <Stack.Screen name='rules' options={{ headerShown: true }} />
+          {/* Protected screens — providers are inside (auth)/_layout.jsx */}
+          <Stack.Screen name='(auth)' options={{ headerShown: false, gestureEnabled: false }} />
+        </Stack>
+        <ToastManager />
+      </AuthProvider>
     </GestureHandlerRootView>
   )
 }

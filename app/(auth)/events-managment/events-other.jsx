@@ -9,11 +9,11 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../../constants/colors'
-import { useDashboard } from '../../../../../context/DashboardContext'
-import MyEventCard from '../../../../../components/MyEventCard'
-import { parseEventDate } from '../../../../../assets/utils/eventsApi'
-import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../../constants/colors'
+import { useDashboard } from '../../../context/DashboardContext'
+import MyEventCard from '../../../components/MyEventCard'
+import { parseEventDate } from '../../../assets/utils/eventsApi'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const OTHER_USER_STATUSES = ['rejected', 'finished', 'cancelled']
 const OTHER_OWNER_STATUSES = ['completed', 'cancelled', 'finished']
@@ -31,10 +31,17 @@ const EventsOther = () => {
   const stateIconSize = ui.moderateScale(58, 0.3)
 
   useEffect(() => {
+    console.log('[EventsOther] MOUNTED')
+    return () => console.log('[EventsOther] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[EventsOther] useEffect: refreshEventsData')
     refreshEventsData().catch(() => {})
   }, [refreshEventsData])
 
   useEffect(() => {
+    console.log('[EventsOther] useEffect: eventsData changed')
     const ownerFiltered = eventsData.ownerEvents
       .filter((event) => OTHER_OWNER_STATUSES.includes(event.eventStatus))
       .sort((a, b) => parseEventDate(b) - parseEventDate(a))
@@ -55,7 +62,7 @@ const EventsOther = () => {
         <TouchableOpacity
           style={styles.backButton}
           onPress={() =>
-            router.push('/(main)/(tabs)/(hidden)/events-managment/events-dashboard')
+            router.push('/(auth)/events-managment/events-dashboard')
           }
           activeOpacity={0.8}
         >
@@ -100,7 +107,7 @@ const EventsOther = () => {
                   event={event}
                   status={event.eventStatus || 'owner'}
                   onPress={() =>
-                    router.push(`/(main)/(tabs)/(hidden)/single-event?id=${event._id}`)
+                    router.push(`/(auth)/single-event?id=${event._id}`)
                   }
                 />
               ))}
@@ -117,7 +124,7 @@ const EventsOther = () => {
                   status={item.status}
                   statusData={item}
                   onPress={() =>
-                    router.push(`/(main)/(tabs)/(hidden)/single-event?id=${item.eventID._id}`)
+                    router.push(`/(auth)/single-event?id=${item.eventID._id}`)
                   }
                 />
               ))}

@@ -35,6 +35,10 @@ const PROVINCE_COORDINATES = {
 
 
 export const MapProvider = ({ children }) => {
+  const renderCountRef = useRef(0)
+  renderCountRef.current += 1
+  console.log('[MapContext] render #' + renderCountRef.current)
+
   const { consents, consentsLoading, getSavedLocation, systemPermissionsGeo, setSystemPermissionsGeo, updateConsents } = useAuth()
   const mapRef = useRef(null)
   const hasInitializedRef = useRef(false)
@@ -140,6 +144,12 @@ export const MapProvider = ({ children }) => {
 
   // Inicjalizacja lokalizacji startowej - tylko raz przy pierwszym załadowaniu
   useEffect(() => {
+    console.log('[MapContext] MOUNTED')
+    return () => console.log('[MapContext] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[MapContext] useEffect: consentsLoading/consents changed (init start location)')
     if (!consentsLoading && consents && !hasInitializedRef.current) {
       hasInitializedRef.current = true
       setStartLocation(consents.locationAccepted)
@@ -148,6 +158,7 @@ export const MapProvider = ({ children }) => {
 
   // Sprawdzanie uprawnień systemowych do geolokalizacji
   useEffect(() => {
+    console.log('[MapContext] useEffect: consentsLoading/locationAccepted/systemPermissionsGeo changed')
     const checkPermissions = async () => {
       await checkSystemLocationPermissions({
         consents,
@@ -164,6 +175,7 @@ export const MapProvider = ({ children }) => {
   // Reaguj na zmiany zgody na lokalizację - tylko po inicjalizacji (zmiana w ustawieniach)
   const prevLocationAccepted = useRef(consents?.locationAccepted)
   useEffect(() => {
+    console.log('[MapContext] useEffect: locationAccepted changed')
     if (consentsLoading || !hasInitializedRef.current) return
     // Reaguj tylko na faktyczną zmianę zgody (nie na initial mount)
     if (prevLocationAccepted.current === consents?.locationAccepted) return

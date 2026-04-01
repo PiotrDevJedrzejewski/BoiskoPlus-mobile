@@ -13,10 +13,10 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../../../constants/colors'
-import { useAuth } from '../../../../../context/AuthContext'
-import DatePicker from '../../../../../components/DatePicker'
-import { useResponsiveScale } from '../../../../../assets/utils/scaleUI.UX'
+import { COLORS } from '../../../constants/colors'
+import { useAuth } from '../../../context/AuthContext'
+import DatePicker from '../../../components/DatePicker'
+import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 
 const FORBIDDEN_WORDS = [
   'admin',
@@ -106,6 +106,12 @@ const ProfileEdit = () => {
   const isInitialLoading = useMemo(() => authLoading || !user, [authLoading, user])
 
   useEffect(() => {
+    console.log('[ProfileEdit] MOUNTED')
+    return () => console.log('[ProfileEdit] UNMOUNTED')
+  }, [])
+
+  useEffect(() => {
+    console.log('[ProfileEdit] useEffect: user changed')
     if (!user) return
 
     setFormData({
