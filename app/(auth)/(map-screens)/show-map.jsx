@@ -26,11 +26,14 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Toast } from 'toastify-react-native'
 import { getCurrentLocation } from '../../../assets/utils/getUserLocation'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 const SUGGESTIONS_DEBOUNCE_MS = 80
 const SUGGESTIONS_LIMIT = 30
 
 const ShowMap = () => {
+  dbg('ShowMapScreen')
+  useDebugMount('ShowMapScreen')
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const {

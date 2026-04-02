@@ -27,6 +27,7 @@ import {
 import customFetch from '../../../assets/utils/customFetch'
 import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 import LottieView from 'lottie-react-native'
 import spinnerData from '../../../assets/utils/spinner.json'
 
@@ -52,6 +53,8 @@ const SUGGESTIONS_LIMIT = 30
 const EVENT_NAME_MAX = 50
 
 const FindEvent = () => {
+  dbg('FindEventScreen')
+  useDebugMount('FindEventScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)

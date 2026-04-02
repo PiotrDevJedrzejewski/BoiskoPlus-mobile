@@ -1,6 +1,5 @@
 
-import { useMemo } from 'react'
-import { Dimensions, PixelRatio, Platform, useWindowDimensions } from 'react-native'
+import { Dimensions, PixelRatio, Platform } from 'react-native'
 
 // React Native operuje głównie na dp, nie na surowych pikselach urządzenia.
 // Dlatego punktem odniesienia nie jest samo 1080x2400 px, tylko rozmiar
@@ -125,31 +124,19 @@ export const getDeviceProfile = (
 	}
 }
 
-// Wersje funkcyjne są wygodne poza komponentem i przy tworzeniu StyleSheet.
-export const scale = (size) => createResponsiveScale().scale(size)
-export const verticalScale = (size) => createResponsiveScale().verticalScale(size)
-export const moderateScale = (size, factor) =>
-	createResponsiveScale().moderateScale(size, factor)
-export const scaleFont = (size, factor) =>
-	createResponsiveScale().scaleFont(size, factor)
-export const spacing = (size, factor) =>
-	createResponsiveScale().spacing(size, factor)
+// Singleton — obliczany raz przy starcie modułu.
+// App jest portrait-only, więc wymiary nigdy się nie zmieniają.
+const UI = Object.freeze(createResponsiveScale())
 
-// Hook jest wygodniejszy wewnątrz komponentu, kiedy chcesz np. warunkowo reagować
-// na isCompactDevice albo korzystać z aktualnych metryk po zmianie orientacji.
-export const useResponsiveScale = () => {
-	const windowMetrics = useWindowDimensions()
+// Wersje funkcyjne delegują do singletona.
+export const scale = (size) => UI.scale(size)
+export const verticalScale = (size) => UI.verticalScale(size)
+export const moderateScale = (size, factor) => UI.moderateScale(size, factor)
+export const scaleFont = (size, factor) => UI.scaleFont(size, factor)
+export const spacing = (size, factor) => UI.spacing(size, factor)
 
-	return useMemo(
-		() => createResponsiveScale(windowMetrics),
-		[
-			windowMetrics.width,
-			windowMetrics.height,
-			windowMetrics.scale,
-			windowMetrics.fontScale,
-		]
-	)
-}
+// Hook zwraca singleton — stabilna referencja, zero obliczeń przy renderze.
+export const useResponsiveScale = () => UI
 
 // Krótka ściąga użycia:
 // width: scale(220)
@@ -159,6 +146,7 @@ export const useResponsiveScale = () => {
 // fontSize: scaleFont(18)
 
 export default {
+	UI,
 	REFERENCE_WIDTH,
 	REFERENCE_HEIGHT,
 	createResponsiveScale,

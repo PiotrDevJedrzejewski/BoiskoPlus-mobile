@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-nati
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../constants/colors'
 import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
-import { useSocketIo } from '../context/SocketIoContext'
+import { useSocketStore } from '../context/socketStore'
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
@@ -15,7 +15,7 @@ import { useResponsiveScale } from '../assets/utils/scaleUI.UX';
 const MyEventCard = ({ event, status, onPress, statusData }) => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
-  const { markEventAsRead } = useSocketIo()
+  const markEventAsRead = useSocketStore((s) => s.markEventAsRead)
   const needsMarking = statusData?.readBy === false
   const [isRead, setIsRead] = useState(!needsMarking)
   const [isPressed, setIsPressed] = useState(false)

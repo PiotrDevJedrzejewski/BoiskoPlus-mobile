@@ -16,36 +16,46 @@ import { COLORS } from '../../constants/colors'
 import ChatRoomListItem from '../../components/ChatRoomListItem'
 import ChatMessageBox from '../../components/ChatMessageBox'
 import customFetch from '../../assets/utils/customFetch'
-import { useSocketIo } from '../../context/SocketIoContext'
+import { useSocketStore, selectIsConnected } from '../../context/socketStore'
 import { useAuth } from '../../context/AuthContext'
 import { useNotification } from '../../context/NotificationContext'
 import LottieView from 'lottie-react-native'
-import { useFonts } from 'expo-font'
 import { useLocalSearchParams } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
+import { useShallow } from 'zustand/react/shallow'
 
 const typing = require('../../assets/utils/typing.json')
 const CUSTOM_TAB_BAR_HEIGHT = 60
 
 const Chat = () => {
+  dbg('ChatScreen')
+  useDebugMount('ChatScreen')
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const { user } = useAuth()
   const { openChatWith } = useLocalSearchParams()
-  const {
-    chatSocket,
-    socket, // kompatybilność wsteczna
-    joinRoom,
-    leaveRoom,
-    sendMessage: socketSendMessage,
-    setRoomAsRead,
-    setActiveRoomId,
-    roomsState,
-    isConnected,
-    sendTyping,
-    sendStopTyping,
-    isUserOnline,
-  } = useSocketIo()
+  const insets = useSafeAreaInsets()
+
+  // Zustand selectors — component only re-renders when these specific values change
+  const roomsState = useSocketStore((s) => s.roomsState)
+  const chatSocket = useSocketStore((s) => s.chatSocket)
+  const isConnected = useSocketStore(selectIsConnected)
+
+  // Actions are stable references — never trigger re-renders
+  const joinRoom = useSocketStore((s) => s.joinRoom)
+  const leaveRoom = useSocketStore((s) => s.leaveRoom)
+  const socketSendMessage = useSocketStore((s) => s.sendMessage)
+  const setRoomAsRead = useSocketStore((s) => s.setRoomAsRead)
+  const setActiveRoomId = useSocketStore((s) => s.setActiveRoomId)
+  const sendTyping = useSocketStore((s) => s.sendTyping)
+  const sendStopTyping = useSocketStore((s) => s.sendStopTyping)
+  const isUserOnline = useSocketStore((s) => s.isUserOnline)
+
+  // Backward compat alias
+  const socket = chatSocket
+
   const { muteChatRoom, unmuteChatRoom } = useNotification()
 
   const [filterType, setFilterType] = useState('all') // all | private | group
@@ -69,10 +79,6 @@ const Chat = () => {
   const [typingUsers, setTypingUsers] = useState({})
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const typingTimeoutRef = useRef({})
-
-  const [fontsLoaded] = useFonts({
-    ObjectFont: require('../../assets/fonts/object.ttf'),
-  })
 
   const scrollViewRef = useRef(null)
   const openChatWithHandledRef = useRef(null)
@@ -591,7 +597,8 @@ const Chat = () => {
   }
 
   const typingText = getTypingText()
-  const tabBarHeight = ui.verticalScale(CUSTOM_TAB_BAR_HEIGHT)
+  // Tab bar height = base (60) + extra safe area beyond the default 8px padding
+  const tabBarHeight = CUSTOM_TAB_BAR_HEIGHT + Math.max(0, insets.bottom - 8)
   const inputBottomOffset = Math.max(0, keyboardHeight - tabBarHeight)
   const headerIconSize = ui.moderateScale(26, 0.35)
   const filterIconSize = ui.moderateScale(14, 0.3)
@@ -601,17 +608,6 @@ const Chat = () => {
   const searchIconSize = ui.moderateScale(20, 0.35)
   const sendIconSize = ui.moderateScale(20, 0.35)
   const typingAnimationSize = ui.scale(80)
-
-  // Loading screen dla czcionek
-  if (!fontsLoaded) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size='large' color={COLORS.secondary} />
-        </View>
-      </View>
-    )
-  }
 
   // Widok listy pokojów
   if (!selectedRoom) {

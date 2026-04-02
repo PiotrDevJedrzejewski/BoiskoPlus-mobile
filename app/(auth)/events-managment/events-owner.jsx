@@ -14,8 +14,11 @@ import { useDashboard } from '../../../context/DashboardContext'
 import MyEventCard from '../../../components/MyEventCard'
 import { parseEventDate } from '../../../assets/utils/eventsApi'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 const EventsOwner = () => {
+  dbg('EventsOwner')
+  useDebugMount('EventsOwner')
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
   const ui = useResponsiveScale()

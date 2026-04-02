@@ -38,7 +38,9 @@ export const checkSystemLocationPermissions = async ({
 
     if (currentStatus === 'granted') {
       // Użytkownik już wcześniej przyznał uprawnienia
-      setSystemPermissionsGeo({ status: 'granted' })
+      if (systemPermissionsGeo.status !== 'granted') {
+        setSystemPermissionsGeo({ status: 'granted' })
+      }
       return { success: true, status: 'granted', wasAlreadyGranted: true }
     }
 
@@ -47,17 +49,23 @@ export const checkSystemLocationPermissions = async ({
 
     if (newStatus === 'granted') {
       // Użytkownik przyznał uprawnienia
-      setSystemPermissionsGeo({ status: 'granted' })
+      if (systemPermissionsGeo.status !== 'granted') {
+        setSystemPermissionsGeo({ status: 'granted' })
+      }
       return { success: true, status: 'granted', wasAlreadyGranted: false }
     } else {
       // Użytkownik odmówił - zmień status i cofnij naszą zgodę
-      setSystemPermissionsGeo({ status: 'denied' })
+      if (systemPermissionsGeo.status !== 'denied') {
+        setSystemPermissionsGeo({ status: 'denied' })
+      }
       await updateConsents({ locationAccepted: false })
       return { success: false, status: 'denied', reason: 'user_denied' }
     }
   } catch (error) {
     console.error('Błąd sprawdzania uprawnień systemowych:', error)
-    setSystemPermissionsGeo({ status: 'denied' })
+    if (systemPermissionsGeo.status !== 'denied') {
+      setSystemPermissionsGeo({ status: 'denied' })
+    }
     await updateConsents({ locationAccepted: false })
     return { success: false, status: 'denied', reason: 'error', error }
   }

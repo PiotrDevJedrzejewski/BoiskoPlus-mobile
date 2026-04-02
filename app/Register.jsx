@@ -23,6 +23,7 @@ import { auth } from '../assets/utils/firebase'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
 import DatePicker from '../components/DatePicker'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../assets/utils/debugLogger'
 
 const parseIsoDate = (value) => {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -51,6 +52,8 @@ const parseIsoDate = (value) => {
 }
 
 const Register = () => {
+  dbg('RegisterScreen')
+  useDebugMount('RegisterScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)

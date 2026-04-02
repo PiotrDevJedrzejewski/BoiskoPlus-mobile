@@ -9,11 +9,14 @@ import { checkSystemLocationPermissions } from '../../assets/utils/getUserLocati
 import SettingSection from '../../components/settingsComponents/SettingSection'
 import SettingRow from '../../components/settingsComponents/SettingRow'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
 const LOCATION_STORAGE_KEY = 'bp_user_location_v1'
 const LOCATION_THROTTLE_KEY = 'last_location_request_time'
 
 const Settings = () => {
+  dbg('SettingsScreen')
+  useDebugMount('SettingsScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)

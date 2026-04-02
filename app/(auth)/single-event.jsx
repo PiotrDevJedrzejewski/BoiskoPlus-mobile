@@ -18,6 +18,7 @@ import customFetch from '../../assets/utils/customFetch'
 import { useDashboard } from '../../context/DashboardContext'
 import { useNotification } from '../../context/NotificationContext'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
 const ENDED_EVENT_STATUSES = ['completed', 'cancelled', 'finished']
 
@@ -69,6 +70,8 @@ const InfoRow = ({ label, value, styles }) => (
 )
 
 const SingleEvent = () => {
+  dbg('SingleEventScreen')
+  useDebugMount('SingleEventScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)

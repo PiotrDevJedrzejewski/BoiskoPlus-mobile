@@ -4,8 +4,11 @@ import { COLORS } from '../../constants/colors'
 import FormEvent from '../../components/FormEvent'
 import { useLocalSearchParams } from 'expo-router'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
 const AddEvent = () => {
+  dbg('AddEventScreen')
+  useDebugMount('AddEventScreen')
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const params = useLocalSearchParams()

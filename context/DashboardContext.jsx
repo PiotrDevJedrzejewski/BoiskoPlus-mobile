@@ -9,8 +9,9 @@ import {
 } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import customFetch from '../assets/utils/customFetch'
-import { useSocketIo } from './SocketIoContext'
 import { useAuth } from './AuthContext'
+import { useSocketStore } from './socketStore'
+import { dbg, useDebugMount, useProviderRenderCount } from '../assets/utils/debugLogger'
 
 const DashboardContext = createContext()
 // Minimalny odstęp między odświeżeniami HTTP, aby przełączanie ekranów
@@ -18,7 +19,11 @@ const DashboardContext = createContext()
 const EVENTS_MIN_REFRESH_MS = 20 * 1000
 
 export const DashboardProvider = ({ children }) => {
-  const { lastStatusUpdate } = useSocketIo()
+  const lastStatusUpdate = useSocketStore((s) => s.lastStatusUpdate)
+  dbg('DashboardProvider')
+  useDebugMount('DashboardProvider')
+  useProviderRenderCount('DashboardProvider')
+
   const { user, isAuthChecked } = useAuth()
   const [filteredEvents, setFilteredEvents] = useState({
     center: { latitude: null, longitude: null },
@@ -84,7 +89,7 @@ export const DashboardProvider = ({ children }) => {
   }, [])
 
   // Funkcja do zmiany motywu mapy
-  const updateMapTheme = async (newTheme) => {
+  const updateMapTheme = useCallback(async (newTheme) => {
     if (newTheme === 'light' || newTheme === 'dark') {
       setMapTheme(newTheme)
       try {
@@ -93,7 +98,7 @@ export const DashboardProvider = ({ children }) => {
         console.error('Błąd zapisywania motywu mapy:', error)
       }
     }
-  }
+  }, [])
 
   // Świadomie ignorujemy błąd lokalnie, bo globalny stan błędu jest już ustawiony
   // wewnątrz refreshEventsData (error w eventsData). Ten helper zastępuje "gołe"
@@ -194,19 +199,22 @@ export const DashboardProvider = ({ children }) => {
     return Date.now() - eventsData.lastFetchedAt
   }, [eventsData.lastFetchedAt])
 
+  const dashboardContextValue = useMemo(() => ({
+    filteredEvents,
+    setFilteredEvents,
+    mapTheme,
+    updateMapTheme,
+    eventsData,
+    refreshEventsData,
+    eventsDataAgeMs,
+    eventsMinRefreshMs: EVENTS_MIN_REFRESH_MS,
+  }), [
+    filteredEvents, mapTheme, updateMapTheme, eventsData,
+    refreshEventsData, eventsDataAgeMs,
+  ])
+
   return (
-    <DashboardContext.Provider
-      value={{
-        filteredEvents,
-        setFilteredEvents,
-        mapTheme,
-        updateMapTheme,
-        eventsData,
-        refreshEventsData,
-        eventsDataAgeMs,
-        eventsMinRefreshMs: EVENTS_MIN_REFRESH_MS,
-      }}
-    >
+    <DashboardContext.Provider value={dashboardContextValue}>
       {children}
     </DashboardContext.Provider>
   )

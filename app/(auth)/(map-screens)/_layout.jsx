@@ -1,13 +1,16 @@
+import React from 'react'
 import { View, StyleSheet } from 'react-native'
 import { Slot } from 'expo-router'
 import LottieView from 'lottie-react-native'
-import { MapProvider, useMap } from '../../../context/MapContext'
+import { useMap } from '../../../context/MapContext'
 import { COLORS } from '../../../constants/colors'
 import MapboxMobile from '../../../components/MapboxMobile'
 import spinner from '../../../assets/utils/spinner.json'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 // Map background — only renders here, not under chat or other screens
-function MapBackground() {
+const MapBackground = React.memo(function MapBackground() {
+  dbg('MapBackground')
   const { isInteractive, overlayOpacity } = useMap()
 
   return (
@@ -27,10 +30,11 @@ function MapBackground() {
       )}
     </View>
   )
-}
+})
 
 // Fullscreen loading overlay — hides map loading + Poland repositioning jank
-function MapLoadingScreen() {
+const MapLoadingScreen = React.memo(function MapLoadingScreen() {
+  dbg('MapLoadingScreen')
   const { isMapReady } = useMap()
 
   if (isMapReady) return null
@@ -45,24 +49,24 @@ function MapLoadingScreen() {
       />
     </View>
   )
-}
+})
 
 export default function MapScreensLayout() {
+  dbg('MapScreensLayout')
+  useDebugMount('MapScreensLayout')
   return (
-    <MapProvider>
-      <View style={styles.container} pointerEvents='box-none'>
-        {/* 1. Map as background (always at bottom) */}
-        <MapBackground />
+    <View style={styles.container} pointerEvents='box-none'>
+      {/* 1. Map as background (always at bottom) */}
+      <MapBackground />
 
-        {/* 2. Slot renders current screen (dashboard-home, show-map, find-event) */}
-        <View style={styles.contentContainer} pointerEvents='box-none'>
-          <Slot />
-        </View>
-
-        {/* 3. Loading overlay — covers everything until map is ready */}
-        <MapLoadingScreen />
+      {/* 2. Slot renders current screen (dashboard-home, show-map, find-event) */}
+      <View style={styles.contentContainer} pointerEvents='box-none'>
+        <Slot />
       </View>
-    </MapProvider>
+
+      {/* 3. Loading overlay — covers everything until map is ready */}
+      <MapLoadingScreen />
+    </View>
   )
 }
 

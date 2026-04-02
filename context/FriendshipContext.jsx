@@ -3,12 +3,14 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
 import customFetch from '../assets/utils/customFetch'
 import { useAuth } from './AuthContext'
-import { useSocketIo } from './SocketIoContext'
+import { useSocketStore, ConnectionState } from './socketStore'
+import { dbg, useDebugMount, useProviderRenderCount } from '../assets/utils/debugLogger'
 
 const FriendshipContext = createContext()
 
@@ -28,8 +30,14 @@ const fetchStatsMap = async (userIds) => {
 }
 
 export const FriendshipProvider = ({ children }) => {
+  dbg('FriendshipProvider')
+  useDebugMount('FriendshipProvider')
+  useProviderRenderCount('FriendshipProvider')
+
   const { user, isAuthChecked } = useAuth()
-  const { notificationSocket, setUnreadFriendRequestsCount, notificationConnectionState, ConnectionState } = useSocketIo()
+  const notificationSocket = useSocketStore((s) => s.notificationSocket)
+  const notificationConnectionState = useSocketStore((s) => s.notificationConnectionState)
+  const setUnreadFriendRequestsCount = useSocketStore((s) => s.setUnreadFriendRequestsCount)
 
   // Czy pierwsze połączenie już odbyło się (login-fetch obsługuje badge same’)
   const initialConnectDoneRef = useRef(false)
@@ -355,39 +363,45 @@ export const FriendshipProvider = ({ children }) => {
 
   const incomingCount = incoming.length
 
+  const friendshipContextValue = useMemo(() => ({
+    // znajomi
+    friends,
+    friendsLoading,
+    friendsError,
+    fetchFriends,
+
+    // zaproszenia
+    incoming,
+    outgoing,
+    incomingCount,
+    pendingLoading,
+    pendingError,
+    fetchPending,
+
+    // wyszukiwarka
+    searchResults,
+    searchQuery,
+    searchLoading,
+    searchError,
+    searchHasMore,
+    searchUsers,
+    clearSearch,
+
+    // handlery
+    sendFriendRequest,
+    respondToFriendRequest,
+    removeFriendship,
+    cancelFriendRequest,
+  }), [
+    friends, friendsLoading, friendsError, fetchFriends,
+    incoming, outgoing, incomingCount, pendingLoading, pendingError, fetchPending,
+    searchResults, searchQuery, searchLoading, searchError, searchHasMore,
+    searchUsers, clearSearch, sendFriendRequest, respondToFriendRequest,
+    removeFriendship, cancelFriendRequest,
+  ])
+
   return (
-    <FriendshipContext.Provider
-      value={{
-        // znajomi
-        friends,
-        friendsLoading,
-        friendsError,
-        fetchFriends,
-
-        // zaproszenia
-        incoming,
-        outgoing,
-        incomingCount,
-        pendingLoading,
-        pendingError,
-        fetchPending,
-
-        // wyszukiwarka
-        searchResults,
-        searchQuery,
-        searchLoading,
-        searchError,
-        searchHasMore,
-        searchUsers,
-        clearSearch,
-
-        // handlery
-        sendFriendRequest,
-        respondToFriendRequest,
-        removeFriendship,
-        cancelFriendRequest,
-      }}
-    >
+    <FriendshipContext.Provider value={friendshipContextValue}>
       {children}
     </FriendshipContext.Provider>
   )

@@ -14,8 +14,11 @@ import { COLORS } from '../../../constants/colors'
 import CardDashboard from '../../../components/CardDashboard'
 import { useDashboard } from '../../../context/DashboardContext'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 const EventsDashboard = () => {
+  dbg('EventsDashboard')
+  useDebugMount('EventsDashboard')
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
   const ui = useResponsiveScale()

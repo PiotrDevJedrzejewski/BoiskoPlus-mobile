@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Image, Text, View, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import LogoBoiskoPlus from '../assets/images/LogoBoiskoPlus.png'
 import { COLORS } from '../constants/colors'
 import { Ionicons } from '@expo/vector-icons'
-import { useSocketIo } from '../context/SocketIoContext'
+import { useSocketStore, selectTotalUnreadMessages } from '../context/socketStore'
 import { useDrawer } from '../context/DrawerContext'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 import QuickNavModal from './popup/QuickNavModal'
@@ -12,7 +12,9 @@ import QuickNavModal from './popup/QuickNavModal'
 const HeaderDrawer = () => {
   const insets = useSafeAreaInsets()
   const { openDrawer } = useDrawer()
-  const { unreadEventsCount, unreadFriendRequestsCount, totalUnreadMessages } = useSocketIo()
+  const unreadEventsCount = useSocketStore((s) => s.unreadEventsCount)
+  const unreadFriendRequestsCount = useSocketStore((s) => s.unreadFriendRequestsCount)
+  const totalUnreadMessages = useSocketStore(selectTotalUnreadMessages)
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const [quickNavVisible, setQuickNavVisible] = useState(false)
@@ -83,7 +85,7 @@ const HeaderDrawer = () => {
   )
 }
 
-export default HeaderDrawer
+export default memo(HeaderDrawer)
 
 const createStyles = (ui) => StyleSheet.create({
   headerContainer: {

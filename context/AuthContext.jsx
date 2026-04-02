@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import * as SecureStore from 'expo-secure-store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
@@ -12,6 +12,7 @@ import { router } from 'expo-router'
 import { storage } from '../assets/utils/firebase'
 import { deleteObject } from 'firebase/storage'
 import { getStorageRefFromUrlOrPath } from '../assets/utils/firebaseStorage'
+import { dbg, useDebugMount, useProviderRenderCount } from '../assets/utils/debugLogger'
 
 const AuthContext = createContext()
 
@@ -28,6 +29,10 @@ const defaultConsents = {
 }
 
 export const AuthProvider = ({ children }) => {
+  dbg('AuthProvider')
+  useDebugMount('AuthProvider')
+  useProviderRenderCount('AuthProvider')
+
   // Początkowo null - inne konteksty sprawdzają user?.userID
   const [user, setUser] = useState(null)
   const [userStats, setUserStats] = useState(null) // Statystyki użytkownika
@@ -55,7 +60,7 @@ export const AuthProvider = ({ children }) => {
     })
   }, [])
 
-  const clearLocalStorageAndState = async () => {
+  const clearLocalStorageAndState = useCallback(async () => {
     // Usuń lokalną sesję i dane cache aplikacji po wylogowaniu/usunięciu konta.
     await removeAuthToken()
     await SecureStore.deleteItemAsync(CONSENTS_KEY)
@@ -71,9 +76,9 @@ export const AuthProvider = ({ children }) => {
       locationAccepted: false,
     })
     setSystemPermissionsGeo({ status: 'undetermined' })
-  }
+  }, [])
 
-  const authorized = async () => {
+  const authorized = useCallback(async () => {
     setLoading(true)
     try {
       const token = await hasAuthToken()
@@ -107,7 +112,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false)
       return
     }
-  }
+  }, [])
 
   // Sprawdź czy użytkownik był zalogowany przy starcie aplikacji
   useEffect(() => {
@@ -150,7 +155,7 @@ export const AuthProvider = ({ children }) => {
   }, [consentsLoading, consents])
 
   // Funkcja do logowania (email/nick + hasło)
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     try {
       const response = await customFetch.post('/auth-mobile/login', {
         email,
@@ -179,10 +184,10 @@ export const AuthProvider = ({ children }) => {
         isEmailNotVerified,
       }
     }
-  }
+  }, [authorized])
 
   // Funkcja do logowania przez Google OAuth
-  const loginWithGoogle = async (email, googleIdToken) => {
+  const loginWithGoogle = useCallback(async (email, googleIdToken) => {
     try {
       const response = await customFetch.post('/auth-mobile/login-oauth', {
         email,
@@ -203,10 +208,10 @@ export const AuthProvider = ({ children }) => {
         error: error.response?.data?.msg || 'Błąd logowania przez Google',
       }
     }
-  }
+  }, [authorized])
 
   // Funkcja do dokończenia rejestracji OAuth (Google)
-  const completeOAuth = async ({
+  const completeOAuth = useCallback(async ({
     nick,
     birthDate,
     email,
@@ -240,10 +245,10 @@ export const AuthProvider = ({ children }) => {
         error: error.response?.data?.msg || 'Błąd podczas rejestracji',
       }
     }
-  }
+  }, [authorized])
 
   // Funkcja do rejestracji (nie loguje automatycznie - wymaga weryfikacji email)
-  const register = async (userData) => {
+  const register = useCallback(async (userData) => {
     // Walidacja hasła (6-20 znaków)
     if (userData.password.length < 6 || userData.password.length > 20) {
       return {
@@ -283,10 +288,10 @@ export const AuthProvider = ({ children }) => {
         error: error.response?.data?.msg || 'Błąd rejestracji',
       }
     }
-  }
+  }, [])
 
   // Funkcja do wysłania emaila z linkiem do resetowania hasła
-  const forgotPassword = async (email) => {
+  const forgotPassword = useCallback(async (email) => {
     try {
       const response = await customFetch.post('/auth-mobile/forgot-password', {
         email,
@@ -304,10 +309,10 @@ export const AuthProvider = ({ children }) => {
           error.response?.data?.msg || 'Wystąpił błąd podczas wysyłania emaila',
       }
     }
-  }
+  }, [])
 
   // Funkcja do resetowania hasła (z tokenem z emaila)
-  const resetPassword = async (token, password) => {
+  const resetPassword = useCallback(async (token, password) => {
     // Walidacja hasła
     if (password.length < 6 || password.length > 20) {
       return {
@@ -336,10 +341,10 @@ export const AuthProvider = ({ children }) => {
           'Wystąpił błąd podczas resetowania hasła',
       }
     }
-  }
+  }, [])
 
   // Funkcja do zmiany hasła dla zalogowanego użytkownika
-  const changePassword = async ({ oldPassword, newPassword }) => {
+  const changePassword = useCallback(async ({ oldPassword, newPassword }) => {
     if (!user?.email) {
       return {
         success: false,
@@ -384,10 +389,10 @@ export const AuthProvider = ({ children }) => {
         error: error.response?.data?.msg || 'Wystąpił błąd podczas zmiany hasła',
       }
     }
-  }
+  }, [user?.email])
 
   // Funkcja do odświeżenia danych użytkownika
-  const refetchUser = async () => {
+  const refetchUser = useCallback(async () => {
     try {
       const userRes = await customFetch.get('/users/current-user')
       setUser(userRes.data.user)
@@ -404,9 +409,9 @@ export const AuthProvider = ({ children }) => {
       console.error('Błąd podczas pobierania danych użytkownika:', error)
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
-  const updateProfile = async (updates) => {
+  const updateProfile = useCallback(async (updates) => {
     try {
       const response = await customFetch.patch(
         '/users/current-user/update-user',
@@ -458,10 +463,10 @@ export const AuthProvider = ({ children }) => {
           'Wystąpił błąd podczas aktualizacji profilu',
       }
     }
-  }
+  }, [])
 
   // Funkcja wylogowania
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await customFetch.get('/auth-mobile/logout')
     } catch (error) {
@@ -482,9 +487,9 @@ export const AuthProvider = ({ children }) => {
       await clearLocalStorageAndState()
       router.replace('/')
     }
-  }
+  }, [clearLocalStorageAndState])
 
-  const deleteAccount = async () => {
+  const deleteAccount = useCallback(async () => {
     try {
       const response = await customFetch.delete('/users/current-user/delete')
 
@@ -539,9 +544,9 @@ export const AuthProvider = ({ children }) => {
         error: error.response?.data?.msg || 'Wystąpił błąd podczas usuwania konta',
       }
     }
-  }
+  }, [clearLocalStorageAndState, user?.avatarUrl])
 
-  const updateConsents = async (updates) => {
+  const updateConsents = useCallback(async (updates) => {
     const nextConsents = {
       ...(consents || defaultConsents),
       ...updates,
@@ -555,40 +560,40 @@ export const AuthProvider = ({ children }) => {
       console.error('Błąd zapisu zgód:', error)
       return { success: false, error: error.message }
     }
-  }
+  }, [consents])
 
-  const setRulesAccepted = (value) => {
+  const setRulesAccepted = useCallback((value) => {
     setPendingConsents((prev) => ({
       ...prev,
       rulesAccepted: value,
     }))
-  }
+  }, [])
 
-  const setMarketingAccepted = (value) => {
+  const setMarketingAccepted = useCallback((value) => {
     setPendingConsents((prev) => ({
       ...prev,
       marketingAccepted: value,
     }))
-  }
+  }, [])
 
-  const setLocationAccepted = (value) => {
+  const setLocationAccepted = useCallback((value) => {
     setPendingConsents((prev) => ({
       ...prev,
       locationAccepted: value,
     }))
-  }
+  }, [])
 
   const needsConsent =
     !consentsLoading && (!consents || !consents.rulesAccepted)
 
-  const saveConsents = async () => {
+  const saveConsents = useCallback(async () => {
     if (!pendingConsents.rulesAccepted) {
       return { success: false, error: 'Akceptacja regulaminu jest wymagana.' }
     }
     return await updateConsents({ ...pendingConsents })
-  }
+  }, [pendingConsents, updateConsents])
 
-  const acceptAllConsents = async () => {
+  const acceptAllConsents = useCallback(async () => {
     const nextConsents = {
       rulesAccepted: true,
       marketingAccepted: true,
@@ -596,11 +601,11 @@ export const AuthProvider = ({ children }) => {
     }
     setPendingConsents(nextConsents)
     return await updateConsents(nextConsents)
-  }
+  }, [updateConsents])
 
   // Funkcja do pobrania lokalizacji z throttlingiem
   // Pobiera z AsyncStorage, a jeśli brak - używa expo-location + reverse geocoding
-  const getThrottledLocation = async () => {
+  const getThrottledLocation = useCallback(async () => {
     // Sprawdź zgodę na lokalizację
     if (!pendingConsents.locationAccepted && !consents?.locationAccepted) {
       return {
@@ -654,10 +659,10 @@ export const AuthProvider = ({ children }) => {
         error: 'Wystąpił błąd podczas pobierania lokalizacji',
       }
     }
-  }
+  }, [pendingConsents.locationAccepted, consents?.locationAccepted])
 
   // Funkcja do zapisania lokalizacji w AsyncStorage
-  const saveLocation = async (location) => {
+  const saveLocation = useCallback(async (location) => {
     try {
       await AsyncStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify(location))
       return { success: true }
@@ -665,10 +670,10 @@ export const AuthProvider = ({ children }) => {
       console.error('Błąd zapisywania lokalizacji:', error)
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
   // Funkcja do pobrania zapisanej lokalizacji (bez throttlingu)
-  const getSavedLocation = async () => {
+  const getSavedLocation = useCallback(async () => {
     try {
       const storedLocation = await AsyncStorage.getItem(LOCATION_STORAGE_KEY)
       if (storedLocation) {
@@ -685,10 +690,10 @@ export const AuthProvider = ({ children }) => {
       console.error('Błąd pobierania lokalizacji:', error)
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
   // Funkcja do usunięcia zapisanej lokalizacji
-  const clearSavedLocation = async () => {
+  const clearSavedLocation = useCallback(async () => {
     try {
       await AsyncStorage.removeItem(LOCATION_STORAGE_KEY)
       await AsyncStorage.removeItem(LOCATION_THROTTLE_KEY)
@@ -697,10 +702,10 @@ export const AuthProvider = ({ children }) => {
       console.error('Błąd usuwania lokalizacji:', error)
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
   // Funkcja do reverse geocoding (współrzędne -> miasto/region)
-  const reverseGeocode = async (latitude, longitude) => {
+  const reverseGeocode = useCallback(async (latitude, longitude) => {
     try {
       const response = await customFetch.post('/location-mobile/reverse-geocode', {
         latitude,
@@ -717,47 +722,55 @@ export const AuthProvider = ({ children }) => {
         error: 'Nie udało się określić lokalizacji',
       }
     }
-  }
+  }, [])
+
+  const authContextValue = useMemo(() => ({
+    user,
+    setUser,
+    loading,
+    userStats,
+    setUserStats,
+    login,
+    loginWithGoogle,
+    completeOAuth,
+    register,
+    forgotPassword,
+    resetPassword,
+    changePassword,
+    updateProfile,
+    refetchUser,
+    logout,
+    deleteAccount,
+    isAuthChecked,
+    consents,
+    consentsLoading,
+    updateConsents,
+    pendingConsents,
+    setRulesAccepted,
+    setMarketingAccepted,
+    setLocationAccepted,
+    needsConsent,
+    saveConsents,
+    acceptAllConsents,
+    getThrottledLocation,
+    saveLocation,
+    getSavedLocation,
+    clearSavedLocation,
+    reverseGeocode,
+    systemPermissionsGeo,
+    setSystemPermissionsGeo,
+  }), [
+    user, loading, userStats, login, loginWithGoogle, completeOAuth, register,
+    forgotPassword, resetPassword, changePassword, updateProfile, refetchUser,
+    logout, deleteAccount, isAuthChecked, consents, consentsLoading, updateConsents,
+    pendingConsents, setRulesAccepted, setMarketingAccepted, setLocationAccepted,
+    needsConsent, saveConsents, acceptAllConsents, getThrottledLocation,
+    saveLocation, getSavedLocation, clearSavedLocation, reverseGeocode,
+    systemPermissionsGeo,
+  ])
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        setUser,
-        loading,
-        userStats,
-        setUserStats,
-        login,
-        loginWithGoogle,
-        completeOAuth,
-        register,
-        forgotPassword,
-        resetPassword,
-        changePassword,
-        updateProfile,
-        refetchUser,
-        logout,
-        deleteAccount,
-        isAuthChecked,
-        consents,
-        consentsLoading,
-        updateConsents,
-        pendingConsents,
-        setRulesAccepted,
-        setMarketingAccepted,
-        setLocationAccepted,
-        needsConsent,
-        saveConsents,
-        acceptAllConsents,
-        getThrottledLocation,
-        saveLocation,
-        getSavedLocation,
-        clearSavedLocation,
-        reverseGeocode,
-        systemPermissionsGeo, 
-        setSystemPermissionsGeo
-      }}
-    >
+    <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   )

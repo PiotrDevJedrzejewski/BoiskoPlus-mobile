@@ -15,6 +15,7 @@ import { useAuth } from '../../../context/AuthContext'
 import ConfirmModal from '../../../components/popup/ConfirmModal'
 import ProfileAvatarSection from '../../../components/profile/ProfileAvatarSection'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 const StatItem = ({ label, value, styles }) => (
   <View style={styles.statItem}>
@@ -24,6 +25,8 @@ const StatItem = ({ label, value, styles }) => (
 )
 
 const Profile = () => {
+  dbg('ProfileScreen')
+  useDebugMount('ProfileScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)

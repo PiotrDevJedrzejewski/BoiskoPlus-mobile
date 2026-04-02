@@ -1,15 +1,18 @@
-import { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { Stack, Redirect, useRouter, usePathname } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { COLORS } from '../../constants/colors'
 import { useAuth } from '../../context/AuthContext'
-import { useSocketIo, SocketIoProvider } from '../../context/SocketIoContext'
+import { SocketIoProvider } from '../../context/SocketIoContext'
+import { useSocketStore, selectTotalUnreadMessages } from '../../context/socketStore'
 import { NotificationProvider } from '../../context/NotificationContext'
 import { DashboardProvider } from '../../context/DashboardContext'
 import { FriendshipProvider } from '../../context/FriendshipContext'
 import { DrawerProvider } from '../../context/DrawerContext'
+import { MapProvider } from '../../context/MapContext'
+import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
 // Overlays
 import HeaderDrawer from '../../components/HeaderDrawer'
@@ -24,11 +27,12 @@ const TABS = [
 ]
 
 // Custom TabBar as absolute overlay
-function CustomTabBar() {
+const CustomTabBar = React.memo(function CustomTabBar() {
+  dbg('CustomTabBar')
   const router = useRouter()
   const pathname = usePathname()
   const insets = useSafeAreaInsets()
-  const { totalUnreadMessages } = useSocketIo()
+  const totalUnreadMessages = useSocketStore(selectTotalUnreadMessages)
 
   const handlePress = useCallback((path) => {
     router.navigate(`/(auth)/${path}`)
@@ -81,9 +85,11 @@ function CustomTabBar() {
       })}
     </View>
   )
-}
+})
 
 export default function AuthLayout() {
+  dbg('AuthLayout')
+  useDebugMount('AuthLayout')
   const router = useRouter()
   const { user, isAuthChecked } = useAuth()
 
@@ -97,7 +103,8 @@ export default function AuthLayout() {
       <SocketIoProvider>
         <DashboardProvider>
           <FriendshipProvider>
-            <DrawerProvider>
+            <MapProvider>
+              <DrawerProvider>
               <View style={styles.container}>
                 {/* Header at top */}
                 <HeaderDrawer />
@@ -124,6 +131,7 @@ export default function AuthLayout() {
                 <DrawerModal />
               </View>
             </DrawerProvider>
+            </MapProvider>
           </FriendshipProvider>
         </DashboardProvider>
       </SocketIoProvider>

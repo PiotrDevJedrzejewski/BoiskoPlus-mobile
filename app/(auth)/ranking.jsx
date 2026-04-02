@@ -14,6 +14,7 @@ import { Picker } from '@react-native-picker/picker'
 import { COLORS } from '../../constants/colors'
 import customFetch from '../../assets/utils/customFetch'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
 const defaultAvatar = require('../../assets/images/defaultAvatar.png')
 
@@ -84,6 +85,8 @@ const RankingCard = ({ user, rank, sortBy, styles, ui }) => {
 }
 
 const Ranking = () => {
+  dbg('RankingScreen')
+  useDebugMount('RankingScreen')
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const usePickerOverlay = Platform.OS === 'android'

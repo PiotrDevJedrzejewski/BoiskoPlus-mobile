@@ -16,6 +16,7 @@ import EditEventUserCard from '../../components/EditEventUserCard'
 import ConfirmModal from '../../components/popup/ConfirmModal'
 import customFetch from '../../assets/utils/customFetch'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
 const StatBadge = ({ count, label, color, styles }) => (
   <View style={[styles.statBadge, { borderColor: color }]}>
@@ -25,6 +26,8 @@ const StatBadge = ({ count, label, color, styles }) => (
 )
 
 const EditEvent = () => {
+  dbg('EditEventScreen')
+  useDebugMount('EditEventScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)

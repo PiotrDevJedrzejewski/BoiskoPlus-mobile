@@ -16,8 +16,11 @@ import { useRouter } from 'expo-router'
 import { COLORS } from '../../../constants/colors'
 import { useAuth } from '../../../context/AuthContext'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 const ProfilePassword = () => {
+  dbg('ProfilePasswordScreen')
+  useDebugMount('ProfilePasswordScreen')
   const router = useRouter()
   const { changePassword } = useAuth()
   const ui = useResponsiveScale()

@@ -17,6 +17,7 @@ import { COLORS } from '../../../constants/colors'
 import { useAuth } from '../../../context/AuthContext'
 import DatePicker from '../../../components/DatePicker'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 const FORBIDDEN_WORDS = [
   'admin',
@@ -89,6 +90,8 @@ const parseIsoDate = (value) => {
 }
 
 const ProfileEdit = () => {
+  dbg('ProfileEditScreen')
+  useDebugMount('ProfileEditScreen')
   const router = useRouter()
   const { user, loading: authLoading, updateProfile } = useAuth()
   const ui = useResponsiveScale()

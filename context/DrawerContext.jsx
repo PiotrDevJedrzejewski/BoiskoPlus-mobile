@@ -1,9 +1,13 @@
-import { createContext, useContext, useCallback } from 'react'
+import { createContext, useContext, useCallback, useMemo } from 'react'
 import { useSharedValue } from 'react-native-reanimated'
+import { dbg, useDebugMount } from '../assets/utils/debugLogger'
 
 const DrawerContext = createContext()
 
 export const DrawerProvider = ({ children }) => {
+  dbg('DrawerProvider')
+  useDebugMount('DrawerProvider')
+
   // 0 = closed, 1 = open — animated with reanimated
   const drawerOpen = useSharedValue(0)
 
@@ -19,8 +23,12 @@ export const DrawerProvider = ({ children }) => {
     drawerOpen.value = drawerOpen.value === 0 ? 1 : 0
   }, [drawerOpen])
 
+  const drawerContextValue = useMemo(() => ({
+    drawerOpen, openDrawer, closeDrawer, toggleDrawer,
+  }), [drawerOpen, openDrawer, closeDrawer, toggleDrawer])
+
   return (
-    <DrawerContext.Provider value={{ drawerOpen, openDrawer, closeDrawer, toggleDrawer }}>
+    <DrawerContext.Provider value={drawerContextValue}>
       {children}
     </DrawerContext.Provider>
   )

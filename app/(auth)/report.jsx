@@ -15,8 +15,11 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { COLORS } from '../../constants/colors'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
 const Report = () => {
+  dbg('ReportScreen')
+  useDebugMount('ReportScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)

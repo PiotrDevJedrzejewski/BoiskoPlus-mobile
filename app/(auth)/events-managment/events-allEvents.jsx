@@ -14,10 +14,13 @@ import { useDashboard } from '../../../context/DashboardContext'
 import FilterButton from '../../../components/FilterButton'
 import MyEventCard from '../../../components/MyEventCard'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 const FILTER_DOT_COUNT = 3
 
 const EventsAllEvents = () => {
+  dbg('EventsAllEvents')
+  useDebugMount('EventsAllEvents')
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
   const ui = useResponsiveScale()

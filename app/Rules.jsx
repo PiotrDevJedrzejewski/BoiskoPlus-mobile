@@ -1,8 +1,11 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native'
 import { COLORS } from '../constants/colors'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../assets/utils/debugLogger'
 
 const Rules = () => {
+  dbg('RulesScreen')
+  useDebugMount('RulesScreen')
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
 

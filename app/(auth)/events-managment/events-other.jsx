@@ -14,11 +14,14 @@ import { useDashboard } from '../../../context/DashboardContext'
 import MyEventCard from '../../../components/MyEventCard'
 import { parseEventDate } from '../../../assets/utils/eventsApi'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 const OTHER_USER_STATUSES = ['rejected', 'finished', 'cancelled']
 const OTHER_OWNER_STATUSES = ['completed', 'cancelled', 'finished']
 
 const EventsOther = () => {
+  dbg('EventsOther')
+  useDebugMount('EventsOther')
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
   const ui = useResponsiveScale()

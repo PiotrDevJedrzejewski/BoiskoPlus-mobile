@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { View, StyleSheet } from 'react-native'
 import Mapbox from '@rnmapbox/maps'
 import Supercluster from 'supercluster'
@@ -40,6 +40,11 @@ const MapboxMobile = ({ isInteractive = true }) => {
   const { filteredEvents, mapTheme, userLocation, geolocationAccepted } =
     useDashboard()
   const { mapRef, camera, showMarkers, showEvents, setIsMapReady } = useMap()
+
+  // Reset isMapReady przy unmount — loading screen pokaże się ponownie przy powrocie
+  useEffect(() => {
+    return () => setIsMapReady(false)
+  }, [setIsMapReady])
 
   // State dla wybranych elementów (musi być state bo wymaga re-renderu przy otwarciu modalu)
   const [selectedClusterEvents, setSelectedClusterEvents] = useState(null)
@@ -510,4 +515,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default MapboxMobile
+export default memo(MapboxMobile)

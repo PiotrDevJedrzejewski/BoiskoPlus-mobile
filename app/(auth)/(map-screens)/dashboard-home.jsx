@@ -6,8 +6,11 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import Entypo from '@expo/vector-icons/Entypo'
 import { BlurView } from 'expo-blur'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 const DashboardHome = () => {
+  dbg('DashboardHomeScreen')
+  useDebugMount('DashboardHomeScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)

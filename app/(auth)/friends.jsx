@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../constants/colors'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 import { useFriendship } from '../../context/FriendshipContext'
 import PlayerCardWithActions from '../../components/PlayerCardWithActions'
 
@@ -19,6 +20,8 @@ const SEARCH_DEBOUNCE_MS = 300
 const SCREEN_HEIGHT = Dimensions.get('window').height
 
 const FriendsScreen = () => {
+  dbg('FriendsScreen')
+  useDebugMount('FriendsScreen')
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
 

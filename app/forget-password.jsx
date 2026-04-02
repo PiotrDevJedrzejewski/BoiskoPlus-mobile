@@ -2,8 +2,11 @@ import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { COLORS } from '../constants/colors'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../assets/utils/debugLogger'
 
 const ForgetPassword = () => {
+  dbg('ForgetPasswordScreen')
+  useDebugMount('ForgetPasswordScreen')
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
 

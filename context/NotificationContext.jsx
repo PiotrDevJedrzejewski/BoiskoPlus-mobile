@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react'
+import { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { Platform, AppState } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Notifications from 'expo-notifications'
@@ -6,6 +6,7 @@ import * as Device from 'expo-device'
 import Constants from 'expo-constants'
 import customFetch from '../assets/utils/customFetch'
 import { useAuth } from './AuthContext'
+import { dbg, useDebugMount, useProviderRenderCount } from '../assets/utils/debugLogger'
 
 const NotificationContext = createContext()
 
@@ -128,6 +129,10 @@ const getDeviceId = () => {
 
 
 export const NotificationProvider = ({ children }) => {
+  dbg('NotificationProvider')
+  useDebugMount('NotificationProvider')
+  useProviderRenderCount('NotificationProvider')
+
   const { user, isAuthChecked } = useAuth()
   const [preferences, setPreferences] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -343,7 +348,7 @@ export const NotificationProvider = ({ children }) => {
   // ─────────────────────────────────────────────────
   // Aktualizuj preferencje
   // ─────────────────────────────────────────────────
-  const updatePreferences = async (newPreferences) => {
+  const updatePreferences = useCallback(async (newPreferences) => {
     try {
       const response = await customFetch.put(
         '/notifications/preferences',
@@ -355,10 +360,10 @@ export const NotificationProvider = ({ children }) => {
       console.error('Błąd aktualizacji preferencji:', error)
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
   // Wycisz chat
-  const muteChatRoom = async (chatRoomId, muteExpiresAt = null) => {
+  const muteChatRoom = useCallback(async (chatRoomId, muteExpiresAt = null) => {
     try {
       const response = await customFetch.post(
         `/notifications/mute-chat/${chatRoomId}`,
@@ -372,10 +377,10 @@ export const NotificationProvider = ({ children }) => {
       console.error('Błąd wyciszania chatu:', error)
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
   // Odcisz chat
-  const unmuteChatRoom = async (chatRoomId) => {
+  const unmuteChatRoom = useCallback(async (chatRoomId) => {
     try {
       const response = await customFetch.delete(
         `/notifications/mute-chat/${chatRoomId}`
@@ -386,10 +391,10 @@ export const NotificationProvider = ({ children }) => {
       console.error('Błąd odciszania chatu:', error)
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
   // Wycisz event
-  const muteEvent = async (eventId) => {
+  const muteEvent = useCallback(async (eventId) => {
     try {
       const response = await customFetch.post(
         `/notifications/mute-event/${eventId}`
@@ -400,10 +405,10 @@ export const NotificationProvider = ({ children }) => {
       console.error('Błąd wyciszania wydarzenia:', error)
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
   // Odcisz event
-  const unmuteEvent = async (eventId) => {
+  const unmuteEvent = useCallback(async (eventId) => {
     try {
       const response = await customFetch.delete(
         `/notifications/mute-event/${eventId}`
@@ -414,10 +419,7 @@ export const NotificationProvider = ({ children }) => {
       console.error('Błąd odciszania wydarzenia:', error)
       return { success: false, error: error.message }
     }
-  }
-
-  // ─────────────────────────────────────────────────
-  // Push-specific helpers
+  }, [])
   // ─────────────────────────────────────────────────
 
   /**
@@ -469,27 +471,32 @@ export const NotificationProvider = ({ children }) => {
   }, [])
 
  
+  const notificationContextValue = useMemo(() => ({
+    // Preferencje (istniejące API)
+    preferences,
+    setPreferences,
+    loading,
+    shouldShowNotification,
+    updatePreferences,
+    muteChatRoom,
+    unmuteChatRoom,
+    muteEvent,
+    unmuteEvent,
+    // Push notification (nowe API)
+    expoPushToken,
+    pushPermissionStatus,
+    requestPushPermission,
+    unregisterPushToken,
+    setBadgeCount,
+  }), [
+    preferences, loading, shouldShowNotification, updatePreferences,
+    muteChatRoom, unmuteChatRoom, muteEvent, unmuteEvent,
+    expoPushToken, pushPermissionStatus, requestPushPermission,
+    unregisterPushToken, setBadgeCount,
+  ])
+
   return (
-    <NotificationContext.Provider
-      value={{
-        // Preferencje (istniejące API)
-        preferences,
-        setPreferences,
-        loading,
-        shouldShowNotification,
-        updatePreferences,
-        muteChatRoom,
-        unmuteChatRoom,
-        muteEvent,
-        unmuteEvent,
-        // Push notification (nowe API)
-        expoPushToken,
-        pushPermissionStatus,
-        requestPushPermission,
-        unregisterPushToken,
-        setBadgeCount,
-      }}
-    >
+    <NotificationContext.Provider value={notificationContextValue}>
       {children}
     </NotificationContext.Provider>
   )

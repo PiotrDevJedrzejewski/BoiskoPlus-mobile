@@ -8,11 +8,15 @@ import spinner from '../assets/utils/spinner.json'
 import { View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import ToastManager from 'toastify-react-native'
+import { dbg, useDebugMount, scheduleSummary } from '../assets/utils/debugLogger'
 
 // Only AuthProvider at root — all other providers scoped to (auth) layout
 import { AuthProvider } from '../context/AuthContext'
 
 const Layout = () => {
+  dbg('RootLayout')
+  useDebugMount('RootLayout')
+  scheduleSummary(5)
   const [fontsLoaded] = useFonts({
     'Montserrat-Bold': require('../assets/fonts/Montserrat-Bold.ttf'),
     'Montserrat-Regular': require('../assets/fonts/Montserrat-Regular.ttf'),
@@ -58,9 +62,9 @@ const Layout = () => {
         >
           {/* Public screens */}
           <Stack.Screen name='index' options={{ headerShown: true }} />
-          <Stack.Screen name='login' options={{ headerShown: true }} />
-          <Stack.Screen name='register' options={{ headerShown: true }} />
-          <Stack.Screen name='rules' options={{ headerShown: true }} />
+          <Stack.Screen name='Login' options={{ headerShown: true }} />
+          <Stack.Screen name='Register' options={{ headerShown: true }} />
+          <Stack.Screen name='Rules' options={{ headerShown: true }} />
           {/* Protected screens — providers are inside (auth)/_layout.jsx */}
           <Stack.Screen name='(auth)' options={{ headerShown: false, gestureEnabled: false }} />
         </Stack>

@@ -2,6 +2,7 @@ import axios from 'axios'
 import * as SecureStore from 'expo-secure-store'
 import Constants from 'expo-constants'
 import { Platform } from 'react-native'
+import { logHttp } from './debugLogger'
 
 // Pobierz URL serwera z konfiguracji Expo
 const getBaseURL = () => {
@@ -56,6 +57,7 @@ customFetch.interceptors.request.use(
 
     // Debug w trybie development
     if (__DEV__) {
+      config._startTime = Date.now()
       console.log('Request:', config.method?.toUpperCase(), config.url)
     }
 
@@ -66,9 +68,13 @@ customFetch.interceptors.request.use(
   }
 )
 
-// Interceptor dla odpowiedzi - obsługa błędów
+// Interceptor dla odpowiedzi — obsługa błędów + HTTP timing
 customFetch.interceptors.response.use(
   (response) => {
+    if (__DEV__ && response.config?._startTime) {
+      const duration = Date.now() - response.config._startTime
+      logHttp(response.config.method?.toUpperCase(), response.config.url, duration, response.status)
+    }
     return response
   },
   async (error) => {

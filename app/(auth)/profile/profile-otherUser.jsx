@@ -15,6 +15,7 @@ import { COLORS } from '../../../constants/colors'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 import { useAuth } from '../../../context/AuthContext'
 import customFetch from '../../../assets/utils/customFetch'
+import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
 const defaultAvatar = require('../../../assets/images/defaultAvatar.png')
 
@@ -26,6 +27,8 @@ const StatItem = ({ label, value, styles }) => (
 )
 
 const ProfileUser = () => {
+  dbg('OtherUserProfileScreen')
+  useDebugMount('OtherUserProfileScreen')
   const router = useRouter()
   const { id } = useLocalSearchParams()
   const ui = useResponsiveScale()

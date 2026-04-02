@@ -5,9 +5,11 @@ import {
   useRef,
   useCallback,
   useEffect,
+  useMemo,
 } from 'react'
 import { useAuth } from './AuthContext'
 import { checkSystemLocationPermissions } from '../assets/utils/getUserLocation'
+import { dbg, useDebugMount, useDebugEffect, useProviderRenderCount } from '../assets/utils/debugLogger'
 
 const MapContext = createContext()
 
@@ -35,9 +37,14 @@ const PROVINCE_COORDINATES = {
 
 
 export const MapProvider = ({ children }) => {
+  dbg('MapProvider')
+  useDebugMount('MapProvider')
+  useProviderRenderCount('MapProvider')
+
   const { consents, consentsLoading, getSavedLocation, systemPermissionsGeo, setSystemPermissionsGeo, updateConsents } = useAuth()
   const mapRef = useRef(null)
   const hasInitializedRef = useRef(false)
+  const permissionsCheckedRef = useRef(false)
 
   // Czy pokazywać markery dla predefiniowanych lokalizacji
   const [showMarkers, setShowMarkers] = useState(true)
@@ -146,8 +153,16 @@ export const MapProvider = ({ children }) => {
     }
   }, [consentsLoading, consents, setStartLocation])
 
-  // Sprawdzanie uprawnień systemowych do geolokalizacji
+  // Sprawdzanie uprawnień systemowych do geolokalizacji — z guardem przeciw infinite loop
+  useDebugEffect('MapContext:checkPermissions',
+    [consentsLoading, consents?.locationAccepted],
+    ['consentsLoading', 'consents.locationAccepted']
+  )
   useEffect(() => {
+    if (consentsLoading) return
+    if (permissionsCheckedRef.current) return
+    permissionsCheckedRef.current = true
+
     const checkPermissions = async () => {
       await checkSystemLocationPermissions({
         consents,
@@ -159,7 +174,7 @@ export const MapProvider = ({ children }) => {
     }
 
     checkPermissions()
-  }, [consentsLoading, consents?.locationAccepted, systemPermissionsGeo.status, setSystemPermissionsGeo, updateConsents])
+  }, [consentsLoading, consents?.locationAccepted, systemPermissionsGeo, setSystemPermissionsGeo, updateConsents])
 
   // Reaguj na zmiany zgody na lokalizację - tylko po inicjalizacji (zmiana w ustawieniach)
   const prevLocationAccepted = useRef(consents?.locationAccepted)
@@ -215,32 +230,36 @@ export const MapProvider = ({ children }) => {
     return false
   }, [flyTo, getProvinceCoordinates])
 
+  const mapContextValue = useMemo(() => ({
+    mapRef,
+    showMarkers,
+    setShowMarkers,
+    showEvents,
+    setShowEvents,
+    overlayOpacity,
+    setOverlayOpacity,
+    isInteractive,
+    setIsInteractive,
+    isMapReady,
+    setIsMapReady,
+    camera,
+    setCamera,
+    flyTo,
+    flyToProvince,
+    getProvinceCoordinates,
+    mapComponent,
+    setMapComponent,
+    userLocation,
+    setUserLocation,
+    setStartLocation,
+  }), [
+    showMarkers, showEvents, overlayOpacity, isInteractive, isMapReady,
+    camera, flyTo, flyToProvince, getProvinceCoordinates,
+    mapComponent, userLocation, setStartLocation,
+  ])
+
   return (
-    <MapContext.Provider
-      value={{
-        mapRef,
-        showMarkers,
-        setShowMarkers,
-        showEvents,
-        setShowEvents,
-        overlayOpacity,
-        setOverlayOpacity,
-        isInteractive,
-        setIsInteractive,
-        isMapReady,
-        setIsMapReady,
-        camera,
-        setCamera,
-        flyTo,
-        flyToProvince,
-        getProvinceCoordinates,
-        mapComponent,
-        setMapComponent,
-        userLocation,
-        setUserLocation,
-        setStartLocation,
-      }}
-    >
+    <MapContext.Provider value={mapContextValue}>
       {children}
     </MapContext.Provider>
   )

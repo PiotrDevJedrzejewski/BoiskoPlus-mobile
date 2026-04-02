@@ -21,8 +21,11 @@ import { auth } from '../assets/utils/firebase'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
 import Constants from 'expo-constants'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { dbg, useDebugMount } from '../assets/utils/debugLogger'
 
 const Login = () => {
+  dbg('LoginScreen')
+  useDebugMount('LoginScreen')
   const router = useRouter()
   const { login, loginWithGoogle } = useAuth()
   const ui = useResponsiveScale()
