@@ -1,10 +1,12 @@
+import { useCallback } from 'react'
 import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { COLORS } from '../../../constants/colors'
 import CardDashboard from '../../../components/CardDashboard'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import Entypo from '@expo/vector-icons/Entypo'
 import { BlurView } from 'expo-blur'
+import { useMap } from '../../../context/MapContext'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
@@ -14,6 +16,14 @@ const DashboardHome = () => {
   const router = useRouter()
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
+  const { setIsInteractive, setOverlayOpacity } = useMap()
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsInteractive(false)
+      setOverlayOpacity(0.3)
+    }, []),
+  )
 
   const cardIconSize = ui.moderateScale(50, 0.35)
   const mapIconSize = ui.moderateScale(24, 0.35)

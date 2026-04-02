@@ -129,7 +129,6 @@ const DrawerModal = () => {
                 onPress={() => {
                   closeDrawer()
                   logout()
-                  router.replace('/')
                 }}
               >
                 <Ionicons name='log-out' size={24} color={COLORS.error} />

@@ -156,12 +156,14 @@ export const NotificationProvider = ({ children }) => {
   // EFFECT: Rejestracja push tokenu przy logowaniu
   // ─────────────────────────────────────────────────
   useEffect(() => {
+    let cancelled = false
+
     const registerPushToken = async () => {
       if (!isAuthChecked || !user?.userID) return
 
       try {
         const token = await getExpoPushToken()
-        if (!token) return
+        if (!token || cancelled) return
 
         setExpoPushToken(token)
 
@@ -175,11 +177,15 @@ export const NotificationProvider = ({ children }) => {
 
         console.log('[Push] Token zarejestrowany:', token.substring(0, 30) + '...')
       } catch (error) {
-        console.error('[Push] Błąd rejestracji tokenu:', error)
+        if (!cancelled) {
+          console.error('[Push] Błąd rejestracji tokenu:', error)
+        }
       }
     }
 
     registerPushToken()
+
+    return () => { cancelled = true }
   }, [isAuthChecked, user?.userID])
 
   // ─────────────────────────────────────────────────
@@ -234,9 +240,7 @@ export const NotificationProvider = ({ children }) => {
 
     return () => {
       if (notificationResponseListener.current) {
-        Notifications.removeNotificationSubscription(
-          notificationResponseListener.current
-        )
+        notificationResponseListener.current.remove()
       }
     }
   }, [])

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   StyleSheet,
   Text,
@@ -19,7 +19,7 @@ import { useMap } from '../../../context/MapContext'
 import { useDashboard } from '../../../context/DashboardContext'
 import { useAuth } from '../../../context/AuthContext'
 import { Toast } from 'toastify-react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import {
   validateCityInput,
   filterCitySuggestions,
@@ -170,10 +170,15 @@ const FindEvent = () => {
     }
   }, [userInput.City, suggestionSelected, consents.locationAccepted, userLocation.City])
 
-  // Aktualizuj UI gdy filteredEvents zmieni się z innego ekranu
+  // Aktualizuj UI gdy filteredEvents zmieni się z innego ekranu (np. show-map)
   useEffect(() => {
     if (filteredEvents && filteredEvents.events && filteredEvents.events.length > 0) {
       setHasSearched(true)
+      Animated.timing(listOpacity, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start()
     }
   }, [filteredEvents])
 
@@ -195,16 +200,13 @@ const FindEvent = () => {
     }
   }, [filteredEvents, userInput.gameType])
 
-  // Sterowanie mapą i overlayem przez state
-  useEffect(() => {
-    if (showList) {
+  // Mapa zawsze jako nieinteraktywne tło w tym ekranie
+  useFocusEffect(
+    useCallback(() => {
       setIsInteractive(false)
       setOverlayOpacity(0.3)
-    } else {
-      setIsInteractive(true)
-      setOverlayOpacity(0)
-    }
-  }, [showList])
+    }, []),
+  )
 
   const handleSubmit = async () => {
     setLoading(true)

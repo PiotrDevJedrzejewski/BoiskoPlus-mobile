@@ -62,9 +62,9 @@ const Layout = () => {
         >
           {/* Public screens */}
           <Stack.Screen name='index' options={{ headerShown: true }} />
-          <Stack.Screen name='Login' options={{ headerShown: true }} />
-          <Stack.Screen name='Register' options={{ headerShown: true }} />
-          <Stack.Screen name='Rules' options={{ headerShown: true }} />
+          <Stack.Screen name='login' options={{ headerShown: true }} />
+          <Stack.Screen name='register' options={{ headerShown: true }} />
+          <Stack.Screen name='rules' options={{ headerShown: true }} />
           {/* Protected screens — providers are inside (auth)/_layout.jsx */}
           <Stack.Screen name='(auth)' options={{ headerShown: false, gestureEnabled: false }} />
         </Stack>
