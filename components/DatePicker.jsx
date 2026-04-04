@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
 import { COLORS } from '../constants/colors'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const MONTHS = [
   { value: 1, label: 'Styczeń' },
@@ -70,7 +71,8 @@ const DatePicker = ({
   disabled = false,
 }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const insets = useSafeAreaInsets()
+  const styles = useMemo(() => createStyles(ui, insets.bottom), [ui, insets.bottom])
   const parsedValue = parseIsoDate(value)
 
   const initialDate = parsedValue || maximumDate || new Date(2000, 0, 1)
@@ -256,7 +258,7 @@ const DatePicker = ({
 
 export default DatePicker
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (ui, insetsBottom = 0) => StyleSheet.create({
   datePickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -306,7 +308,7 @@ const createStyles = (ui) => StyleSheet.create({
     borderTopLeftRadius: ui.moderateScale(20, 0.35),
     borderTopRightRadius: ui.moderateScale(20, 0.35),
     padding: ui.spacing(20, 0.45),
-    paddingBottom: ui.verticalScale(30),
+    paddingBottom: Math.max(ui.verticalScale(30), insetsBottom + 10),
   },
   modalTitle: {
     fontSize: ui.scaleFont(18, 0.4),

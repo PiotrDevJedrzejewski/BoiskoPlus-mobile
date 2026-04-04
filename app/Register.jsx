@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import {
   StyleSheet,
   Text,
@@ -7,12 +7,9 @@ import {
   TextInput,
   ScrollView,
   Pressable,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import LottieView from 'lottie-react-native'
-import Constants from 'expo-constants'
 import { COLORS } from '../constants/colors'
 import Button1 from '../components/Button1'
 import customFetch from '../assets/utils/customFetch'
@@ -56,17 +53,19 @@ const Register = () => {
   useDebugMount('RegisterScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState([false, false])
 
-  useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: Constants.expoConfig?.extra?.googleWebClientId,
-      iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
-    })
+  const maxBirthDate = useMemo(() => {
+    const today = new Date()
+    today.setFullYear(today.getFullYear() - 13)
+    return today
   }, [])
-  
+
+  const styles = useMemo(() => createStyles(ui), [ui])
+
+  // GoogleSignin is already configured globally in AuthContext – no need to repeat here
+
   const [formData, setFormData] = useState({
     nickName: '',
     name: '',
@@ -76,6 +75,14 @@ const Register = () => {
     passwordConfirm: '',
     phoneNumber: '',
   })
+
+  const [birthDate, setBirthDate] = useState('')
+
+  // ────────────────────────────────────────────────────────────────────────────
+
+  const handleChange = useCallback((name, value) => {
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }, [])
 
   // Google OAuth configuration
 
@@ -133,18 +140,6 @@ const Register = () => {
     }
   }
 
-  const [birthDate, setBirthDate] = useState('')
-
-  const handleChange = (name, value) => {
-    setFormData({ ...formData, [name]: value })
-  }
-
-  const getMaxBirthDate = () => {
-    const today = new Date()
-    today.setFullYear(today.getFullYear() - 7)
-    return today
-  }
-
   const handleSubmit = async () => {
     // Walidacje
     if (!formData.nickName || formData.nickName.length < 3 || formData.nickName.length > 20) {
@@ -184,8 +179,8 @@ const Register = () => {
       return
     }
 
-    if (parsedBirthDate > getMaxBirthDate()) {
-      Toast.error('Musisz mieć co najmniej 7 lat')
+    if (parsedBirthDate > maxBirthDate) {
+      Toast.error('Musisz mieć co najmniej 13 lat')
       return
     }
 
@@ -278,11 +273,7 @@ const Register = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-    >
-      <ScrollView contentContainerStyle={styles.auth}>
+    <ScrollView contentContainerStyle={styles.auth}>
         <View style={styles.authMask} />
         <View style={styles.authFormContainer}>
           <Text style={styles.authFormTitle}>Register</Text>
@@ -365,7 +356,7 @@ const Register = () => {
                 value={birthDate}
                 onChange={setBirthDate}
                 minimumDate={new Date(1900, 0, 1)}
-                maximumDate={getMaxBirthDate()}
+                maximumDate={maxBirthDate}
               />
             </View>
 
@@ -445,8 +436,7 @@ const Register = () => {
             </Text>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </ScrollView>
   )
 }
 
