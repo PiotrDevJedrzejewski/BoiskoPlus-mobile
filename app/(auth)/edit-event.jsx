@@ -17,6 +17,7 @@ import ConfirmModal from '../../components/popup/ConfirmModal'
 import customFetch from '../../assets/utils/customFetch'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
+import { useDashboard } from '../../context/DashboardContext'
 
 const StatBadge = ({ count, label, color, styles }) => (
   <View style={[styles.statBadge, { borderColor: color }]}>
@@ -32,6 +33,7 @@ const EditEvent = () => {
   const ui = useResponsiveScale()
   const styles = createStyles(ui)
   const { id } = useLocalSearchParams()
+  const { removeOwnerEvent } = useDashboard()
 
   const [loading, setLoading] = useState(true)
   const [event, setEvent] = useState(null)
@@ -160,6 +162,7 @@ const EditEvent = () => {
     setActionLoading(true)
     try {
       await customFetch.delete(`/football-events/${id}`)
+      removeOwnerEvent(id)
       setShowDeleteModal(false)
       Alert.alert('Sukces', 'Wydarzenie zostało usunięte')
       router.back()

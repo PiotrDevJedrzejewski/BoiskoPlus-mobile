@@ -11,7 +11,6 @@ import {
   Animated,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { Picker } from '@react-native-picker/picker'
 import { COLORS } from '../../../constants/colors'
 import FindEventListElement from '../../../components/FindEventListElement'
 import CitySuggestions from '../../../components/CitySuggestions'
@@ -30,6 +29,7 @@ import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 import LottieView from 'lottie-react-native'
 import spinnerData from '../../../assets/utils/spinner.json'
+import GameTypePickerModal from '../../../components/popup/GameTypePickerModal'
 
 const GAME_TYPES = [
   { label: 'Wybierz typ gry', value: '' },
@@ -86,6 +86,7 @@ const FindEvent = () => {
   const searchAbortControllerRef = useRef(null)
   const loadingTimerRef = useRef(null)
   const lastSearchParamsRef = useRef(null)
+  const [showGameTypeModal, setShowGameTypeModal] = useState(false)
   const listOpacity = useRef(new Animated.Value(0)).current
 
   const headerIconSize = ui.moderateScale(26, 0.35)
@@ -396,6 +397,10 @@ const FindEvent = () => {
     }
   }
 
+  const handleGameTypeSelect = (value) => {
+    setUserInput((prev) => ({ ...prev, gameType: value }))
+  }
+
   return (
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
@@ -462,25 +467,18 @@ const FindEvent = () => {
         {/* Typ gry i dystans i wiecej */}
         {showAdvancedSearch && (
         <View style={styles.inputRowSecond}>
-          <View style={styles.pickerWrapper}>
-            <Picker
-              selectedValue={userInput.gameType}
-              onValueChange={(value) =>
-                setUserInput((prev) => ({ ...prev, gameType: value }))
-              }
-              style={styles.picker}
-              dropdownIconColor={COLORS.background}
+          <Pressable style={styles.pickerWrapper} onPress={() => setShowGameTypeModal(true)}>
+            <Text
+              style={[
+                styles.pickerButtonText,
+                !userInput.gameType && styles.pickerButtonPlaceholder,
+              ]}
+              numberOfLines={1}
             >
-              {GAME_TYPES.map((type) => (
-                <Picker.Item
-                  style={styles.pickerItem}
-                  key={type.value}
-                  label={type.label}
-                  value={type.value}
-                />
-              ))}
-            </Picker>
-          </View>
+              {GAME_TYPES.find((t) => t.value === userInput.gameType)?.label || 'Wybierz typ gry'}
+            </Text>
+            <Ionicons name='chevron-down' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
+          </Pressable>
               
           <View style={styles.distanceWrapper}>
             <TextInput
@@ -615,6 +613,15 @@ const FindEvent = () => {
           </Text>
         </View>
       )} */}
+
+      {/* Modal wyboru typu gry */}
+      <GameTypePickerModal
+        visible={showGameTypeModal}
+        selectedValue={userInput.gameType}
+        options={GAME_TYPES}
+        onSelect={handleGameTypeSelect}
+        onClose={() => setShowGameTypeModal(false)}
+      />
     </View>
   )
 }
@@ -681,17 +688,18 @@ const createStyles = (ui) => StyleSheet.create({
     borderRadius: ui.controlRadius,
     minHeight: ui.controlMinHeight,
     marginRight: ui.spacing(12, 0.35),
-    justifyContent: 'center',
-    overflow: 'hidden',
-    paddingLeft: ui.controlPaddingHorizontal,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: ui.controlPaddingHorizontal,
   },
-  picker: {
-    color: COLORS.background,
-    height: ui.pickerHeight,
-  },
-  pickerItem: {
+  pickerButtonText: {
+    flex: 1,
     fontSize: ui.scaleFont(16, 0.35),
+    fontFamily: 'Lato-Regular',
     color: COLORS.background,
+  },
+  pickerButtonPlaceholder: {
+    color: COLORS.gray,
   },
   distanceWrapper: {
     position: 'relative',

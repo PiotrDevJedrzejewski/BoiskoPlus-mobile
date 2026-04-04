@@ -369,24 +369,34 @@ export const SocketIoProvider = ({ children }) => {
     if (!chatSocket) return
 
     const handleNewMessage = (msg) => {
-      if (msg.sender?._id === userIdRef.current) return
-      if (msg.roomId === useSocketStore.getState().activeRoomId) return
+      const isOwnMessage = msg.sender?._id === userIdRef.current
+      const isActiveRoom = msg.roomId === useSocketStore.getState().activeRoomId
 
-      // Zwiększ unread count
+      // Zawsze aktualizuj lastMessage (w tym własne wiadomości)
+      // Zwiększ unreadCount tylko dla cudzych wiadomości spoza aktywnego pokoju
       useSocketStore.getState().setRoomsState((prev) =>
         prev.map((room) =>
           room.roomId === msg.roomId
-            ? { ...room, unreadCount: (room.unreadCount || 0) + 1 }
+            ? {
+                ...room,
+                lastMessage: msg,
+                unreadCount:
+                  !isOwnMessage && !isActiveRoom
+                    ? (room.unreadCount || 0) + 1
+                    : room.unreadCount,
+              }
             : room
         )
       )
 
-      // Dźwięk
-      const shouldNotify = shouldShowNotificationRef.current(
-        'chatMessages',
-        msg.roomId
-      )
-      if (shouldNotify) playNotificationSound()
+      // Dźwięk tylko dla cudzych wiadomości spoza aktywnego pokoju
+      if (!isOwnMessage && !isActiveRoom) {
+        const shouldNotify = shouldShowNotificationRef.current(
+          'chatMessages',
+          msg.roomId
+        )
+        if (shouldNotify) playNotificationSound()
+      }
     }
 
     useSocketStore.getState()._addChatListener('newMessage', handleNewMessage)
@@ -520,6 +530,27 @@ export const SocketIoProvider = ({ children }) => {
     return () => {
       notificationSocket.off('friendRequest', handleFriendRequest)
       _getNotificationListeners().delete('friendRequest')
+    }
+  }, [notificationSocket])
+
+  // ═════════════════════════════════════════════════
+  // EFFECT: Listener — usunięcie pokoju czatu (usunięcie konta rozmówcy)
+  // ═════════════════════════════════════════════════
+
+  useEffect(() => {
+    if (!notificationSocket) return
+
+    const handleChatRoomRemoved = ({ roomId }) => {
+      useSocketStore.getState().removeRoom(roomId)
+    }
+
+    useSocketStore
+      .getState()
+      ._addNotificationListener('chatRoomRemoved', handleChatRoomRemoved)
+
+    return () => {
+      notificationSocket.off('chatRoomRemoved', handleChatRoomRemoved)
+      _getNotificationListeners().delete('chatRoomRemoved')
     }
   }, [notificationSocket])
 

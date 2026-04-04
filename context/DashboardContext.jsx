@@ -199,6 +199,15 @@ export const DashboardProvider = ({ children }) => {
     return Date.now() - eventsData.lastFetchedAt
   }, [eventsData.lastFetchedAt])
 
+  // Optymistyczne usunięcie eventu z lokalnej listy, żeby UI nie pokazywał
+  // usuniętego rekordu przez czas throttle'u (20s).
+  const removeOwnerEvent = useCallback((eventId) => {
+    setEventsData((prev) => ({
+      ...prev,
+      ownerEvents: prev.ownerEvents.filter((e) => e._id !== eventId),
+    }))
+  }, [])
+
   const dashboardContextValue = useMemo(() => ({
     filteredEvents,
     setFilteredEvents,
@@ -206,11 +215,12 @@ export const DashboardProvider = ({ children }) => {
     updateMapTheme,
     eventsData,
     refreshEventsData,
+    removeOwnerEvent,
     eventsDataAgeMs,
     eventsMinRefreshMs: EVENTS_MIN_REFRESH_MS,
   }), [
     filteredEvents, mapTheme, updateMapTheme, eventsData,
-    refreshEventsData, eventsDataAgeMs,
+    refreshEventsData, removeOwnerEvent, eventsDataAgeMs,
   ])
 
   return (

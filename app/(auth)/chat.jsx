@@ -24,7 +24,6 @@ import { useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
-import { useShallow } from 'zustand/react/shallow'
 
 const typing = require('../../assets/utils/typing.json')
 const CUSTOM_TAB_BAR_HEIGHT = 60
@@ -52,6 +51,8 @@ const Chat = () => {
   const sendTyping = useSocketStore((s) => s.sendTyping)
   const sendStopTyping = useSocketStore((s) => s.sendStopTyping)
   const isUserOnline = useSocketStore((s) => s.isUserOnline)
+  const addRoom = useSocketStore((s) => s.addRoom)
+  const removeRoom = useSocketStore((s) => s.removeRoom)
 
   // Backward compat alias
   const socket = chatSocket
@@ -65,7 +66,6 @@ const Chat = () => {
   const [loading, setLoading] = useState(false)
   const [loadingRooms, setLoadingRooms] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [chatRooms, setChatRooms] = useState([])
   const [eventParticipants, setEventParticipants] = useState([])
   const [loadingParticipants, setLoadingParticipants] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -91,13 +91,17 @@ const Chat = () => {
     selectedRoomRef.current = selectedRoom
   }, [selectedRoom])
 
-  // Pobierz pokoje czatu przy załadowaniu
+  // Pobierz pokoje czatu przy załadowaniu (bootstrap — jeśli socket nie zdążył)
   useEffect(() => {
     const fetchChatRooms = async () => {
       setLoadingRooms(true)
       try {
         const response = await customFetch.get('/chat/rooms')
-        setChatRooms(response.data.chatRooms || [])
+        const rooms = response.data.chatRooms || []
+        // Wypełnij roomsState tylko jeśli socket jeszcze nie załadował danych
+        if (useSocketStore.getState().roomsState.length === 0) {
+          useSocketStore.getState().setRoomsState(rooms)
+        }
       } catch (error) {
         console.error('Błąd pobierania pokoi:', error)
       } finally {
@@ -137,19 +141,13 @@ const Chat = () => {
       const currentRoom = selectedRoomRef.current
 
       // Dodaj wiadomość tylko jeśli jesteśmy w tym pokoju
+      // lastMessage i unreadCount są aktualizowane przez SocketIoContext → roomsState
       setMessages((prev) => {
         if (currentRoom && currentRoom.roomId === msg.roomId) {
           return [...prev, msg]
         }
         return prev
       })
-
-      // Aktualizuj ostatnią wiadomość w liście pokoi
-      setChatRooms((prevRooms) =>
-        prevRooms.map((room) =>
-          room.roomId === msg.roomId ? { ...room, lastMessage: msg } : room
-        )
-      )
     }
 
     chatSocket.on('newMessage', handleNewMessage)
@@ -166,16 +164,8 @@ const Chat = () => {
 
     const handleNewChatRoom = (data) => {
       if (data.userId === user?._id) {
-        setChatRooms((prevRooms) => {
-          const roomExists = prevRooms.some(
-            (room) => room.roomId === data.chatRoom.roomId
-          )
-          if (!roomExists) {
-            joinRoom(data.chatRoom.roomId)
-            return [data.chatRoom, ...prevRooms]
-          }
-          return prevRooms
-        })
+        addRoom(data.chatRoom)
+        joinRoom(data.chatRoom.roomId)
       }
     }
 
@@ -183,7 +173,7 @@ const Chat = () => {
     return () => {
       chatSocket.off('newChatRoom', handleNewChatRoom)
     }
-  }, [chatSocket, user?._id, joinRoom])
+  }, [chatSocket, user?._id, joinRoom, addRoom])
 
   // Obsługa usuwania z pokojów
   useEffect(() => {
@@ -191,9 +181,7 @@ const Chat = () => {
 
     const handleRemovedFromChatRoom = (data) => {
       if (data.userId === user?._id) {
-        setChatRooms((prevRooms) =>
-          prevRooms.filter((room) => room.roomId !== data.roomId)
-        )
+        removeRoom(data.roomId)
 
         const currentRoom = selectedRoomRef.current
         if (currentRoom && currentRoom.roomId === data.roomId) {
@@ -211,7 +199,7 @@ const Chat = () => {
     return () => {
       chatSocket.off('removedFromChatRoom', handleRemovedFromChatRoom)
     }
-  }, [chatSocket, user?._id, setActiveRoomId, leaveRoom])
+  }, [chatSocket, user?._id, setActiveRoomId, leaveRoom, removeRoom])
 
   // Obsługa typing indicator (ref-based - bez re-subscribe)
   useEffect(() => {
@@ -332,7 +320,7 @@ const Chat = () => {
   }, [messages, isInitialLoad, isNearBottom])
 
   // Filtrowanie pokoi
-  const filteredRooms = chatRooms.filter((room) => {
+  const filteredRooms = roomsState.filter((room) => {
     if (filterType === 'private' && room.roomType !== 'private') return false
     if (filterType === 'group' && room.roomType !== 'group') return false
 
@@ -434,11 +422,11 @@ const Chat = () => {
       const response = await customFetch.post('/chat/rooms', { otherUserId })
       const newRoom = response.data.chatRoom
 
-      const roomExists = chatRooms.some(
+      const roomExists = roomsState.some(
         (room) => room.roomId === newRoom.roomId
       )
       if (!roomExists) {
-        setChatRooms((prev) => [newRoom, ...prev])
+        addRoom(newRoom)
         joinRoom(newRoom.roomId)
       }
 
@@ -726,7 +714,7 @@ const Chat = () => {
                 size={stateIconSize}
                 color={COLORS.gray}
               />
-              <Text style={styles.emptyText}>Brak pokojów czatu</Text>
+              <Text style={styles.emptyText}>Pusto? Znajdź swoich znajomych lub dołącz do wydarzenia!</Text>
             </View>
           )}
         </ScrollView>

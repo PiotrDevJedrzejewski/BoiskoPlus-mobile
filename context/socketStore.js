@@ -297,6 +297,18 @@ export const useSocketStore = create((set, get) => ({
 
   isUserOnline: (userId) => get().onlineUsers.has(userId),
 
+  addRoom: (room) =>
+    set((s) => ({
+      roomsState: s.roomsState.some((r) => r.roomId === room.roomId)
+        ? s.roomsState
+        : [room, ...s.roomsState],
+    })),
+
+  removeRoom: (roomId) =>
+    set((s) => ({
+      roomsState: s.roomsState.filter((r) => r.roomId !== roomId),
+    })),
+
   // ═════════════════════════════════════════════════
   // DISCONNECT (wylogowanie / cleanup)
   // ═════════════════════════════════════════════════
