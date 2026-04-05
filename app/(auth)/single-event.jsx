@@ -249,6 +249,16 @@ const SingleEvent = () => {
     setIsNotificationsMuted(isEventMutedInPrefs || false)
   }, [preferences, eventID])
 
+  const handleRespondToInvite = async (accept) => {
+    try {
+      await customFetch.patch(`/status/events/${eventID}/invite/respond`, { accept })
+      setUserStatus(accept ? 'accepted' : 'invite_declined')
+    } catch (error) {
+      Alert.alert('Błąd', error?.response?.data?.msg || 'Nie udało się odpowiedzieć na zaproszenie')
+      console.error('Błąd respondToInvite:', error)
+    }
+  }
+
   const handleJoinRequest = async () => {
     if (userStatus === 'interested' || userStatus === 'accepted') {
       Alert.alert('Info', 'Już masz status dla tego wydarzenia')
@@ -406,11 +416,33 @@ const SingleEvent = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Join Button / View-only indicator */}
+        {/* Join Button / Invite Response / View-only indicator */}
         {isViewOnly ? (
           <View style={styles.viewOnlyBanner}>
             <Ionicons name='eye-outline' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
             <Text style={styles.viewOnlyText}>Tryb podglądu – wydarzenie zakończone</Text>
+          </View>
+        ) : userStatus === 'invited' ? (
+          <View style={styles.inviteResponseContainer}>
+            <Text style={styles.inviteResponseLabel}>Zaproszono Cię na to wydarzenie</Text>
+            <View style={styles.inviteResponseButtons}>
+              <TouchableOpacity
+                style={[styles.inviteResponseBtn, styles.inviteAcceptBtn]}
+                onPress={() => handleRespondToInvite(true)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name='checkmark' size={ui.moderateScale(18, 0.35)} color={COLORS.background} />
+                <Text style={styles.inviteResponseBtnText}>Zaakceptuj</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.inviteResponseBtn, styles.inviteDeclineBtn]}
+                onPress={() => handleRespondToInvite(false)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name='close' size={ui.moderateScale(18, 0.35)} color='#fff' />
+                <Text style={[styles.inviteResponseBtnText, { color: '#fff' }]}>Odrzuć</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <TouchableOpacity
@@ -628,6 +660,44 @@ const createStyles = (ui) => StyleSheet.create({
   },
   joinButtonText: {
     fontSize: ui.scaleFont(16, 0.35),
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.background,
+  },
+  inviteResponseContainer: {
+    marginBottom: ui.verticalScale(20),
+    backgroundColor: COLORS.backgroundSecondary,
+    borderRadius: ui.moderateScale(12, 0.35),
+    padding: ui.spacing(16),
+    alignItems: 'center',
+    gap: ui.verticalScale(12),
+  },
+  inviteResponseLabel: {
+    fontSize: ui.scaleFont(14, 0.35),
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.secondary,
+  },
+  inviteResponseButtons: {
+    flexDirection: 'row',
+    gap: ui.spacing(12, 0.35),
+    width: '100%',
+  },
+  inviteResponseBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: ui.verticalScale(14),
+    borderRadius: ui.moderateScale(10, 0.35),
+    gap: ui.spacing(6, 0.35),
+  },
+  inviteAcceptBtn: {
+    backgroundColor: COLORS.third,
+  },
+  inviteDeclineBtn: {
+    backgroundColor: COLORS.error,
+  },
+  inviteResponseBtnText: {
+    fontSize: ui.scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },

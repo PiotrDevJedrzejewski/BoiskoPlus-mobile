@@ -16,7 +16,7 @@ import MyEventCard from '../../../components/MyEventCard'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 
-const FILTER_DOT_COUNT = 3
+const FILTER_DOT_COUNT = 4
 
 const EventsAllEvents = () => {
   dbg('EventsAllEvents')
@@ -36,6 +36,7 @@ const EventsAllEvents = () => {
   const [showInterestedEvents, setShowInterestedEvents] = useState(true)
   const [showRejectedEvents, setShowRejectedEvents] = useState(true)
   const [showFinishedEvents, setShowFinishedEvents] = useState(true)
+  const [showInvitedEvents, setShowInvitedEvents] = useState(true)
   const [activeFilterDot, setActiveFilterDot] = useState(0)
   const [filtersContainerWidth, setFiltersContainerWidth] = useState(0)
   const [filtersContentWidth, setFiltersContentWidth] = useState(0)
@@ -69,10 +70,13 @@ const EventsAllEvents = () => {
 
   const filteredUserEvents = myEventsUser.filter((event) => {
     if (!event.eventID) return false
+    // Exclude tombstone statuses from the list entirely
+    if (['invite_cancelled', 'invite_declined'].includes(event.status)) return false
     if (event.status === 'accepted' && !showAcceptedEvents) return false
     if (event.status === 'interested' && !showInterestedEvents) return false
     if (event.status === 'rejected' && !showRejectedEvents) return false
     if (event.status === 'finished' && !showFinishedEvents) return false
+    if (event.status === 'invited' && !showInvitedEvents) return false
     return true
   })
 
@@ -136,6 +140,18 @@ const EventsAllEvents = () => {
             isActive={showOwnerEvents}
             onPress={() => setShowOwnerEvents(!showOwnerEvents)}
           />
+                    <FilterButton
+            icon={
+              <Ionicons
+                name='mail'
+                size={filterIconSize}
+                color={showInvitedEvents ? COLORS.secondary : COLORS.primary}
+              />
+            }
+            label='Zaproszenia'
+            isActive={showInvitedEvents}
+            onPress={() => setShowInvitedEvents(!showInvitedEvents)}
+          />
           <FilterButton
             icon={
               <Ionicons
@@ -184,6 +200,7 @@ const EventsAllEvents = () => {
             isActive={showFinishedEvents}
             onPress={() => setShowFinishedEvents(!showFinishedEvents)}
           />
+
         </ScrollView>
 
         <View style={styles.filterDotsContainer}>

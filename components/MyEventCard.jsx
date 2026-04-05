@@ -16,7 +16,7 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
   const ui = useResponsiveScale()
   const styles = useMemo(() => createStyles(ui), [ui])
   const markEventAsRead = useSocketStore((s) => s.markEventAsRead)
-  const needsMarking = statusData?.readBy === false
+  const needsMarking = !isInvited && statusData?.readBy === false
   const [isRead, setIsRead] = useState(!needsMarking)
   const [isPressed, setIsPressed] = useState(false)
   const cardRef = useRef(null)
@@ -73,6 +73,8 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
         return 'Zakończone'
       case 'cancelled':
         return 'Anulowane'
+      case 'invited':
+        return 'Zaproszono'
       default:
         return ''
     }
@@ -112,6 +114,8 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
         return <FontAwesome5 name="flag-checkered" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       case 'cancelled':
         return <Entypo name="cross" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
+      case 'invited':
+        return <Ionicons name="mail" size={ui.moderateScale(40, 0.35)} color='rgba(255, 255, 255, 0.15)' />
       default:
         return null
     }
@@ -123,6 +127,8 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
     'completed',
     'cancelled',
   ].includes(status)
+
+  const isInvited = status === 'invited'
 
   const handlePress = () => {
     if (onPress) onPress()
@@ -153,7 +159,12 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
         </View>
 
         {/* Notification badge */}
-        {showNotification && (
+        {isInvited && (
+          <View style={[styles.notificationBadge, styles.invitedBadge]}>
+            <Text style={styles.notificationText}>Zaproszono</Text>
+          </View>
+        )}
+        {!isInvited && showNotification && (
           <View style={styles.notificationBadge}>
             <Text style={styles.notificationText}>Nowe</Text>
           </View>
@@ -285,6 +296,9 @@ const createStyles = (ui) => StyleSheet.create({
     paddingHorizontal: ui.spacing(8, 0.35),
     borderRadius: ui.moderateScale(8, 0.35),
     zIndex: 10,
+  },
+  invitedBadge: {
+    backgroundColor: COLORS.secondary,
   },
   notificationText: {
     fontSize: ui.scaleFont(10, 0.25),

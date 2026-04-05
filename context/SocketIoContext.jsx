@@ -460,6 +460,40 @@ export const SocketIoProvider = ({ children }) => {
         newStatus: data.newStatus,
       })
 
+      // Invite cancelled: remove from invites list, no sound
+      if (data.newStatus === 'inviteCancelled') {
+        store.clearInvite(data.eventId)
+        return
+      }
+
+      // New invite: add to invites list, play sound
+      if (data.newStatus === 'invited') {
+        const shouldNotify = shouldShowNotificationRef.current(
+          'eventStatusUpdates',
+          null,
+          data.eventId
+        )
+        if (shouldNotify) {
+          playNotificationSound()
+          store.setUnreadInvitesList((prev) => {
+            const exists = prev.some((item) => item.eventID._id === data.eventId)
+            if (exists) return prev
+            const newList = [
+              ...prev,
+              {
+                eventID: { _id: data.eventId, eventName: data.eventName },
+                status: 'invited',
+                readBy: false,
+              },
+            ]
+            store.setUnreadInvitesCount(newList.length)
+            return newList
+          })
+        }
+        return
+      }
+
+      // All other statuses (accepted, rejected, finished, inviteAccepted, etc.)
       const shouldNotify = shouldShowNotificationRef.current(
         'eventStatusUpdates',
         null,

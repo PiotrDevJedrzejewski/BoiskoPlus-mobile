@@ -14,6 +14,7 @@ import { COLORS } from '../../constants/colors'
 import FormEvent from '../../components/FormEvent'
 import EditEventUserCard from '../../components/EditEventUserCard'
 import ConfirmModal from '../../components/popup/ConfirmModal'
+import InviteModal from '../../components/popup/InviteModal'
 import customFetch from '../../assets/utils/customFetch'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
@@ -42,6 +43,7 @@ const EditEvent = () => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showFinishModal, setShowFinishModal] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
   // Statystyki
@@ -299,7 +301,17 @@ const EditEvent = () => {
           </View>
         ) : (
           <View style={styles.usersContainer}>
-            <Text style={styles.sectionTitle}>Lista uczestników</Text>
+            <View style={styles.usersHeader}>
+              <Text style={styles.sectionTitle}>Lista uczestników</Text>
+              <TouchableOpacity
+                style={styles.inviteButton}
+                onPress={() => setShowInviteModal(true)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name='mail-outline' size={ui.moderateScale(16, 0.35)} color={COLORS.background} />
+                <Text style={styles.inviteButtonText}>Zaproś</Text>
+              </TouchableOpacity>
+            </View>
             {users.length > 0 ? (
               users.map((userStatus) => (
                 <EditEventUserCard
@@ -344,6 +356,16 @@ const EditEvent = () => {
         actionText='ZAKOŃCZ'
         actionType='warning'
         loading={actionLoading}
+      />
+
+      {/* Invite Modal */}
+      <InviteModal
+        visible={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        eventId={id}
+        invitedUserIds={users
+          .filter((u) => u.status === 'invited')
+          .map((u) => u.userID._id)}
       />
     </View>
   )
@@ -460,11 +482,30 @@ const createStyles = (ui) => StyleSheet.create({
   usersContainer: {
     marginTop: ui.verticalScale(10),
   },
+  usersHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: ui.verticalScale(16),
+  },
   sectionTitle: {
     fontSize: ui.scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginBottom: ui.verticalScale(16),
+  },
+  inviteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: ui.spacing(5, 0.35),
+    backgroundColor: COLORS.secondary,
+    paddingHorizontal: ui.spacing(12, 0.35),
+    paddingVertical: ui.verticalScale(7),
+    borderRadius: ui.moderateScale(20, 0.35),
+  },
+  inviteButtonText: {
+    fontSize: ui.scaleFont(13, 0.35),
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.background,
   },
   emptyText: {
     fontSize: ui.scaleFont(14, 0.35),

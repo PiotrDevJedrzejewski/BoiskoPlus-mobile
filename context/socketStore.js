@@ -58,6 +58,8 @@ export const useSocketStore = create((set, get) => ({
   unreadEventsList: [],
   unreadFriendRequestsCount: 0,
   lastStatusUpdate: null,
+  unreadInvitesList: [],
+  unreadInvitesCount: 0,
 
   // ── Online users ──
   onlineUsers: new Set(),
@@ -99,6 +101,18 @@ export const useSocketStore = create((set, get) => ({
     })),
 
   setLastStatusUpdate: (v) => set({ lastStatusUpdate: v }),
+
+  setUnreadInvitesList: (valOrFn) =>
+    set((s) => ({
+      unreadInvitesList:
+        typeof valOrFn === 'function' ? valOrFn(s.unreadInvitesList) : valOrFn,
+    })),
+
+  setUnreadInvitesCount: (valOrFn) =>
+    set((s) => ({
+      unreadInvitesCount:
+        typeof valOrFn === 'function' ? valOrFn(s.unreadInvitesCount) : valOrFn,
+    })),
 
   setOnlineUsers: (valOrFn) =>
     set((s) => ({
@@ -278,6 +292,14 @@ export const useSocketStore = create((set, get) => ({
 
   resetFriendRequestCount: () => set({ unreadFriendRequestsCount: 0 }),
 
+  clearInvite: (eventId) =>
+    set((s) => {
+      const filtered = s.unreadInvitesList.filter(
+        (item) => item.eventID._id !== eventId
+      )
+      return { unreadInvitesList: filtered, unreadInvitesCount: filtered.length }
+    }),
+
   hasUnreadNotifications: (eventId) => {
     return get().unreadEventsList.some(
       (event) => event.eventID._id === eventId
@@ -343,6 +365,8 @@ export const useSocketStore = create((set, get) => ({
       unreadEventsList: [],
       unreadFriendRequestsCount: 0,
       lastStatusUpdate: null,
+      unreadInvitesList: [],
+      unreadInvitesCount: 0,
       onlineUsers: new Set(),
     })
   },
@@ -356,9 +380,9 @@ export const useSocketStore = create((set, get) => ({
 export const selectTotalUnreadMessages = (s) =>
   s.roomsState.reduce((sum, room) => sum + (room.unreadCount || 0), 0)
 
-/** Total event + friend-request notification count */
+/** Total event + friend-request + invite notification count */
 export const selectTotalNotificationsCount = (s) =>
-  s.unreadEventsCount + s.unreadFriendRequestsCount
+  s.unreadEventsCount + s.unreadFriendRequestsCount + s.unreadInvitesCount
 
 /** Are both sockets connected? */
 export const selectIsConnected = (s) =>

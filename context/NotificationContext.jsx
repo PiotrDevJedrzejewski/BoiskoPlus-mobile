@@ -228,10 +228,12 @@ export const NotificationProvider = ({ children }) => {
           const { router: navRouter } = require('expo-router')
           if (data?.screen === 'chat' && data?.roomId) {
             navRouter.push(`/(auth)/chat/${data.roomId}`)
-          } else if (data?.screen === 'notifications') {
-            navRouter.push('/(auth)/notifications')
           } else if (data?.screen === 'friends') {
             navRouter.push('/(auth)/friends')
+          } else if (data?.type === 'eventStatusUpdate' && data?.newStatus === 'invited') {
+            navRouter.push('/(auth)/events-managment/events-allEvents')
+          } else if (data?.screen === 'notifications') {
+            navRouter.push('/(auth)/notifications')
           }
         } catch (error) {
           console.error('[Push] Błąd nawigacji:', error)

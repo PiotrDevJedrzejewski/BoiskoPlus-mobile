@@ -64,7 +64,7 @@ const EventsOwner = () => {
           <Ionicons name='arrow-back' size={backIconSize} color={COLORS.primary} />
         </TouchableOpacity>
         <Ionicons name='person' size={headerIconSize} color={COLORS.secondary} />
-        <Text style={styles.headerText}>Eventy Właściciela</Text>
+        <Text style={styles.headerText}>Twoje wydarzenia</Text>
       </View>
 
       {loading && (
