@@ -7,6 +7,7 @@ import LottieView from 'lottie-react-native'
 import spinner from '../assets/utils/spinner.json'
 import { View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { KeyboardProvider } from 'react-native-keyboard-controller'
 import ToastManager from 'toastify-react-native'
 import { dbg, useDebugMount, scheduleSummary } from '../assets/utils/debugLogger'
 
@@ -48,6 +49,7 @@ const Layout = () => {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardProvider>
       <AuthProvider>
         <Stack
           screenOptions={{
@@ -70,6 +72,7 @@ const Layout = () => {
         </Stack>
         <ToastManager />
       </AuthProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   )
 }

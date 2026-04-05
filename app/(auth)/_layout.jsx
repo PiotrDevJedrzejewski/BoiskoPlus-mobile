@@ -34,6 +34,9 @@ const CustomTabBar = React.memo(function CustomTabBar() {
   const insets = useSafeAreaInsets()
   const totalUnreadMessages = useSocketStore(selectTotalUnreadMessages)
 
+  // Hide tab bar on chat-room screen
+  const hidden = pathname.includes('chat-room')
+
   const handlePress = useCallback((path) => {
     router.navigate(`/(auth)/${path}`)
   }, [router])
@@ -46,6 +49,8 @@ const CustomTabBar = React.memo(function CustomTabBar() {
     ...styles.tabBar,
     paddingBottom: Math.max(8, insets.bottom),
   }), [insets.bottom])
+
+  if (hidden) return null
 
   return (
     <View style={tabBarStyle}>
@@ -121,6 +126,7 @@ export default function AuthLayout() {
                   >
                     <Stack.Screen name='(map-screens)' options={{ animation: 'none' }} />
                     <Stack.Screen name='chat' options={{ animation: 'none' }} />
+                    <Stack.Screen name='chat-room' options={{ animation: 'slide_from_right' }} />
                   </Stack>
                 </View>
 

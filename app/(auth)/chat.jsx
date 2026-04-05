@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo} from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import {
   StyleSheet,
   Text,
@@ -6,99 +6,44 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Keyboard,
-  Platform,
   ActivityIndicator,
-  Alert,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../constants/colors'
 import ChatRoomListItem from '../../components/ChatRoomListItem'
-import ChatMessageBox from '../../components/ChatMessageBox'
 import customFetch from '../../assets/utils/customFetch'
-import { useSocketStore, selectIsConnected } from '../../context/socketStore'
+import { useSocketStore } from '../../context/socketStore'
 import { useAuth } from '../../context/AuthContext'
-import { useNotification } from '../../context/NotificationContext'
-import LottieView from 'lottie-react-native'
-import { useLocalSearchParams } from 'expo-router'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
-const typing = require('../../assets/utils/typing.json')
-const CUSTOM_TAB_BAR_HEIGHT = 60
-
 const Chat = () => {
-  dbg('ChatScreen')
-  useDebugMount('ChatScreen')
+  dbg('ChatRoomsList')
+  useDebugMount('ChatRoomsList')
   const ui = useResponsiveScale()
   const styles = useMemo(() => createStyles(ui), [ui])
+  const router = useRouter()
   const { user } = useAuth()
   const { openChatWith } = useLocalSearchParams()
-  const insets = useSafeAreaInsets()
 
-  // Zustand selectors — component only re-renders when these specific values change
   const roomsState = useSocketStore((s) => s.roomsState)
-  const chatSocket = useSocketStore((s) => s.chatSocket)
-  const isConnected = useSocketStore(selectIsConnected)
-
-  // Actions are stable references — never trigger re-renders
-  const joinRoom = useSocketStore((s) => s.joinRoom)
-  const leaveRoom = useSocketStore((s) => s.leaveRoom)
-  const socketSendMessage = useSocketStore((s) => s.sendMessage)
-  const setRoomAsRead = useSocketStore((s) => s.setRoomAsRead)
-  const setActiveRoomId = useSocketStore((s) => s.setActiveRoomId)
-  const sendTyping = useSocketStore((s) => s.sendTyping)
-  const sendStopTyping = useSocketStore((s) => s.sendStopTyping)
   const isUserOnline = useSocketStore((s) => s.isUserOnline)
   const addRoom = useSocketStore((s) => s.addRoom)
-  const removeRoom = useSocketStore((s) => s.removeRoom)
+  const joinRoom = useSocketStore((s) => s.joinRoom)
 
-  // Backward compat alias
-  const socket = chatSocket
-
-  const { muteChatRoom, unmuteChatRoom } = useNotification()
-
-  const [filterType, setFilterType] = useState('all') // all | private | group
-  const [selectedRoom, setSelectedRoom] = useState(null)
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [filterType, setFilterType] = useState('all')
   const [loadingRooms, setLoadingRooms] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [eventParticipants, setEventParticipants] = useState([])
-  const [loadingParticipants, setLoadingParticipants] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-
-  // Infinite scroll state
-  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false)
-  const [hasMoreMessages, setHasMoreMessages] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isNearBottom, setIsNearBottom] = useState(true)
-  const [isInitialLoad, setIsInitialLoad] = useState(false)
-  const [typingUsers, setTypingUsers] = useState({})
-  const [keyboardHeight, setKeyboardHeight] = useState(0)
-  const typingTimeoutRef = useRef({})
-
-  const scrollViewRef = useRef(null)
   const openChatWithHandledRef = useRef(null)
 
-  // Ref do selectedRoom - używany w socket handlerach aby uniknąć stale closure
-  // WZORZEC: Ref synchronizowany ze stanem eliminuje stale closures w socket handlerach.
-  // Użyj tego wzorca dla każdej wartości stanu, która jest używana w długożyjących event listenerach.
-  const selectedRoomRef = useRef(null)
-  useEffect(() => {
-    selectedRoomRef.current = selectedRoom
-  }, [selectedRoom])
-
-  // Pobierz pokoje czatu przy załadowaniu (bootstrap — jeśli socket nie zdążył)
+  // Bootstrap rooms if socket hasn't loaded yet
   useEffect(() => {
     const fetchChatRooms = async () => {
       setLoadingRooms(true)
       try {
         const response = await customFetch.get('/chat/rooms')
         const rooms = response.data.chatRooms || []
-        // Wypełnij roomsState tylko jeśli socket jeszcze nie załadował danych
         if (useSocketStore.getState().roomsState.length === 0) {
           useSocketStore.getState().setRoomsState(rooms)
         }
@@ -109,217 +54,17 @@ const Chat = () => {
       }
     }
 
-    if (user) {
-      fetchChatRooms()
-    }
+    if (user) fetchChatRooms()
   }, [user])
 
-  // Pobierz uczestników wydarzeń użytkownika
+  // Auto-open conversation when arriving from another screen (e.g. player profile)
   useEffect(() => {
-    const fetchEventParticipants = async () => {
-      setLoadingParticipants(true)
-      try {
-        const response = await customFetch.get('/chat/event-participants')
-        setEventParticipants(response.data.participants || [])
-      } catch (error) {
-        console.error('Błąd pobierania uczestników wydarzeń:', error)
-      } finally {
-        setLoadingParticipants(false)
-      }
-    }
+    if (!openChatWith || loadingRooms || openChatWithHandledRef.current === openChatWith) return
+    openChatWithHandledRef.current = openChatWith
+    router.push({ pathname: '/(auth)/chat-room', params: { otherUserId: openChatWith } })
+  }, [openChatWith, loadingRooms])
 
-    if (user) {
-      fetchEventParticipants()
-    }
-  }, [user])
-
-  // Obsługa nowych wiadomości z socket
-  useEffect(() => {
-    if (!chatSocket) return
-
-    const handleNewMessage = (msg) => {
-      const currentRoom = selectedRoomRef.current
-
-      // Dodaj wiadomość tylko jeśli jesteśmy w tym pokoju
-      // lastMessage i unreadCount są aktualizowane przez SocketIoContext → roomsState
-      setMessages((prev) => {
-        if (currentRoom && currentRoom.roomId === msg.roomId) {
-          return [...prev, msg]
-        }
-        return prev
-      })
-    }
-
-    chatSocket.on('newMessage', handleNewMessage)
-
-    return () => {
-      chatSocket.off('newMessage', handleNewMessage)
-    }
-    // selectedRoom jest w ref - nie powoduje re-subscribe
-  }, [chatSocket])
-
-  // Obsługa nowych pokojów z socket
-  useEffect(() => {
-    if (!chatSocket) return
-
-    const handleNewChatRoom = (data) => {
-      if (data.userId === user?._id) {
-        addRoom(data.chatRoom)
-        joinRoom(data.chatRoom.roomId)
-      }
-    }
-
-    chatSocket.on('newChatRoom', handleNewChatRoom)
-    return () => {
-      chatSocket.off('newChatRoom', handleNewChatRoom)
-    }
-  }, [chatSocket, user?._id, joinRoom, addRoom])
-
-  // Obsługa usuwania z pokojów
-  useEffect(() => {
-    if (!chatSocket) return
-
-    const handleRemovedFromChatRoom = (data) => {
-      if (data.userId === user?._id) {
-        removeRoom(data.roomId)
-
-        const currentRoom = selectedRoomRef.current
-        if (currentRoom && currentRoom.roomId === data.roomId) {
-          setSelectedRoom(null)
-          setMessages([])
-          setActiveRoomId(null)
-        }
-
-        // V2: użyj funkcji leaveRoom zamiast socket.emit
-        leaveRoom(data.roomId)
-      }
-    }
-
-    chatSocket.on('removedFromChatRoom', handleRemovedFromChatRoom)
-    return () => {
-      chatSocket.off('removedFromChatRoom', handleRemovedFromChatRoom)
-    }
-  }, [chatSocket, user?._id, setActiveRoomId, leaveRoom, removeRoom])
-
-  // Obsługa typing indicator (ref-based - bez re-subscribe)
-  useEffect(() => {
-    if (!chatSocket) return
-
-    const handleUserTyping = (data) => {
-      const roomId = data.roomId
-      const userId = data.userId || data.userID || data.user_id
-      const currentRoom = selectedRoomRef.current
-
-      if (
-        currentRoom &&
-        currentRoom.roomId === roomId &&
-        userId !== user?._id
-      ) {
-        // Znajdź użytkownika w liście uczestników pokoju
-        let nickName = 'Użytkownik'
-        if (currentRoom.participants && currentRoom.participants.length > 0) {
-          const typingUser = currentRoom.participants.find(
-            (p) => String(p._id) === String(userId)
-          )
-          if (typingUser) {
-            nickName =
-              typingUser.nickName ||
-              typingUser.nickname ||
-              typingUser.nick ||
-              'Użytkownik'
-          }
-        }
-
-        setTypingUsers((prev) => ({
-          ...prev,
-          [userId]: nickName,
-        }))
-
-        // Usuń status typing po 3 sekundach
-        if (typingTimeoutRef.current[userId]) {
-          clearTimeout(typingTimeoutRef.current[userId])
-        }
-        typingTimeoutRef.current[userId] = setTimeout(() => {
-          setTypingUsers((prev) => {
-            const newTyping = { ...prev }
-            delete newTyping[userId]
-            return newTyping
-          })
-        }, 3000)
-      }
-    }
-
-    const handleUserStoppedTyping = (data) => {
-      const roomId = data.roomId
-      const userId = data.userId || data.userID || data.user_id
-      const currentRoom = selectedRoomRef.current
-
-      if (currentRoom && currentRoom.roomId === roomId) {
-        if (typingTimeoutRef.current[userId]) {
-          clearTimeout(typingTimeoutRef.current[userId])
-          delete typingTimeoutRef.current[userId]
-        }
-        setTypingUsers((prev) => {
-          const newTyping = { ...prev }
-          delete newTyping[userId]
-          return newTyping
-        })
-      }
-    }
-
-    chatSocket.on('userTyping', handleUserTyping)
-    chatSocket.on('userStoppedTyping', handleUserStoppedTyping)
-
-    return () => {
-      chatSocket.off('userTyping', handleUserTyping)
-      chatSocket.off('userStoppedTyping', handleUserStoppedTyping)
-      // Clear all typing timeouts
-      Object.values(typingTimeoutRef.current).forEach(clearTimeout)
-      typingTimeoutRef.current = {}
-    }
-  }, [chatSocket, user?._id])
-
-  // Reset activeRoomId przy odmontowaniu
-  useEffect(() => {
-    return () => {
-      setActiveRoomId(null)
-    }
-  }, [setActiveRoomId])
-
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
-    const hideEvent =
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
-
-    const onKeyboardShow = (event) => {
-      setKeyboardHeight(event?.endCoordinates?.height || 0)
-    }
-
-    const onKeyboardHide = () => {
-      setKeyboardHeight(0)
-    }
-
-    const showSubscription = Keyboard.addListener(showEvent, onKeyboardShow)
-    const hideSubscription = Keyboard.addListener(hideEvent, onKeyboardHide)
-
-    return () => {
-      showSubscription.remove()
-      hideSubscription.remove()
-    }
-  }, [])
-
-  // Scroll do końca przy nowych wiadomościach
-  useEffect(() => {
-    if (isInitialLoad) {
-      scrollViewRef.current?.scrollToEnd({ animated: false })
-      setIsInitialLoad(false)
-    } else if (isNearBottom && messages.length > 0) {
-      scrollViewRef.current?.scrollToEnd({ animated: true })
-    }
-  }, [messages, isInitialLoad, isNearBottom])
-
-  // Filtrowanie pokoi
+  // Filter rooms
   const filteredRooms = roomsState.filter((room) => {
     if (filterType === 'private' && room.roomType !== 'private') return false
     if (filterType === 'group' && room.roomType !== 'group') return false
@@ -339,840 +84,191 @@ const Chat = () => {
     return true
   })
 
-  // Oznaczanie wiadomości jako przeczytane
-  const markAllMessagesAsRead = async (roomId) => {
-    try {
-      await customFetch.patch('/chat/messages/read', { roomId })
-    } catch (error) {
-      console.error('Błąd oznaczania wiadomości jako przeczytane:', error)
-    }
-  }
-
-  // Obsługa wyboru pokoju
-  const handleRoomSelect = async (room) => {
-    setSelectedRoom(room)
-    setActiveRoomId(room.roomId)
-    setLoading(true)
-
-    // Zresetuj stan paginacji
-    setCurrentPage(1)
-    setHasMoreMessages(true)
-    setLoadingOlderMessages(false)
-    setIsNearBottom(true)
-    setIsInitialLoad(true)
-
-    // Wyczyść typing users
-    setTypingUsers({})
-    Object.values(typingTimeoutRef.current).forEach(clearTimeout)
-    typingTimeoutRef.current = {}
-
-    // Oznacz wiadomości jako przeczytane
-    markAllMessagesAsRead(room.roomId)
-    setRoomAsRead(room.roomId)
-
-    try {
-      const response = await customFetch.get(`/chat/messages/${room.roomId}`)
-      setMessages(response.data.messages || [])
-
-      if ((response.data.messages || []).length < 30) {
-        setHasMoreMessages(false)
-      }
-    } catch (error) {
-      console.error('Błąd pobierania wiadomości:', error)
-      setMessages([])
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Ładowanie starszych wiadomości
-  const loadOlderMessages = async () => {
-    if (loadingOlderMessages || !hasMoreMessages || !selectedRoom) return
-
-    setLoadingOlderMessages(true)
-
-    try {
-      const nextPage = currentPage + 1
-      const response = await customFetch.get(
-        `/chat/messages/${selectedRoom.roomId}?page=${nextPage}&limit=30`
-      )
-
-      const olderMessages = response.data.messages || []
-
-      if (olderMessages.length > 0) {
-        setMessages((prev) => [...olderMessages, ...prev])
-        setCurrentPage(nextPage)
-
-        if (olderMessages.length < 30) {
-          setHasMoreMessages(false)
-        }
-      } else {
-        setHasMoreMessages(false)
-      }
-    } catch (error) {
-      console.error('Błąd ładowania starszych wiadomości:', error)
-    } finally {
-      setLoadingOlderMessages(false)
-    }
-  }
-
-  // Tworzenie nowego pokoju z użytkownikiem
-  const handleStartNewChat = async (otherUserId) => {
-    try {
-      const response = await customFetch.post('/chat/rooms', { otherUserId })
-      const newRoom = response.data.chatRoom
-
-      const roomExists = roomsState.some(
-        (room) => room.roomId === newRoom.roomId
-      )
-      if (!roomExists) {
-        addRoom(newRoom)
-        joinRoom(newRoom.roomId)
-      }
-
-      handleRoomSelect(newRoom)
-    } catch (error) {
-      console.error('Błąd tworzenia pokoju:', error)
-      Alert.alert('Błąd', 'Nie udało się utworzyć pokoju czatu')
-    }
-  }
-
-  // Auto-otwórz rozmowę gdy przybywamy z innego ekranu (np. profilu gracza)
-  useEffect(() => {
-    if (!openChatWith || loadingRooms || openChatWithHandledRef.current === openChatWith) return
-    openChatWithHandledRef.current = openChatWith
-    handleStartNewChat(openChatWith)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openChatWith, loadingRooms])
-
-  // Powrót do listy pokojów
-  const handleBackToList = () => {
-    setSelectedRoom(null)
-    setMessages([])
-    setActiveRoomId(null)
-    setShowSettings(false)
-    setTypingUsers({})
-    // Clear all typing timeouts
-    Object.values(typingTimeoutRef.current).forEach(clearTimeout)
-    typingTimeoutRef.current = {}
-  }
-
-  // Obsługa zmiany input - wysyłanie typing events
-  const handleInputChange = (text) => {
-    setInput(text)
-
-    if (!selectedRoom || !sendTyping) return
-
-    // Wyślij typing event gdy użytkownik zaczyna pisać
-    if (text.trim() && !input.trim()) {
-      sendTyping(selectedRoom.roomId)
-    }
-
-    // Wyślij stopTyping gdy użytkownik usuwa cały tekst
-    if (!text.trim() && input.trim() && sendStopTyping) {
-      sendStopTyping(selectedRoom.roomId)
-    }
-  }
-
-  // Wysyłanie wiadomości
-  const handleSend = async () => {
-    if (!input.trim() || !user || !selectedRoom) {
-      if (!selectedRoom) {
-        Alert.alert('Info', 'Wybierz pokój czatu, aby wysłać wiadomość')
-      }
-      return
-    }
-
-    if (!chatSocket || !isConnected) {
-      Alert.alert('Błąd', 'Brak połączenia z serwerem. Spróbuj ponownie.')
-      return
-    }
-
-    try {
-      // Wyślij stopTyping przed wysłaniem wiadomości
-      if (sendStopTyping) {
-        sendStopTyping(selectedRoom.roomId)
-      }
-
-      // V2: sendMessage zwraca Promise i nie wymaga senderId
-      await socketSendMessage(selectedRoom.roomId, input)
-      setInput('')
-    } catch (error) {
-      console.error('Błąd wysyłania wiadomości:', error)
-      Alert.alert('Błąd', 'Nie udało się wysłać wiadomości')
-    }
-  }
-
-  // Wyciszanie czatu
-  const handleMuteChat = async (duration) => {
-    if (!selectedRoom) return
-
-    let muteExpiresAt = null
-
-    if (duration === 'permanent') {
-      muteExpiresAt = null
-    } else if (duration === '1h') {
-      muteExpiresAt = new Date(Date.now() + 1000 * 60 * 60)
-    } else if (duration === '12h') {
-      muteExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 12)
-    } else if (duration === '24h') {
-      muteExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24)
-    } else if (duration === '1w') {
-      muteExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
-    }
-
-    try {
-      const result = await muteChatRoom(selectedRoom.roomId, muteExpiresAt)
-      if (result.success) {
-        Alert.alert(
-          'Sukces',
-          `Czat wyciszony na ${duration === 'permanent' ? 'stałe' : duration}`
-        )
-      } else {
-        Alert.alert('Błąd', 'Błąd wyciszania czatu')
-      }
-    } catch (error) {
-      Alert.alert('Błąd', 'Błąd wyciszania czatu')
-      console.error('Błąd wyciszania czatu:', error)
-    }
-
-    setShowSettings(false)
-  }
-
-  const handleUnmuteChat = async () => {
-    if (!selectedRoom) return
-    try {
-      const result = await unmuteChatRoom(selectedRoom.roomId)
-      if (result.success) {
-        Alert.alert('Sukces', 'Powiadomienia w czacie włączone')
-      } else {
-        Alert.alert('Błąd', 'Błąd odciszania czatu')
-      }
-    } catch (error) {
-      Alert.alert('Błąd', 'Błąd odciszania czatu')
-      console.error('Błąd odciszania czatu:', error)
-    }
-
-    setShowSettings(false)
-  }
-
-  // Nazwa wybranego pokoju
-  const getSelectedRoomName = () => {
-    if (!selectedRoom) return ''
-    if (selectedRoom.roomType === 'group') {
-      return selectedRoom.eventName || 'Wydarzenie grupowe'
-    }
-    const otherUser = selectedRoom.participants?.find(
-      (p) => String(p._id) !== String(user?._id)
-    )
-    return otherUser?.nickName || 'Użytkownik'
-  }
-
-  // Pobierz unreadCount dla pokoju z roomsState
   const getUnreadCount = (roomId) => {
     const roomData = roomsState.find((r) => r.roomId === roomId)
     return roomData?.unreadCount || 0
   }
 
-  // Oblicz tekst typing indicator
-  const getTypingText = () => {
-    const typingUsersList = Object.values(typingUsers)
-    if (typingUsersList.length === 0) return null
-    if (typingUsersList.length === 1) return `${typingUsersList[0]} pisze`
-    if (typingUsersList.length === 2)
-      return `${typingUsersList[0]} i ${typingUsersList[1]} piszą`
-    return `${typingUsersList.length} osób pisze`
+  const handleRoomSelect = (room) => {
+    router.push({ pathname: '/(auth)/chat-room', params: { roomId: room.roomId } })
   }
 
-  const typingText = getTypingText()
-  // Tab bar height = base (60) + extra safe area beyond the default 8px padding
-  const tabBarHeight = CUSTOM_TAB_BAR_HEIGHT + Math.max(0, insets.bottom - 8)
-  const inputBottomOffset = Math.max(0, keyboardHeight - tabBarHeight)
   const headerIconSize = ui.moderateScale(26, 0.35)
   const filterIconSize = ui.moderateScale(14, 0.3)
   const stateIconSize = ui.moderateScale(50, 0.3)
-  const backIconSize = ui.moderateScale(24, 0.35)
-  const settingsIconSize = ui.moderateScale(22, 0.35)
   const searchIconSize = ui.moderateScale(20, 0.35)
-  const sendIconSize = ui.moderateScale(20, 0.35)
-  const typingAnimationSize = ui.scale(80)
 
-  // Widok listy pokojów
-  if (!selectedRoom) {
-    return (
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Ionicons name='chatbubbles' size={headerIconSize} color={COLORS.secondary} />
-          <Text style={styles.headerText}>Czat</Text>
-        </View>
-
-        {/* Filtry */}
-        <View style={styles.filters}>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              filterType === 'all' && styles.filterButtonActive,
-            ]}
-            onPress={() => setFilterType('all')}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                filterType === 'all' && styles.filterTextActive,
-              ]}
-            >
-              Wszystkie
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              filterType === 'private' && styles.filterButtonActive,
-            ]}
-            onPress={() => setFilterType('private')}
-          >
-            <Ionicons
-              name='chatbubble'
-              size={filterIconSize}
-              color={
-                filterType === 'private' ? COLORS.background : COLORS.primary
-              }
-            />
-            <Text
-              style={[
-                styles.filterText,
-                filterType === 'private' && styles.filterTextActive,
-              ]}
-            >
-              Prywatne
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              filterType === 'group' && styles.filterButtonActive,
-            ]}
-            onPress={() => setFilterType('group')}
-          >
-            <Ionicons
-              name='people'
-              size={filterIconSize}
-              color={
-                filterType === 'group' ? COLORS.background : COLORS.primary
-              }
-            />
-            <Text
-              style={[
-                styles.filterText,
-                filterType === 'group' && styles.filterTextActive,
-              ]}
-            >
-              Grupowe
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Wyszukiwarka */}
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder='Szukaj...'
-            placeholderTextColor={COLORS.gray}
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-          />
-          <Ionicons
-            name='search'
-            size={searchIconSize}
-            color={COLORS.gray}
-            style={styles.searchIcon}
-          />
-        </View>
-
-        {/* Lista pokojów */}
-        <ScrollView
-          style={styles.roomList}
-          showsVerticalScrollIndicator={false}
-        >
-          {filteredRooms.length > 0 ? (
-            filteredRooms.map((room) => (
-              <ChatRoomListItem
-                key={room.roomId}
-                room={room}
-                currentUser={user}
-                onPress={() => handleRoomSelect(room)}
-                isSelected={false}
-                unreadCount={getUnreadCount(room.roomId)}
-                isUserOnline={isUserOnline}
-              />
-            ))
-          ) : (
-            <View style={styles.emptyState}>
-              <Ionicons
-                name='chatbubbles-outline'
-                size={stateIconSize}
-                color={COLORS.gray}
-              />
-              <Text style={styles.emptyText}>Pusto? Znajdź swoich znajomych lub dołącz do wydarzenia!</Text>
-            </View>
-          )}
-        </ScrollView>
-      </View>
-    )
-  }
-
-  // Widok wiadomości
   return (
     <View style={styles.container}>
-      {/* Header z powrotem */}
-      <View style={styles.messageHeader}>
-        <TouchableOpacity onPress={handleBackToList} style={styles.backButton}>
-          <Ionicons name='arrow-back' size={backIconSize} color={COLORS.primary} />
-        </TouchableOpacity>
-        <View style={styles.headerInfo}>
-          <Text style={styles.headerUsername} numberOfLines={1}>
-            {getSelectedRoomName()}
-          </Text>
-          {selectedRoom.roomType === 'group' && (
-            <Text style={styles.headerSubtitle}>
-              {selectedRoom.participants?.length || 0} uczestników
-            </Text>
-          )}
-        </View>
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={() => setShowSettings(!showSettings)}
-        >
-          <Ionicons name='settings-outline' size={settingsIconSize} color={COLORS.primary} />
-        </TouchableOpacity>
+      {/* Header */}
+      <View style={styles.header}>
+        <Ionicons name='chatbubbles' size={headerIconSize} color={COLORS.secondary} />
+        <Text style={styles.headerText}>Czat</Text>
       </View>
 
-      {/* Settings dropdown */}
-      {showSettings && (
-        <View style={styles.settingsDropdown}>
-          <TouchableOpacity
-            style={styles.settingsOption}
-            onPress={() => handleMuteChat('1h')}
-          >
-            <Text style={styles.settingsOptionText}>Wycisz na 1h</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.settingsOption}
-            onPress={() => handleMuteChat('12h')}
-          >
-            <Text style={styles.settingsOptionText}>Wycisz na 12h</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.settingsOption}
-            onPress={() => handleMuteChat('24h')}
-          >
-            <Text style={styles.settingsOptionText}>Wycisz na 24h</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.settingsOption}
-            onPress={() => handleMuteChat('1w')}
-          >
-            <Text style={styles.settingsOptionText}>Wycisz na tydzień</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.settingsOption}
-            onPress={() => handleMuteChat('permanent')}
-          >
-            <Text style={styles.settingsOptionText}>Wycisz na stałe</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.settingsOption, styles.settingsOptionLast]}
-            onPress={handleUnmuteChat}
-          >
-            <Text style={styles.settingsOptionText}>Włącz powiadomienia</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Wiadomości */}
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size='large' color={COLORS.secondary} />
-          <Text style={styles.loadingText}>Ładowanie wiadomości...</Text>
-        </View>
-      ) : (
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.messagesContainer}
-          contentContainerStyle={[
-            styles.messagesContent,
-            {
-              paddingBottom:
-                ui.verticalScale(96) + (typingText ? ui.verticalScale(20) : 0),
-            },
-          ]}
-          showsVerticalScrollIndicator={false}
-          onScroll={({ nativeEvent }) => {
-            const { contentOffset, contentSize, layoutMeasurement } =
-              nativeEvent
-            const distanceFromBottom =
-              contentSize.height - contentOffset.y - layoutMeasurement.height
-            setIsNearBottom(distanceFromBottom <= 200)
-
-            // Ładuj starsze wiadomości gdy scroll blisko góry
-            if (
-              contentOffset.y < 100 &&
-              !loadingOlderMessages &&
-              hasMoreMessages
-            ) {
-              loadOlderMessages()
-            }
-          }}
-          scrollEventThrottle={100}
-        >
-          {loadingOlderMessages && (
-            <View style={styles.loadingOlder}>
-              <ActivityIndicator size='small' color={COLORS.secondary} />
-              <Text style={styles.loadingOlderText}>
-                Ładowanie starszych wiadomości...
-              </Text>
-            </View>
-          )}
-          {!hasMoreMessages && messages.length > 0 && (
-            <Text style={styles.noMoreMessages}>
-              To są wszystkie wiadomości w tym pokoju
-            </Text>
-          )}
-          {messages.length > 0 ? (
-            messages.map((msg) => (
-              <ChatMessageBox
-                key={msg._id}
-                message={msg.message}
-                isOwn={msg.sender?._id === user?._id}
-                senderName={msg.sender?.nickName || 'Użytkownik'}
-                time={
-                  msg.createdAt
-                    ? new Date(msg.createdAt).toLocaleTimeString('pl-PL', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                    : ''
-                }
-              />
-            ))
-          ) : (
-            <View style={styles.emptyMessages}>
-              <Ionicons
-                name='chatbubble-outline'
-                size={stateIconSize}
-                color={COLORS.gray}
-              />
-              <Text style={styles.emptyText}>Brak wiadomości</Text>
-              <Text style={styles.emptySubtext}>
-                Napisz pierwszą wiadomość!
-              </Text>
-            </View>
-          )}
-        </ScrollView>
-      )}
-
-      {/* Input */}
-      <View style={[styles.inputContainer, { bottom: inputBottomOffset }]}>
-        {/* Typing indicator */}
-        {typingText && (
-          <View style={styles.typingIndicator}>
-            <Text style={styles.typingIndicatorText}>{typingText}</Text>
-            <View style={styles.typingAnimationWrapper}>
-              <LottieView
-                source={typing}
-                autoPlay
-                loop
-                style={{
-                  width: typingAnimationSize,
-                  height: typingAnimationSize,
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  marginLeft: -typingAnimationSize / 2,
-                  marginTop: -typingAnimationSize / 2,
-                }}
-              />
-            </View>
-          </View>
-        )}
-        <TextInput
-          style={styles.messageInput}
-          placeholder='Napisz wiadomość...'
-          placeholderTextColor={COLORS.gray}
-          value={input}
-          onChangeText={handleInputChange}
-          onSubmitEditing={handleSend}
-          returnKeyType='send'
-        />
+      {/* Filters */}
+      <View style={styles.filters}>
         <TouchableOpacity
-          style={[
-            styles.sendButton,
-            !input.trim() && styles.sendButtonDisabled,
-          ]}
-          onPress={handleSend}
-          disabled={!input.trim()}
+          style={[styles.filterButton, filterType === 'all' && styles.filterButtonActive]}
+          onPress={() => setFilterType('all')}
+        >
+          <Text style={[styles.filterText, filterType === 'all' && styles.filterTextActive]}>
+            Wszystkie
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.filterButton, filterType === 'private' && styles.filterButtonActive]}
+          onPress={() => setFilterType('private')}
         >
           <Ionicons
-            name='send'
-            size={sendIconSize}
-            color={input.trim() ? COLORS.background : COLORS.gray}
+            name='chatbubble'
+            size={filterIconSize}
+            color={filterType === 'private' ? COLORS.background : COLORS.primary}
           />
+          <Text style={[styles.filterText, filterType === 'private' && styles.filterTextActive]}>
+            Prywatne
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.filterButton, filterType === 'group' && styles.filterButtonActive]}
+          onPress={() => setFilterType('group')}
+        >
+          <Ionicons
+            name='people'
+            size={filterIconSize}
+            color={filterType === 'group' ? COLORS.background : COLORS.primary}
+          />
+          <Text style={[styles.filterText, filterType === 'group' && styles.filterTextActive]}>
+            Grupowe
+          </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Search */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder='Szukaj...'
+          placeholderTextColor={COLORS.gray}
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+        />
+        <Ionicons name='search' size={searchIconSize} color={COLORS.gray} style={styles.searchIcon} />
+      </View>
+
+      {/* Room list */}
+      <ScrollView style={styles.roomList} showsVerticalScrollIndicator={false}>
+        {filteredRooms.length > 0 ? (
+          filteredRooms.map((room) => (
+            <ChatRoomListItem
+              key={room.roomId}
+              room={room}
+              currentUser={user}
+              onPress={() => handleRoomSelect(room)}
+              isSelected={false}
+              unreadCount={getUnreadCount(room.roomId)}
+              isUserOnline={isUserOnline}
+            />
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <Ionicons name='chatbubbles-outline' size={stateIconSize} color={COLORS.gray} />
+            <Text style={styles.emptyText}>
+              Pusto? Znajdź swoich znajomych lub dołącz do wydarzenia!
+            </Text>
+          </View>
+        )}
+      </ScrollView>
     </View>
   )
 }
 
 export default Chat
 
-const createStyles = (ui) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    position: 'relative',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: ui.verticalScale(20),
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-  },
-  headerText: {
-    fontSize: ui.scaleFont(24, 0.45),
-    fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(12, 0.35),
-  },
-  filters: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    paddingHorizontal: ui.spacing(16),
-    paddingVertical: ui.verticalScale(12),
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    gap: ui.spacing(8, 0.35),
-  },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: ui.spacing(12, 0.35),
-    paddingVertical: ui.verticalScale(8),
-    borderRadius: ui.moderateScale(16, 0.35),
-    backgroundColor: '#494949',
-    gap: ui.spacing(6, 0.35),
-  },
-  filterButtonActive: {
-    backgroundColor: COLORS.secondary,
-  },
-  filterText: {
-    fontSize: ui.scaleFont(13, 0.35),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-  },
-  filterTextActive: {
-    color: COLORS.background,
-    fontFamily: 'Montserrat-Bold',
-  },
-  searchContainer: {
-    paddingHorizontal: ui.spacing(16),
-    paddingVertical: ui.verticalScale(12),
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-  },
-  searchInput: {
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.controlRadius,
-    minHeight: ui.controlMinHeight,
-    paddingHorizontal: ui.controlPaddingHorizontal,
-    paddingVertical: ui.controlPaddingVertical,
-    paddingRight: ui.spacing(40, 0.35),
-    fontSize: ui.scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-  },
-  searchIcon: {
-    position: 'absolute',
-    right: ui.spacing(28, 0.35),
-    top: ui.verticalScale(24),
-  },
-  roomList: {
-    flex: 1,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: ui.verticalScale(50),
-  },
-  emptyText: {
-    marginTop: ui.verticalScale(16),
-    fontSize: ui.scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-  },
-  emptySubtext: {
-    marginTop: ui.verticalScale(8),
-    fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    opacity: 0.7,
-  },
-  // Message view styles
-  messageHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: ui.spacing(16),
-    paddingVertical: ui.verticalScale(16),
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.third,
-  },
-  backButton: {
-    padding: ui.spacing(4, 0.35),
-    marginRight: ui.spacing(12, 0.35),
-  },
-  headerInfo: {
-    flex: 1,
-  },
-  headerUsername: {
-    fontSize: ui.scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-  },
-  headerSubtitle: {
-    fontSize: ui.scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    marginTop: ui.verticalScale(2),
-  },
-  settingsButton: {
-    padding: ui.spacing(4, 0.35),
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: ui.verticalScale(12),
-    fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-  },
-  messagesContainer: {
-    flex: 1,
-  },
-  messagesContent: {
-    padding: ui.spacing(16),
-    flexGrow: 1,
-  },
-  emptyMessages: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: ui.verticalScale(50),
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: ui.spacing(16),
-    paddingVertical: ui.verticalScale(12),
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderTopWidth: 1,
-    borderTopColor: COLORS.third,
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
-  },
-  typingIndicator: {
-    position: 'absolute',
-    flexDirection: 'row',
-    top: -ui.verticalScale(24),
-    left: ui.spacing(16),
-  },
-  typingIndicatorText: {
-    fontSize: ui.scaleFont(12, 0.3),
-    fontFamily: 'ObjectFont',
-    color: COLORS.primary,
-  },
-  typingAnimationWrapper: {
-    width: ui.scale(50),
-    height: ui.verticalScale(20),
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  messageInput: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: ui.controlRadius,
-    minHeight: ui.controlMinHeight,
-    paddingHorizontal: ui.controlPaddingHorizontal,
-    paddingVertical: ui.controlPaddingVertical,
-    fontSize: ui.scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.background,
-    marginRight: ui.spacing(12, 0.35),
-  },
-  sendButton: {
-    width: ui.controlMinHeight,
-    height: ui.controlMinHeight,
-    borderRadius: ui.controlMinHeight / 2,
-    backgroundColor: COLORS.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButtonDisabled: {
-    backgroundColor: COLORS.backgroundSecondary,
-  },
-  // Settings dropdown styles
-  settingsDropdown: {
-    position: 'absolute',
-    zIndex: 20,
-    top: ui.verticalScale(60),
-    right: 0,
-    width: '100%',
-    borderRadius: ui.moderateScale(8, 0.35),
-    backgroundColor: COLORS.backgroundSecondary,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.third,
-  },
-  settingsOption: {
-    paddingVertical: ui.verticalScale(12),
-    paddingHorizontal: ui.spacing(16),
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  settingsOptionLast: {
-    borderBottomWidth: 0,
-  },
-  settingsOptionText: {
-    fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-  },
-  // Infinite scroll styles
-  loadingOlder: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: ui.verticalScale(10),
-  },
-  loadingOlderText: {
-    marginLeft: ui.spacing(8, 0.35),
-    fontSize: ui.scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-  },
-  noMoreMessages: {
-    textAlign: 'center',
-    paddingVertical: ui.verticalScale(10),
-    fontSize: ui.scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    fontStyle: 'italic',
-  },
-})
+const createStyles = (ui) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: ui.verticalScale(20),
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    },
+    headerText: {
+      fontSize: ui.scaleFont(24, 0.45),
+      fontFamily: 'Montserrat-Bold',
+      color: COLORS.primary,
+      marginLeft: ui.spacing(12, 0.35),
+    },
+    filters: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      paddingHorizontal: ui.spacing(16),
+      paddingVertical: ui.verticalScale(12),
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      gap: ui.spacing(8, 0.35),
+    },
+    filterButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: ui.spacing(12, 0.35),
+      paddingVertical: ui.verticalScale(8),
+      borderRadius: ui.moderateScale(16, 0.35),
+      backgroundColor: '#494949',
+      gap: ui.spacing(6, 0.35),
+    },
+    filterButtonActive: {
+      backgroundColor: COLORS.secondary,
+    },
+    filterText: {
+      fontSize: ui.scaleFont(13, 0.35),
+      fontFamily: 'Lato-Regular',
+      color: COLORS.primary,
+    },
+    filterTextActive: {
+      color: COLORS.background,
+      fontFamily: 'Montserrat-Bold',
+    },
+    searchContainer: {
+      paddingHorizontal: ui.spacing(16),
+      paddingVertical: ui.verticalScale(12),
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    },
+    searchInput: {
+      backgroundColor: COLORS.backgroundSecondary,
+      borderRadius: ui.controlRadius,
+      minHeight: ui.controlMinHeight,
+      paddingHorizontal: ui.controlPaddingHorizontal,
+      paddingVertical: ui.controlPaddingVertical,
+      paddingRight: ui.spacing(40, 0.35),
+      fontSize: ui.scaleFont(16, 0.35),
+      fontFamily: 'Lato-Regular',
+      color: COLORS.primary,
+      borderWidth: 1,
+      borderColor: COLORS.secondary,
+    },
+    searchIcon: {
+      position: 'absolute',
+      right: ui.spacing(28, 0.35),
+      top: ui.verticalScale(24),
+    },
+    roomList: {
+      flex: 1,
+    },
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: ui.verticalScale(50),
+    },
+    emptyText: {
+      marginTop: ui.verticalScale(16),
+      fontSize: ui.scaleFont(16, 0.35),
+      fontFamily: 'Lato-Regular',
+      color: COLORS.gray,
+    },
+  })
