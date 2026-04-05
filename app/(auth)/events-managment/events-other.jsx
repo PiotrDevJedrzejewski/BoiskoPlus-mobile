@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo} from 'react'
 import {
   ActivityIndicator,
   ScrollView,
@@ -25,7 +25,7 @@ const EventsOther = () => {
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const [ownerEvents, setOwnerEvents] = useState([])
   const [otherUserEvents, setOtherUserEvents] = useState([])
 

@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, View, ScrollView } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../../constants/colors'
@@ -8,7 +9,7 @@ const Premium = () => {
   dbg('PremiumScreen')
   useDebugMount('PremiumScreen')
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   return (
     <View style={styles.container} pointerEvents='box-none'>

@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -7,7 +8,7 @@ import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const FindEventListElement = ({ event, onPress }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   if (!event) {
     return (

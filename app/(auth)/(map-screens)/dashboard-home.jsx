@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo} from 'react'
 import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { COLORS } from '../../../constants/colors'
@@ -15,7 +15,7 @@ const DashboardHome = () => {
   useDebugMount('DashboardHomeScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const { setIsInteractive, setOverlayOpacity } = useMap()
 
   useFocusEffect(

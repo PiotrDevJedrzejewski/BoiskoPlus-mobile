@@ -1,26 +1,34 @@
-import { useMemo, useState } from 'react'
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
-import { Picker } from '@react-native-picker/picker'
+import { useMemo, useRef, useState, useEffect } from 'react'
+import { Modal, Pressable, StyleSheet, Text, View, FlatList, Animated, Dimensions } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import { COLORS } from '../constants/colors'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const MONTHS = [
-  { value: 1, label: 'Styczeń' },
-  { value: 2, label: 'Luty' },
-  { value: 3, label: 'Marzec' },
-  { value: 4, label: 'Kwiecień' },
+  { value: 1, label: 'Sty' },
+  { value: 2, label: 'Lut' },
+  { value: 3, label: 'Mar' },
+  { value: 4, label: 'Kwi' },
   { value: 5, label: 'Maj' },
-  { value: 6, label: 'Czerwiec' },
-  { value: 7, label: 'Lipiec' },
-  { value: 8, label: 'Sierpień' },
-  { value: 9, label: 'Wrzesień' },
-  { value: 10, label: 'Październik' },
-  { value: 11, label: 'Listopad' },
-  { value: 12, label: 'Grudzień' },
+  { value: 6, label: 'Cze' },
+  { value: 7, label: 'Lip' },
+  { value: 8, label: 'Sie' },
+  { value: 9, label: 'Wrz' },
+  { value: 10, label: 'Paź' },
+  { value: 11, label: 'Lis' },
+  { value: 12, label: 'Gru' },
 ]
 
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
+
+const PANEL_HEIGHT = Dimensions.get('window').height * 0.6
+const ITEM_HEIGHT = 44
+
+const getItemLayout = (_, index) => ({
+  length: ITEM_HEIGHT,
+  offset: ITEM_HEIGHT * index,
+  index,
+})
 
 const pad2 = (value) => String(value).padStart(2, '0')
 
@@ -71,11 +79,23 @@ const DatePicker = ({
   disabled = false,
 }) => {
   const ui = useResponsiveScale()
-  const insets = useSafeAreaInsets()
-  const styles = useMemo(() => createStyles(ui, insets.bottom), [ui, insets.bottom])
+  const styles = useMemo(() => createStyles(ui), [ui])
   const parsedValue = parseIsoDate(value)
 
+  const currentYear = new Date().getFullYear()
+  const minYear = minimumDate ? minimumDate.getFullYear() : 1900
+  const maxYear = maximumDate ? maximumDate.getFullYear() : currentYear
+  const years = useMemo(
+    () => Array.from({ length: Math.max(1, maxYear - minYear + 1) }, (_, i) => maxYear - i),
+    [maxYear, minYear]
+  )
+
   const initialDate = parsedValue || maximumDate || new Date(2000, 0, 1)
+  const anim = useRef(new Animated.Value(0)).current
+  const isMounted = useRef(true)
+  const dayListRef = useRef(null)
+  const monthListRef = useRef(null)
+  const yearListRef = useRef(null)
 
   const [showModal, setShowModal] = useState(false)
   const [tempDay, setTempDay] = useState(initialDate.getDate())
@@ -83,17 +103,24 @@ const DatePicker = ({
   const [tempYear, setTempYear] = useState(initialDate.getFullYear())
   const [localError, setLocalError] = useState('')
 
-  const currentYear = new Date().getFullYear()
-  const minYear = minimumDate ? minimumDate.getFullYear() : 1900
-  const maxYear = maximumDate ? maximumDate.getFullYear() : currentYear
+  useEffect(() => {
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
 
-  const years = useMemo(
-    () =>
-      Array.from({ length: Math.max(1, maxYear - minYear + 1) }, (_, i) =>
-        maxYear - i
-      ),
-    [maxYear, minYear]
-  )
+  useEffect(() => {
+    if (!showModal) return
+    const timer = setTimeout(() => {
+      dayListRef.current?.scrollToIndex({ index: tempDay - 1, animated: false, viewPosition: 0.5 })
+      monthListRef.current?.scrollToIndex({ index: tempMonth - 1, animated: false, viewPosition: 0.5 })
+      const yearIdx = years.indexOf(tempYear)
+      if (yearIdx >= 0) {
+        yearListRef.current?.scrollToIndex({ index: yearIdx, animated: false, viewPosition: 0.5 })
+      }
+    }, 320)
+    return () => clearTimeout(timer)
+  }, [showModal])
 
   const openDatePicker = () => {
     const sourceDate = parseIsoDate(value) || maximumDate || new Date(2000, 0, 1)
@@ -101,17 +128,20 @@ const DatePicker = ({
     setTempMonth(sourceDate.getMonth() + 1)
     setTempYear(sourceDate.getFullYear())
     setLocalError('')
+    anim.setValue(0)
     setShowModal(true)
+    Animated.timing(anim, { toValue: 1, duration: 280, useNativeDriver: true }).start()
   }
 
-  const closeDatePicker = () => {
+  const close = () => {
     setLocalError('')
-    setShowModal(false)
+    Animated.timing(anim, { toValue: 0, duration: 220, useNativeDriver: true }).start(() => {
+      if (isMounted.current) setShowModal(false)
+    })
   }
 
   const confirmDate = () => {
     const selected = new Date(tempYear, tempMonth - 1, tempDay)
-
     if (
       selected.getFullYear() !== tempYear ||
       selected.getMonth() + 1 !== tempMonth ||
@@ -120,30 +150,60 @@ const DatePicker = ({
       setLocalError('Wybierz prawidłową datę')
       return
     }
-
-    const selectedDateOnly = toDateOnly(selected)
-    if (minimumDate && selectedDateOnly < toDateOnly(minimumDate)) {
+    const sel = toDateOnly(selected)
+    if (minimumDate && sel < toDateOnly(minimumDate)) {
       setLocalError('Wybrana data jest za wcześnie')
       return
     }
-
-    if (maximumDate && selectedDateOnly > toDateOnly(maximumDate)) {
+    if (maximumDate && sel > toDateOnly(maximumDate)) {
       setLocalError('Wybrana data jest za późna')
       return
     }
-
     onChange?.(toIsoDate(selected))
-    setShowModal(false)
     setLocalError('')
+    close()
   }
 
   const selectedDay = parsedValue ? pad2(parsedValue.getDate()) : placeholderDay
-  const selectedMonth = parsedValue
-    ? pad2(parsedValue.getMonth() + 1)
-    : placeholderMonth
-  const selectedYear = parsedValue
-    ? String(parsedValue.getFullYear())
-    : placeholderYear
+  const selectedMonth = parsedValue ? pad2(parsedValue.getMonth() + 1) : placeholderMonth
+  const selectedYear = parsedValue ? String(parsedValue.getFullYear()) : placeholderYear
+  const hasValue = parsedValue !== null
+
+  const renderDay = ({ item }) => (
+    <Pressable
+      style={[styles.item, tempDay === item && styles.itemSelected]}
+      onPress={() => setTempDay(item)}
+      android_ripple={{ color: COLORS.background }}
+    >
+      <Text style={[styles.itemText, tempDay === item && styles.itemTextSelected]}>
+        {pad2(item)}
+      </Text>
+    </Pressable>
+  )
+
+  const renderMonth = ({ item }) => (
+    <Pressable
+      style={[styles.item, tempMonth === item.value && styles.itemSelected]}
+      onPress={() => setTempMonth(item.value)}
+      android_ripple={{ color: COLORS.background }}
+    >
+      <Text style={[styles.itemText, tempMonth === item.value && styles.itemTextSelected]}>
+        {item.label}
+      </Text>
+    </Pressable>
+  )
+
+  const renderYear = ({ item }) => (
+    <Pressable
+      style={[styles.item, tempYear === item && styles.itemSelected]}
+      onPress={() => setTempYear(item)}
+      android_ripple={{ color: COLORS.background }}
+    >
+      <Text style={[styles.itemText, tempYear === item && styles.itemTextSelected]}>
+        {String(item)}
+      </Text>
+    </Pressable>
+  )
 
   return (
     <>
@@ -153,104 +213,124 @@ const DatePicker = ({
         disabled={disabled}
       >
         <View style={styles.dateBox}>
-          <Text style={[styles.dateText, !parsedValue && styles.datePlaceholder]}>
+          <Text style={[styles.dateText, !hasValue && styles.datePlaceholder]}>
             {selectedDay}
           </Text>
           <Text style={styles.dateLabel}>Dzień</Text>
         </View>
-
         <View style={styles.dateSeparator}>
           <Text style={styles.dateSeparatorText}>/</Text>
         </View>
-
         <View style={styles.dateBox}>
-          <Text style={[styles.dateText, !parsedValue && styles.datePlaceholder]}>
+          <Text style={[styles.dateText, !hasValue && styles.datePlaceholder]}>
             {selectedMonth}
           </Text>
           <Text style={styles.dateLabel}>Miesiąc</Text>
         </View>
-
         <View style={styles.dateSeparator}>
           <Text style={styles.dateSeparatorText}>/</Text>
         </View>
-
         <View style={styles.dateBox}>
-          <Text style={[styles.dateText, !parsedValue && styles.datePlaceholder]}>
+          <Text style={[styles.dateText, !hasValue && styles.datePlaceholder]}>
             {selectedYear}
           </Text>
           <Text style={styles.dateLabel}>Rok</Text>
         </View>
       </Pressable>
 
-      <Modal visible={showModal} transparent animationType='slide'>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Wybierz datę</Text>
+      <Modal
+        visible={showModal}
+        transparent
+        animationType='none'
+        onRequestClose={close}
+        statusBarTranslucent
+      >
+        <Pressable style={styles.backdrop} onPress={close}>
+          <Animated.View
+            style={[
+              styles.panel,
+              {
+                transform: [{
+                  translateY: anim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [PANEL_HEIGHT, 0],
+                  }),
+                }],
+              },
+            ]}
+          >
+            <Pressable style={{ flex: 1 }} onPress={() => {}}>
+              <LinearGradient
+                colors={[COLORS.third, COLORS.background]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={styles.panelInner}
+              >
+                <View style={styles.handle} />
+                <Text style={styles.title}>Wybierz datę</Text>
 
-            <View style={styles.pickersContainer}>
-              <View style={styles.pickerWrapper}>
-                <Text style={styles.pickerLabel}>Dzień</Text>
-                <Picker
-                  selectedValue={tempDay}
-                  onValueChange={setTempDay}
-                  style={styles.picker}
-                >
-                  {DAYS.map((day) => (
-                    <Picker.Item key={day} label={String(day)} value={day} />
-                  ))}
-                </Picker>
-              </View>
-
-              <View style={styles.pickerWrapper}>
-                <Text style={styles.pickerLabel}>Miesiąc</Text>
-                <Picker
-                  selectedValue={tempMonth}
-                  onValueChange={setTempMonth}
-                  style={styles.picker}
-                >
-                  {MONTHS.map((month) => (
-                    <Picker.Item
-                      key={month.value}
-                      label={month.label}
-                      value={month.value}
+                <View style={styles.columnsContainer}>
+                  {/* Dzień */}
+                  <View style={styles.columnWrapper}>
+                    <Text style={styles.columnLabel}>Dzień</Text>
+                    <FlatList
+                      ref={dayListRef}
+                      data={DAYS}
+                      keyExtractor={(item) => `d-${item}`}
+                      renderItem={renderDay}
+                      getItemLayout={getItemLayout}
+                      showsVerticalScrollIndicator={false}
+                      style={styles.columnList}
                     />
-                  ))}
-                </Picker>
-              </View>
+                  </View>
 
-              <View style={styles.pickerWrapper}>
-                <Text style={styles.pickerLabel}>Rok</Text>
-                <Picker
-                  selectedValue={tempYear}
-                  onValueChange={setTempYear}
-                  style={styles.picker}
-                >
-                  {years.map((year) => (
-                    <Picker.Item key={year} label={String(year)} value={year} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
+                  <View style={styles.columnDivider} />
 
-            {!!localError && <Text style={styles.errorText}>{localError}</Text>}
+                  {/* Miesiąc */}
+                  <View style={[styles.columnWrapper, styles.columnWide]}>
+                    <Text style={styles.columnLabel}>Miesiąc</Text>
+                    <FlatList
+                      ref={monthListRef}
+                      data={MONTHS}
+                      keyExtractor={(item) => `m-${item.value}`}
+                      renderItem={renderMonth}
+                      getItemLayout={getItemLayout}
+                      showsVerticalScrollIndicator={false}
+                      style={styles.columnList}
+                    />
+                  </View>
 
-            <View style={styles.modalButtons}>
-              <Pressable
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={closeDatePicker}
-              >
-                <Text style={styles.cancelButtonText}>Anuluj</Text>
-              </Pressable>
+                  <View style={styles.columnDivider} />
 
-              <Pressable
-                style={[styles.modalButton, styles.confirmButton]}
-                onPress={confirmDate}
-              >
-                <Text style={styles.confirmButtonText}>Potwierdź</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
+                  {/* Rok */}
+                  <View style={styles.columnWrapper}>
+                    <Text style={styles.columnLabel}>Rok</Text>
+                    <FlatList
+                      ref={yearListRef}
+                      data={years}
+                      keyExtractor={(item) => `y-${item}`}
+                      renderItem={renderYear}
+                      getItemLayout={getItemLayout}
+                      showsVerticalScrollIndicator={false}
+                      style={styles.columnList}
+                    />
+                  </View>
+                </View>
+
+                {!!localError && <Text style={styles.errorText}>{localError}</Text>}
+
+                <View style={styles.buttonsRow}>
+                  <Pressable style={[styles.btn, styles.cancelBtn]} onPress={close}>
+                    <Text style={styles.cancelBtnText}>Anuluj</Text>
+                  </Pressable>
+                  <Pressable style={[styles.btn, styles.confirmBtn]} onPress={confirmDate}>
+                    <Text style={styles.confirmBtnText}>Potwierdź</Text>
+                  </Pressable>
+                </View>
+              </LinearGradient>
+            </Pressable>
+          </Animated.View>
+        </Pressable>
       </Modal>
     </>
   )
@@ -258,7 +338,7 @@ const DatePicker = ({
 
 export default DatePicker
 
-const createStyles = (ui, insetsBottom = 0) => StyleSheet.create({
+const createStyles = (ui) => StyleSheet.create({
   datePickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -298,74 +378,122 @@ const createStyles = (ui, insetsBottom = 0) => StyleSheet.create({
     color: '#999',
     fontWeight: '300',
   },
-  modalOverlay: {
+  backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
     justifyContent: 'flex-end',
   },
-  modalContent: {
-    backgroundColor: '#fff',
+  panel: {
+    height: PANEL_HEIGHT,
     borderTopLeftRadius: ui.moderateScale(20, 0.35),
     borderTopRightRadius: ui.moderateScale(20, 0.35),
-    padding: ui.spacing(20, 0.45),
-    paddingBottom: Math.max(ui.verticalScale(30), insetsBottom + 10),
+    overflow: 'hidden',
   },
-  modalTitle: {
-    fontSize: ui.scaleFont(18, 0.4),
-    fontWeight: '600',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: ui.verticalScale(20),
-  },
-  pickersContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  pickerWrapper: {
+  panelInner: {
     flex: 1,
+    paddingTop: ui.verticalScale(12),
+  },
+  handle: {
+    width: ui.scale(40),
+    height: ui.verticalScale(4),
+    borderRadius: ui.moderateScale(2, 0.35),
+    backgroundColor: COLORS.primary,
+    opacity: 0.4,
+    alignSelf: 'center',
+    marginBottom: ui.verticalScale(12),
+  },
+  title: {
+    fontSize: ui.scaleFont(18, 0.4),
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginBottom: ui.verticalScale(8),
+    paddingBottom: ui.verticalScale(8),
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.15)',
+    marginHorizontal: ui.spacing(16, 0.35),
+  },
+  columnsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  columnWrapper: {
+    flex: 1,
+  },
+  columnWide: {
+    flex: 1.4,
+  },
+  columnLabel: {
+    fontSize: ui.scaleFont(13, 0.3),
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.primary,
+    opacity: 0.7,
+    paddingVertical: ui.verticalScale(8),
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+    textAlign: 'center',
+  },
+  columnList: {
+    flex: 1,
+  },
+  columnDivider: {
+    width: 1,
+    backgroundColor: COLORS.primary,
+    opacity: 0.15,
+    marginVertical: ui.verticalScale(8),
+  },
+  item: {
+    height: ITEM_HEIGHT,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  pickerLabel: {
-    fontSize: ui.scaleFont(12, 0.3),
-    color: '#666',
-    marginBottom: ui.verticalScale(5),
+  itemSelected: {
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
   },
-  picker: {
-    width: '100%',
-    height: ui.verticalScale(150),
+  itemText: {
+    fontSize: ui.scaleFont(18, 0.35),
+    fontFamily: 'Montserrat-Regular',
+    color: COLORS.primary,
+  },
+  itemTextSelected: {
+    color: COLORS.secondary,
+    fontFamily: 'Montserrat-Bold',
+    fontSize: ui.scaleFont(20, 0.35),
   },
   errorText: {
-    marginTop: ui.verticalScale(8),
     textAlign: 'center',
     fontSize: ui.scaleFont(13, 0.35),
     color: COLORS.error,
+    paddingHorizontal: ui.spacing(16, 0.35),
+    paddingTop: ui.verticalScale(4),
   },
-  modalButtons: {
+  buttonsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: ui.verticalScale(20),
-    gap: ui.spacing(10, 0.35),
+    padding: ui.spacing(16, 0.4),
+    gap: ui.spacing(12, 0.35),
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
-  modalButton: {
+  btn: {
     flex: 1,
-    padding: ui.spacing(15, 0.4),
+    paddingVertical: ui.verticalScale(14),
     borderRadius: ui.moderateScale(10, 0.35),
     alignItems: 'center',
   },
-  cancelButton: {
-    backgroundColor: '#f5f5f5',
+  cancelBtn: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  cancelButtonText: {
-    color: '#666',
-    fontWeight: '600',
+  cancelBtnText: {
+    color: COLORS.primary,
+    fontFamily: 'Montserrat-Bold',
     fontSize: ui.scaleFont(14, 0.35),
   },
-  confirmButton: {
-    backgroundColor: '#4CAF50',
+  confirmBtn: {
+    backgroundColor: COLORS.secondary,
   },
-  confirmButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+  confirmBtnText: {
+    color: COLORS.background,
+    fontFamily: 'Montserrat-Bold',
     fontSize: ui.scaleFont(14, 0.35),
   },
 })

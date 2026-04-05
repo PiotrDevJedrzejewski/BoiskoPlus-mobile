@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { View, Text, Pressable, ScrollView, StyleSheet, Dimensions } from 'react-native'
+import { View, Text, Pressable, ScrollView, StyleSheet, Dimensions, InteractionManager } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -30,8 +30,8 @@ const DrawerModal = () => {
 
   const navigateTo = useCallback((path) => {
     closeDrawer()
-    // Small delay so drawer animation starts before navigation
-    setTimeout(() => router.push(path), 50)
+    // Navigate after drawer close animation finishes (runs on UI thread, no setTimeout)
+    InteractionManager.runAfterInteractions(() => router.push(path))
   }, [closeDrawer, router])
 
   // Animated style for the drawer panel (slide from left)

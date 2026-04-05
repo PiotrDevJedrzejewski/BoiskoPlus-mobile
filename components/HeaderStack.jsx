@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Image, Text, View, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import LogoBoiskoPlus from '../assets/images/LogoBoiskoPlus.png'
@@ -8,7 +9,7 @@ import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 const HeaderStack = ({ navigation, route, options, back }) => {
   const insets = useSafeAreaInsets()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   return (
     <>
       <View

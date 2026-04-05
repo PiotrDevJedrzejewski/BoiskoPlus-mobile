@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   StyleSheet,
   Text,
@@ -32,7 +33,7 @@ const ConfirmModal = ({
   loading = false,
 }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const getActionColor = () => {
     switch (actionType) {

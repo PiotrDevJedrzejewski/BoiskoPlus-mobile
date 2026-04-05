@@ -10,7 +10,7 @@ import {
 import { COLORS } from '../../../constants/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect } from 'expo-router'
-import { useCallback, useState, useEffect, useRef } from 'react'
+import { useCallback, useState, useEffect, useRef, useMemo} from 'react'
 import { useMap } from '../../../context/MapContext'
 import { useDashboard } from '../../../context/DashboardContext'
 import { useAuth } from '../../../context/AuthContext'
@@ -35,7 +35,7 @@ const ShowMap = () => {
   dbg('ShowMapScreen')
   useDebugMount('ShowMapScreen')
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const {
     flyTo,
     flyToProvince,

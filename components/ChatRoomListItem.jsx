@@ -10,7 +10,7 @@ import Animated, {
   withSequence,
   Easing,
 } from 'react-native-reanimated'
-import { useEffect } from 'react'
+import { useEffect, useMemo} from 'react'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const defaultAvatar = require('../assets/images/defaultAvatar.png')
@@ -24,7 +24,7 @@ const ChatRoomListItem = ({
   isUserOnline = () => false,
 }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   let displayName = ''
   let avatar = null
   let gameTypeIcon = null

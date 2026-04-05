@@ -1,10 +1,11 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, View, Pressable } from 'react-native'
 import { COLORS } from '../constants/colors'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const CardDashboard = ({ icon, title, desc, onPress }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   return (
     <Pressable style={styles.card} onPress={onPress}>

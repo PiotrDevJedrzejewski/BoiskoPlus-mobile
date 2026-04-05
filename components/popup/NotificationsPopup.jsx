@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   StyleSheet,
   Text,
@@ -19,7 +20,7 @@ const NotificationsModal = ({
 }) => {
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const totalUnread = unreadMessages + unreadEvents
 
   const handleNavigateToChat = () => {

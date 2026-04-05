@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -13,7 +13,7 @@ import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const FullScreenAd = ({ visible, onClose, onPremiumPress }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const [countdown, setCountdown] = useState(5)
   const [canClose, setCanClose] = useState(false)
 

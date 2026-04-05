@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { COLORS } from '../constants/colors'
@@ -8,7 +9,7 @@ const NewPassword = () => {
   dbg('NewPasswordScreen')
   useDebugMount('NewPasswordScreen')
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   return (
     <View style={styles.container}>

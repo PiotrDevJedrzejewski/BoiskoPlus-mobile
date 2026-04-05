@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo} from 'react'
 import { StyleSheet, Text, View, ScrollView, Alert } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
@@ -19,7 +19,7 @@ const Settings = () => {
   useDebugMount('SettingsScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const [userLocation, setUserLocation] = useState(null)
   const { 
     consents, 

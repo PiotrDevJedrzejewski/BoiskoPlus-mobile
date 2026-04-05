@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { COLORS } from '../constants/colors'
 import PlayerCardWithActions from './PlayerCardWithActions'
@@ -19,7 +20,7 @@ const EditEventUserCard = ({
   loading = false,
 }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const isFinished = status === 'finished'
 
   const player = {

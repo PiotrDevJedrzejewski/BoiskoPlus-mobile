@@ -13,11 +13,10 @@ import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { COLORS } from '../../constants/colors'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
-import { gameTypeIcons } from '../../assets/utils/gameTypeIcons'
 
 const PANEL_HEIGHT = Dimensions.get('window').height * 0.65
 
-const GameTypePickerModal = ({ visible, selectedValue, options, onSelect, onClose }) => {
+const CustomTypePickerModal = ({ visible, selectedValue, options, title, iconMap, onSelect, onClose }) => {
   const ui = useResponsiveScale()
   const styles = React.useMemo(() => createStyles(ui), [ui])
   const anim = useRef(new Animated.Value(0)).current
@@ -57,7 +56,8 @@ const GameTypePickerModal = ({ visible, selectedValue, options, onSelect, onClos
   }
 
   const renderIcon = (value) => {
-    const el = gameTypeIcons[value]
+    if (!iconMap) return null
+    const el = iconMap[value]
     if (!el) {
       return <Ionicons name='apps-outline' size={iconSize} color={COLORS.gray} />
     }
@@ -94,7 +94,7 @@ const GameTypePickerModal = ({ visible, selectedValue, options, onSelect, onClos
               style={styles.panelInner}
             >
               <View style={styles.handle} />
-              <Text style={styles.title}>Wybierz typ gry</Text>
+              <Text style={styles.title}>{title}</Text>
               <ScrollView showsVerticalScrollIndicator={false}>
                 {options.map((type, index) => (
                   <View key={type.value}>
@@ -106,9 +106,11 @@ const GameTypePickerModal = ({ visible, selectedValue, options, onSelect, onClos
                       onPress={() => handleSelect(type.value)}
                       android_ripple={{ color: COLORS.background }}
                     >
-                      <View style={styles.itemIcon}>
-                        {renderIcon(type.value)}
-                      </View>
+                      {iconMap && (
+                        <View style={styles.itemIcon}>
+                          {renderIcon(type.value)}
+                        </View>
+                      )}
                       <Text
                         style={[
                           styles.itemText,
@@ -139,7 +141,7 @@ const GameTypePickerModal = ({ visible, selectedValue, options, onSelect, onClos
   )
 }
 
-export default GameTypePickerModal
+export default CustomTypePickerModal
 
 const createStyles = (ui) => StyleSheet.create({
   backdrop: {

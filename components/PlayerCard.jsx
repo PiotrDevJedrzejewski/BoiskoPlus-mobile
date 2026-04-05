@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../constants/colors'
@@ -8,7 +9,7 @@ const defaultAvatar = require('../assets/images/defaultAvatar.png')
 const PlayerCard = ({ playerInfo, onPress }) => {
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const handlePress = () => {
     if (onPress) {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -24,7 +24,7 @@ const EventsAllEvents = () => {
   const router = useRouter()
   const { eventsData, refreshEventsData } = useDashboard()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const headerIconSize = ui.moderateScale(26, 0.35)
   const backIconSize = ui.moderateScale(28, 0.35)

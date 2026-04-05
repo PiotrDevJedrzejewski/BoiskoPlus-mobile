@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -32,7 +32,7 @@ const Chat = () => {
   dbg('ChatScreen')
   useDebugMount('ChatScreen')
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const { user } = useAuth()
   const { openChatWith } = useLocalSearchParams()
   const insets = useSafeAreaInsets()

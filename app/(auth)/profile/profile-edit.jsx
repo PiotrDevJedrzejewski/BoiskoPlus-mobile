@@ -95,7 +95,7 @@ const ProfileEdit = () => {
   const router = useRouter()
   const { user, loading: authLoading, updateProfile } = useAuth()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({

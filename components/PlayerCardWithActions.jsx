@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { COLORS } from '../constants/colors'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
@@ -16,7 +17,7 @@ const getChipStyles = (type, styles) => {
 
 const ActionButtons = ({ actions = [] }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   return (
     <View style={styles.buttonWrapper}>
       {actions.map((action) => {
@@ -38,7 +39,7 @@ const ActionButtons = ({ actions = [] }) => {
 
 const PlayerCardWithActions = ({ player, actions = [] }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   return (
     <View style={styles.playerCardWrapper}>
       <PlayerCard playerInfo={player} />

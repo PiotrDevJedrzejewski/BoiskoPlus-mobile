@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, View, TouchableOpacity, Switch } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../../constants/colors'
@@ -16,7 +17,7 @@ const SettingRow = ({
   danger = false,
 }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const IconComponent =
     iconFamily === 'material' ? MaterialCommunityIcons : Ionicons
 

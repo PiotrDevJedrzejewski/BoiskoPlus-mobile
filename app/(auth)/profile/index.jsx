@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -29,7 +29,7 @@ const Profile = () => {
   useDebugMount('ProfileScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const {

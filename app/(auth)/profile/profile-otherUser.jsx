@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -32,7 +32,7 @@ const ProfileUser = () => {
   const router = useRouter()
   const { id } = useLocalSearchParams()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const { user: currentUser } = useAuth()
 
   const [loading, setLoading] = useState(true)

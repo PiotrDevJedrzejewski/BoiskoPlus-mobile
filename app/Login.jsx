@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native'
 import { COLORS } from '../constants/colors'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo} from 'react'
 import { useRouter } from 'expo-router'
 import { useAuth } from '../context/AuthContext'
 import Button1 from '../components/Button1'
@@ -29,7 +29,7 @@ const Login = () => {
   const router = useRouter()
   const { login, loginWithGoogle } = useAuth()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)

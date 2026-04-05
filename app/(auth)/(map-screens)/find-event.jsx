@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -29,7 +29,8 @@ import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 import LottieView from 'lottie-react-native'
 import spinnerData from '../../../assets/utils/spinner.json'
-import GameTypePickerModal from '../../../components/popup/GameTypePickerModal'
+import { gameTypeIcons } from '../../../assets/utils/gameTypeIcons'
+import CustomTypePickerModal from '../../../components/popup/CustomTypePickerModal'
 
 const GAME_TYPES = [
   { label: 'Wybierz typ gry', value: '' },
@@ -57,7 +58,7 @@ const FindEvent = () => {
   useDebugMount('FindEventScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const { setIsInteractive, setOverlayOpacity, userLocation, flyTo, flyToProvince } = useMap()
   const { consents } = useAuth()
   const [loading, setLoading] = useState(false)
@@ -615,10 +616,12 @@ const FindEvent = () => {
       )} */}
 
       {/* Modal wyboru typu gry */}
-      <GameTypePickerModal
+      <CustomTypePickerModal
         visible={showGameTypeModal}
         selectedValue={userInput.gameType}
         options={GAME_TYPES}
+        title='Wybierz typ gry'
+        iconMap={gameTypeIcons}
         onSelect={handleGameTypeSelect}
         onClose={() => setShowGameTypeModal(false)}
       />

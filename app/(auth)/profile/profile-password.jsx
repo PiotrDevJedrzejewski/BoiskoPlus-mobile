@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -24,7 +24,7 @@ const ProfilePassword = () => {
   const router = useRouter()
   const { changePassword } = useAuth()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({

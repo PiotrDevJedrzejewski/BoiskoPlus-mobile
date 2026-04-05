@@ -1,10 +1,11 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { COLORS } from '../../constants/colors'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const SettingSection = ({ title, children }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   return (
     <View style={styles.section}>

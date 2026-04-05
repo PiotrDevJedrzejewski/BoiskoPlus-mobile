@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import React from 'react'
 import {
   View,
@@ -33,7 +34,7 @@ const getLevelLabel = (level) => {
 const EventMarkerEventList = ({ events, onClose }) => {
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const handleEventPress = (eventId) => {
     onClose()

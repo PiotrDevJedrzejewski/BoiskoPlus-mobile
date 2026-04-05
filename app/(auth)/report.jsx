@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -22,7 +22,7 @@ const Report = () => {
   useDebugMount('ReportScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const { type, userId, eventId, reportedNickName } = useLocalSearchParams()
 
   const [message, setMessage] = useState('')

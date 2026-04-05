@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useRouter } from 'expo-router'
 import { useAuth } from '../../context/AuthContext'
 import Button1 from '../../components/Button1'
@@ -11,7 +12,7 @@ import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 const CookiesAndRules = () => {
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const {
     needsConsent,
     pendingConsents,

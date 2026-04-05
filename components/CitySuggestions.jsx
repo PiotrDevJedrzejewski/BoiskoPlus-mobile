@@ -5,7 +5,7 @@ import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const CitySuggestions = ({ suggestions, onSuggestionClick }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const flatItems = useMemo(() => {
     if (!suggestions || suggestions.length === 0) {

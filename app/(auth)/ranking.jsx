@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -88,7 +88,7 @@ const Ranking = () => {
   dbg('RankingScreen')
   useDebugMount('RankingScreen')
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const usePickerOverlay = Platform.OS === 'android'
   const [sortBy, setSortBy] = useState('points')
   const [loading, setLoading] = useState(true)

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useMemo} from 'react'
 import {
   ActivityIndicator,
   Dimensions,
@@ -23,7 +23,7 @@ const FriendsScreen = () => {
   dbg('FriendsScreen')
   useDebugMount('FriendsScreen')
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const {
     friends,

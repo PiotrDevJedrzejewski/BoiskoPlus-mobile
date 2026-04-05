@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   StyleSheet,
   Text,
@@ -40,7 +41,7 @@ const MuteChatModal = ({
   roomName = 'Czat',
 }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const handleMute = (duration) => {
     if (onMute) {

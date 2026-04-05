@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   StyleSheet,
   Text,
@@ -8,7 +9,7 @@ import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 
 const ChatMessageBox = ({ message, isOwn, senderName, time }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   return (
     <View style={[styles.messageBox, isOwn && styles.messageBoxOwn]}>

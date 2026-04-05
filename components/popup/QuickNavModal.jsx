@@ -1,30 +1,59 @@
+import { useCallback, useEffect, useMemo } from 'react'
 import {
-  Modal,
+  BackHandler,
   Pressable,
   StyleSheet,
   Text,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  runOnJS,
+  Easing,
+} from 'react-native-reanimated'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { COLORS } from '../../constants/colors'
 import { useSocketStore, selectTotalUnreadMessages } from '../../context/socketStore'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
+const ANIMATION_DURATION = 200
+
 const QuickNavModal = ({ visible, onClose }) => {
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const unreadFriendRequestsCount = useSocketStore((s) => s.unreadFriendRequestsCount)
   const unreadEventsCount = useSocketStore((s) => s.unreadEventsCount)
   const totalUnreadMessages = useSocketStore(selectTotalUnreadMessages)
 
-  const navigate = (path) => {
+  const progress = useSharedValue(0)
+
+  useEffect(() => {
+    progress.value = withTiming(visible ? 1 : 0, {
+      duration: ANIMATION_DURATION,
+      easing: Easing.out(Easing.cubic),
+    })
+  }, [visible, progress])
+
+  // Android back button support
+  useEffect(() => {
+    if (!visible) return
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      onClose()
+      return true
+    })
+    return () => sub.remove()
+  }, [visible, onClose])
+
+  const navigate = useCallback((path) => {
     onClose()
     router.push(path)
-  }
+  }, [onClose, router])
 
   const buttons = [
     {
@@ -50,65 +79,73 @@ const QuickNavModal = ({ visible, onClose }) => {
     },
   ]
 
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType='fade'
-      onRequestClose={onClose}
-    >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback>
-            <View style={styles.container}>
-              {/* Header label */}
-              <View style={styles.header}>
-                <Ionicons
-                  name='notifications'
-                  size={ui.moderateScale(18, 0.35)}
-                  color={COLORS.secondary}
-                />
-                <Text style={styles.headerText}>Powiadomienia</Text>
-              </View>
+  const overlayAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    pointerEvents: progress.value > 0 ? 'auto' : 'none',
+  }))
 
-              {/* Buttons row */}
-              <View style={styles.buttonsRow}>
-                {buttons.map((btn) => (
-                  <View key={btn.key} style={styles.buttonWrapper}>
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.roundButton,
-                        pressed && styles.roundButtonPressed,
-                      ]}
-                      onPress={() => navigate(btn.path)}
-                      android_ripple={{
-                        color: COLORS.backgroundSecondary,
-                        borderless: false,
-                      }}
-                    >
-                      <Ionicons
-                        name={btn.icon}
-                        size={ui.moderateScale(26, 0.35)}
-                        color={COLORS.primary}
-                      />
-                      {/* Badge - position absolute top-right */}
-                      {btn.count > 0 && (
-                        <View style={styles.badge}>
-                          <Text style={styles.badgeText}>
-                            {btn.count > 9 ? '9+' : btn.count}
-                          </Text>
-                        </View>
-                      )}
-                    </Pressable>
-                    <Text style={styles.buttonLabel}>{btn.label}</Text>
-                  </View>
-                ))}
+  const containerAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [
+      { translateY: withTiming(visible ? 0 : -8, { duration: ANIMATION_DURATION }) },
+      { scale: 0.95 + 0.05 * progress.value },
+    ],
+  }))
+
+  const backdropTap = Gesture.Tap().onEnd(() => {
+    runOnJS(onClose)()
+  })
+
+  return (
+    <GestureDetector gesture={backdropTap}>
+      <Animated.View style={[styles.overlay, overlayAnimatedStyle]}>
+        <Animated.View style={[styles.container, containerAnimatedStyle]}>
+          {/* Header label */}
+          <View style={styles.header}>
+            <Ionicons
+              name='notifications'
+              size={ui.moderateScale(18, 0.35)}
+              color={COLORS.secondary}
+            />
+            <Text style={styles.headerText}>Powiadomienia</Text>
+          </View>
+
+          {/* Buttons row */}
+          <View style={styles.buttonsRow}>
+            {buttons.map((btn) => (
+              <View key={btn.key} style={styles.buttonWrapper}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.roundButton,
+                    pressed && styles.roundButtonPressed,
+                  ]}
+                  onPress={() => navigate(btn.path)}
+                  android_ripple={{
+                    color: COLORS.backgroundSecondary,
+                    borderless: false,
+                  }}
+                >
+                  <Ionicons
+                    name={btn.icon}
+                    size={ui.moderateScale(26, 0.35)}
+                    color={COLORS.primary}
+                  />
+                  {/* Badge - position absolute top-right */}
+                  {btn.count > 0 && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>
+                        {btn.count > 9 ? '9+' : btn.count}
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
+                <Text style={styles.buttonLabel}>{btn.label}</Text>
               </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+            ))}
+          </View>
+        </Animated.View>
+      </Animated.View>
+    </GestureDetector>
   )
 }
 
@@ -117,10 +154,11 @@ export default QuickNavModal
 const createStyles = (ui) =>
   StyleSheet.create({
     overlay: {
-      flex: 1,
+      ...StyleSheet.absoluteFillObject,
       backgroundColor: 'rgba(0, 0, 0, 0.65)',
       justifyContent: 'flex-start',
       alignItems: 'flex-end',
+      zIndex: 80,
     },
     container: {
       marginTop: ui.verticalScale(70),

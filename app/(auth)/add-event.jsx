@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../constants/colors'
@@ -10,7 +11,7 @@ const AddEvent = () => {
   dbg('AddEventScreen')
   useDebugMount('AddEventScreen')
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const params = useLocalSearchParams()
   const predefinedPlace = params.predefinedPlace ? JSON.parse(params.predefinedPlace) : null
 

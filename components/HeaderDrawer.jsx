@@ -1,4 +1,4 @@
-import { useState, memo } from 'react'
+import { useState, memo, useMemo} from 'react'
 import { Image, Text, View, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import LogoBoiskoPlus from '../assets/images/LogoBoiskoPlus.png'
@@ -16,7 +16,7 @@ const HeaderDrawer = () => {
   const unreadFriendRequestsCount = useSocketStore((s) => s.unreadFriendRequestsCount)
   const totalUnreadMessages = useSocketStore(selectTotalUnreadMessages)
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const [quickNavVisible, setQuickNavVisible] = useState(false)
 
   const totalBadge = unreadEventsCount + unreadFriendRequestsCount + totalUnreadMessages

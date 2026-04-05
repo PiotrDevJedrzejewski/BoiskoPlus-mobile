@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo} from 'react'
 import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../constants/colors'
@@ -14,7 +14,7 @@ import { useResponsiveScale } from '../assets/utils/scaleUI.UX';
 
 const MyEventCard = ({ event, status, onPress, statusData }) => {
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const markEventAsRead = useSocketStore((s) => s.markEventAsRead)
   const needsMarking = statusData?.readBy === false
   const [isRead, setIsRead] = useState(!needsMarking)

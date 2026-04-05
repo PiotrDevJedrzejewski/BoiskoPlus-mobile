@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -8,14 +8,19 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Pressable,
 } from 'react-native'
-import { Picker } from '@react-native-picker/picker'
+import { Ionicons } from '@expo/vector-icons'
 import { Slider } from '@miblanchard/react-native-slider'
 import { COLORS } from '../constants/colors'
 import customFetch from '../assets/utils/customFetch'
 import { Toast } from 'toastify-react-native'
 import { useRouter } from 'expo-router'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { gameTypeIcons } from '../assets/utils/gameTypeIcons'
+import CustomTypePickerModal from './popup/CustomTypePickerModal'
+import DatePicker from './DatePicker'
+import HourPicker from './popup/HourPicker'
 
 const GAME_TYPES = [
   { label: 'Wybierz typ gry', value: '' },
@@ -64,9 +69,9 @@ const defaultEventData = {
     postalCode: '',
   },
   fieldType: 'field',
-  playerCount: '0',
+  playerCount: '',
   level: 'beginner',
-  price: '0',
+  price: '',
   paymentMethod: 'Na miejscu',
   eventDescription: '',
   phoneNumber: '',
@@ -126,9 +131,10 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
       : defaultEventData
   )
   const [loading, setLoading] = useState(false)
+  const [pickerModal, setPickerModal] = useState(null)
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const postalPart2Ref = useRef(null)
   const [postalPart1, setPostalPart1] = useState(() => {
@@ -223,8 +229,8 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         ...eventData,
         address: { ...eventData.address, postalCode },
         duration: parseInt(eventData.duration),
-        playerCount: parseInt(eventData.playerCount),
-        price: parseInt(eventData.price),
+        playerCount: parseInt(eventData.playerCount) || 0,
+        price: parseInt(eventData.price) || 0,
         startDateTime: startDateTime.toISOString(),
         endDateTime: endDateTime.toISOString(),
         addressString: `${eventData.address.street} ${eventData.address.addressNumber}, ${eventData.address.city}, ${postalCode}`,
@@ -266,8 +272,12 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
     }
   }
 
+  const getOptionLabel = (options, value) =>
+    options.find((o) => o.value === value)?.label || 'Wybierz...'
+
   return (
-    <ScrollView
+    <>
+      <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
@@ -284,47 +294,27 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
 
       {/* Typ gry */}
       <Text style={styles.label}>Typ rozgrywki</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker
-          selectedValue={eventData.gameType}
-          onValueChange={(value) => handleChange('gameType', value)}
-          style={styles.picker}
-          dropdownIconColor={COLORS.secondary}
-        >
-          {GAME_TYPES.map((type) => (
-            <Picker.Item
-              key={type.value}
-              label={type.label}
-              value={type.value}
-              color={COLORS.background}
-            />
-          ))}
-        </Picker>
-      </View>
+      <Pressable
+        style={styles.pickerWrapper}
+        onPress={() => setPickerModal({ field: 'gameType', options: GAME_TYPES, title: 'Wybierz typ gry', iconMap: gameTypeIcons })}
+      >
+        <Text style={styles.pickerButtonText} numberOfLines={1}>
+          {getOptionLabel(GAME_TYPES, eventData.gameType)}
+        </Text>
+        <Ionicons name='chevron-down' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
+      </Pressable>
 
       {/* Data i godzina */}
-      <View style={styles.row}>
-        <View style={styles.halfColumn}>
-          <Text style={styles.label}>Data</Text>
-          <TextInput
-            style={styles.input}
-            value={eventData.startDate}
-            onChangeText={(value) => handleChange('startDate', value)}
-            placeholder='RRRR-MM-DD'
-            placeholderTextColor={COLORS.gray}
-          />
-        </View>
-        <View style={styles.halfColumn}>
-          <Text style={styles.label}>Godzina</Text>
-          <TextInput
-            style={styles.input}
-            value={eventData.startHour}
-            onChangeText={(value) => handleChange('startHour', value)}
-            placeholder='HH:MM'
-            placeholderTextColor={COLORS.gray}
-          />
-        </View>
-      </View>
+      <Text style={styles.label}>Data</Text>
+      <DatePicker
+        value={eventData.startDate}
+        onChange={(value) => handleChange('startDate', value)}
+      />
+      <Text style={styles.label}>Godzina</Text>
+      <HourPicker
+        value={eventData.startHour}
+        onChange={(value) => handleChange('startHour', value)}
+      />
 
       {/* Czas trwania */}
       <Text style={styles.label}>Czas trwania (minuty)</Text>
@@ -418,30 +408,27 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
 
       {/* Typ boiska */}
       <Text style={styles.label}>Typ boiska</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker
-          selectedValue={eventData.fieldType}
-          onValueChange={(value) => handleChange('fieldType', value)}
-          style={styles.picker}
-          dropdownIconColor={COLORS.secondary}
-        >
-          {FIELD_TYPES.map((type) => (
-            <Picker.Item
-              key={type.value}
-              label={type.label}
-              value={type.value}
-              color={COLORS.background}
-            />
-          ))}
-        </Picker>
-      </View>
+      <Pressable
+        style={styles.pickerWrapper}
+        onPress={() => setPickerModal({ field: 'fieldType', options: FIELD_TYPES, title: 'Wybierz typ boiska' })}
+      >
+        <Text style={styles.pickerButtonText} numberOfLines={1}>
+          {getOptionLabel(FIELD_TYPES, eventData.fieldType)}
+        </Text>
+        <Ionicons name='chevron-down' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
+      </Pressable>
 
       {/* Liczba graczy */}
       <Text style={styles.label}>Ilu graczy szukasz</Text>
       <TextInput
         style={styles.input}
         value={eventData.playerCount}
-        onChangeText={(value) => handleChange('playerCount', value)}
+        onChangeText={(value) => {
+          const digits = value.replace(/\D/g, '')
+          if (digits === '' || parseInt(digits) <= 999) {
+            handleChange('playerCount', digits)
+          }
+        }}
         keyboardType='numeric'
         placeholder='0'
         placeholderTextColor={COLORS.gray}
@@ -449,23 +436,15 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
 
       {/* Poziom */}
       <Text style={styles.label}>Poziom</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker
-          selectedValue={eventData.level}
-          onValueChange={(value) => handleChange('level', value)}
-          style={styles.picker}
-          dropdownIconColor={COLORS.secondary}
-        >
-          {LEVELS.map((level) => (
-            <Picker.Item
-              key={level.value}
-              label={level.label}
-              value={level.value}
-              color={COLORS.background}
-            />
-          ))}
-        </Picker>
-      </View>
+      <Pressable
+        style={styles.pickerWrapper}
+        onPress={() => setPickerModal({ field: 'level', options: LEVELS, title: 'Wybierz poziom gry' })}
+      >
+        <Text style={styles.pickerButtonText} numberOfLines={1}>
+          {getOptionLabel(LEVELS, eventData.level)}
+        </Text>
+        <Ionicons name='chevron-down' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
+      </Pressable>
 
       {/* Cena i płatność */}
       <View style={styles.row}>
@@ -474,7 +453,12 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
           <TextInput
             style={styles.input}
             value={eventData.price}
-            onChangeText={(value) => handleChange('price', value)}
+            onChangeText={(value) => {
+              const digits = value.replace(/\D/g, '')
+              if (digits === '' || parseInt(digits) <= 999) {
+                handleChange('price', digits)
+              }
+            }}
             keyboardType='numeric'
             placeholder='0'
             placeholderTextColor={COLORS.gray}
@@ -569,6 +553,25 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
           />
           <Text style={styles.checkboxLabel}>Wydarzenie cykliczne</Text>
         </View>
+
+        <View style={styles.checkboxRow}>
+          <Switch
+            value={eventData.isPrivate}
+            onValueChange={(value) => handleChange('isPrivate', value)}
+            trackColor={{ false: COLORS.gray, true: COLORS.third }}
+            thumbColor={
+              eventData.isPrivate ? COLORS.secondary : COLORS.grayLight
+            }
+          />
+          <Text style={styles.checkboxLabel}>Wydarzenie prywatne</Text>
+        </View>
+        {eventData.isPrivate && (
+          <View style={styles.privateWarning}>
+            <Text style={styles.privateWarningText}>
+              ⚠️ Wydarzenie prywatne nie będzie widoczne na liście wyszukiwań ani na mapie. Tylko zaproszone osoby będą mogły je zobaczyć.
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Przycisk submit */}
@@ -587,11 +590,20 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         </Text>
       </TouchableOpacity>
     </ScrollView>
+      <CustomTypePickerModal
+        visible={pickerModal !== null}
+        selectedValue={pickerModal ? eventData[pickerModal.field] : ''}
+        options={pickerModal?.options || []}
+        title={pickerModal?.title || ''}
+        iconMap={pickerModal?.iconMap}
+        onSelect={(value) => {
+          if (pickerModal) handleChange(pickerModal.field, value)
+        }}
+        onClose={() => setPickerModal(null)}
+      />
+    </>
   )
 }
-
-export default FormEvent
-
 const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
@@ -647,13 +659,15 @@ const createStyles = (ui) => StyleSheet.create({
     borderColor: COLORS.secondary,
     borderRadius: ui.controlRadius,
     minHeight: ui.controlMinHeight,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    paddingLeft: ui.controlPaddingHorizontal,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: ui.controlPaddingHorizontal,
   },
-  picker: {
+  pickerButtonText: {
+    flex: 1,
+    fontSize: ui.scaleFont(16, 0.35),
+    fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    height: ui.pickerHeight,
   },
   row: {
     flexDirection: 'row',
@@ -727,9 +741,25 @@ const createStyles = (ui) => StyleSheet.create({
     fontFamily: 'Lato-Regular',
     color: COLORS.gray,
   },
+  privateWarning: {
+    backgroundColor: COLORS.backgroundSecondary,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    borderRadius: ui.controlRadius,
+    padding: ui.spacing(12, 0.4),
+    marginBottom: ui.verticalScale(8),
+  },
+  privateWarningText: {
+    fontSize: ui.scaleFont(13, 0.3),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.secondary,
+    lineHeight: ui.scaleFont(20, 0.3),
+  },
   submitButtonText: {
     fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.background,
   },
 })
+
+export default FormEvent

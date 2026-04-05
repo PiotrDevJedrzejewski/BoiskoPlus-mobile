@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo} from 'react'
 import { View, Text, Image, TouchableOpacity, Alert, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImageManipulator from 'expo-image-manipulator'
@@ -14,7 +14,7 @@ const defaultAvatar = require('../../assets/images/defaultAvatar.png')
 const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
   const [avatarUploading, setAvatarUploading] = useState(false)
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   const avatar = user?.avatarUrl ? { uri: user.avatarUrl } : defaultAvatar
   // Keep user id field robust across legacy payload variants.

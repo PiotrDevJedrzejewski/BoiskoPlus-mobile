@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import React from 'react'
 import {
   View,
@@ -16,7 +17,7 @@ import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 const EventMarkerEventCreate = ({ orlikData, onClose }) => {
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
 
   // Obsługa pojedynczego miejsca lub listy miejsc (z klastra)
   const places = Array.isArray(orlikData) ? orlikData : [orlikData]

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo} from 'react'
 import {
   StyleSheet,
   Text,
@@ -31,7 +31,7 @@ const EditEvent = () => {
   useDebugMount('EditEventScreen')
   const router = useRouter()
   const ui = useResponsiveScale()
-  const styles = createStyles(ui)
+  const styles = useMemo(() => createStyles(ui), [ui])
   const { id } = useLocalSearchParams()
   const { removeOwnerEvent } = useDashboard()
 
