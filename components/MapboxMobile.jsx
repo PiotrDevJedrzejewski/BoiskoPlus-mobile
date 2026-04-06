@@ -143,7 +143,9 @@ const MapboxMobile = ({ isInteractive = true }) => {
   const eventsGeojson = useMemo(
     () => ({
       type: 'FeatureCollection',
-      features: filteredEvents.events.map((event, index) => ({
+      features: (filteredEvents.events || [])
+        .filter((event) => event && event._id && event.geolocation?.coordinates)
+        .map((event, index) => ({
         type: 'Feature',
         id: index,
         properties: {

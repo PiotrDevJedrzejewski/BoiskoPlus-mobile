@@ -98,7 +98,9 @@ const EventsActive = () => {
               status={item.status}
               statusData={item}
               onPress={() =>
-                router.push(`/(auth)/single-event?id=${item.eventID._id}`)
+                item.eventID?._id
+                  ? router.push(`/(auth)/single-event?id=${item.eventID._id}`)
+                  : null
               }
             />
           ))}

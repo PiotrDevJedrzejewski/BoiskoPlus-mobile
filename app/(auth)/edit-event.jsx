@@ -59,7 +59,9 @@ const EditEvent = () => {
         setEvent(response.data.event)
       } catch (error) {
         console.error('Błąd pobierania wydarzenia:', error)
-        Alert.alert('Błąd', 'Nie udało się pobrać danych wydarzenia')
+        Alert.alert('Błąd', 'Nie udało się pobrać danych wydarzenia. Możliwe, że zostało usunięte.')
+        router.back()
+        return
       }
     }
 
@@ -75,8 +77,9 @@ const EditEvent = () => {
         const eventUsers = response.data.eventUsers || []
 
         // Pobierz statystyki dla użytkowników
-        if (eventUsers.length > 0) {
-          const userIds = eventUsers.map((u) => u.userID._id)
+        const validUsers = eventUsers.filter((u) => u.userID?._id)
+        if (validUsers.length > 0) {
+          const userIds = validUsers.map((u) => u.userID._id)
           try {
             const statsResponse = await customFetch.post(
               '/user-stats/multiple',
@@ -86,7 +89,7 @@ const EditEvent = () => {
             )
 
             // Połącz użytkowników ze statystykami
-            const usersWithStats = eventUsers.map((user) => {
+            const usersWithStats = validUsers.map((user) => {
               const userStats = statsResponse.data.stats?.find(
                 (stat) =>
                   stat.userID?.toString() === user.userID._id?.toString(),
@@ -103,7 +106,7 @@ const EditEvent = () => {
             setUsers(usersWithStats)
           } catch (statsError) {
             console.error('Błąd pobierania statystyk:', statsError)
-            setUsers(eventUsers)
+            setUsers(validUsers)
           }
         } else {
           setUsers([])
@@ -129,13 +132,14 @@ const EditEvent = () => {
       const eventUsers = response.data.eventUsers || []
 
       // Pobierz statystyki dla użytkowników
-      if (eventUsers.length > 0) {
-        const userIds = eventUsers.map((u) => u.userID._id)
+      const validUsers = eventUsers.filter((u) => u.userID?._id)
+      if (validUsers.length > 0) {
+        const userIds = validUsers.map((u) => u.userID._id)
         try {
           const statsResponse = await customFetch.post('/user-stats/multiple', {
             userIds,
           })
-          const usersWithStats = eventUsers.map((user) => {
+          const usersWithStats = validUsers.map((user) => {
             const userStats = statsResponse.data.stats?.find(
               (stat) => stat.userID?.toString() === user.userID._id?.toString(),
             )
@@ -150,7 +154,7 @@ const EditEvent = () => {
           })
           setUsers(usersWithStats)
         } catch {
-          setUsers(eventUsers)
+          setUsers(validUsers)
         }
       }
       Alert.alert('Sukces', `Status zmieniony na: ${newStatus}`)
@@ -201,6 +205,18 @@ const EditEvent = () => {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size='large' color={COLORS.secondary} />
         <Text style={styles.loadingText}>Ładowanie wydarzenia...</Text>
+      </View>
+    )
+  }
+
+  if (!event) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Ionicons name='alert-circle' size={ui.moderateScale(64, 0.35)} color={COLORS.error} />
+        <Text style={styles.loadingText}>Nie znaleziono wydarzenia</Text>
+        <TouchableOpacity onPress={handleGoBack} style={{ marginTop: 16 }}>
+          <Text style={{ color: COLORS.secondary, fontFamily: 'Montserrat-Bold' }}>Wróć</Text>
+        </TouchableOpacity>
       </View>
     )
   }

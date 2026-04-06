@@ -91,7 +91,13 @@ const ChatRoom = () => {
             const found = (res.data.chatRooms || []).find(
               (r) => r.roomId === paramRoomId
             )
-            if (found) setRoom(found)
+            if (found) {
+              setRoom(found)
+            } else {
+              Alert.alert('Info', 'Pokój czatu nie istnieje lub został usunięty')
+              router.back()
+              return
+            }
           }
         } else if (otherUserId) {
           const res = await customFetch.post('/chat/rooms', { otherUserId })
@@ -137,6 +143,14 @@ const ChatRoom = () => {
         if (msgs.length < 30) setHasMore(false)
       } catch (error) {
         console.error('Błąd pobierania wiadomości:', error)
+        const status = error?.response?.status
+        if (status === 404 || status === 500) {
+          // Room was deleted (e.g. event deletion) — clean up and go back
+          useSocketStore.getState().removeRoom(room.roomId)
+          Alert.alert('Info', 'Pokój czatu nie istnieje lub został usunięty')
+          router.back()
+          return
+        }
         setMessages([])
       } finally {
         setLoading(false)

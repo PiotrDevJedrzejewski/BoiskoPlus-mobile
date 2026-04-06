@@ -190,7 +190,9 @@ const SingleEvent = () => {
         const response = await customFetch.get(
           `/status/events/${eventID}/users`,
         )
-        const acceptedUsers = response.data.usersByStatus?.accepted || []
+        const acceptedUsers = (response.data.usersByStatus?.accepted || []).filter(
+          (user) => user.userID?._id
+        )
 
         if (acceptedUsers.length > 0) {
           const userIds = acceptedUsers.map((user) => user.userID._id)

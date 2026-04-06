@@ -49,6 +49,7 @@ const EventsAllEvents = () => {
     eventsData
 
   const handleEventPress = (event, status) => {
+    if (!event?._id) return
     const isEnded = ['completed', 'cancelled', 'finished'].includes(event.eventStatus)
     if (status === 'owner' && !isEnded) {
       router.push(`/(auth)/edit-event?id=${event._id}`)

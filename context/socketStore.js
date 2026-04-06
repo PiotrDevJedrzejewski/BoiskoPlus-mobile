@@ -227,7 +227,7 @@ export const useSocketStore = create((set, get) => ({
       // Optimistic update
       set((s) => {
         const filtered = s.unreadEventsList.filter(
-          (event) => event.eventID._id !== eventId
+          (event) => event.eventID?._id !== eventId
         )
         return {
           unreadEventsList: filtered,
@@ -259,7 +259,7 @@ export const useSocketStore = create((set, get) => ({
       set((s) => {
         if (eventIds && eventIds.length > 0) {
           const filtered = s.unreadEventsList.filter(
-            (event) => !eventIds.includes(event.eventID._id)
+            (event) => !eventIds.includes(event.eventID?._id)
           )
           return {
             unreadEventsList: filtered,
@@ -295,14 +295,14 @@ export const useSocketStore = create((set, get) => ({
   clearInvite: (eventId) =>
     set((s) => {
       const filtered = s.unreadInvitesList.filter(
-        (item) => item.eventID._id !== eventId
+        (item) => item.eventID?._id !== eventId
       )
       return { unreadInvitesList: filtered, unreadInvitesCount: filtered.length }
     }),
 
   hasUnreadNotifications: (eventId) => {
     return get().unreadEventsList.some(
-      (event) => event.eventID._id === eventId
+      (event) => event.eventID?._id === eventId
     )
   },
 
