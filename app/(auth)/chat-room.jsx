@@ -9,7 +9,8 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native'
-import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useGradualAnimation } from '../../assets/hooks/useGradualAnimation'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '../../constants/colors'
@@ -30,7 +31,8 @@ const ChatRoom = () => {
   dbg('ChatRoom')
   useDebugMount('ChatRoom')
   const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const insets = useSafeAreaInsets()
+  const styles = useMemo(() => createStyles(ui, insets.bottom), [ui, insets.bottom])
   const router = useRouter()
   const { user } = useAuth()
   const { roomId: paramRoomId, otherUserId } = useLocalSearchParams()
@@ -358,8 +360,14 @@ const ChatRoom = () => {
   }, [typingUsers])
 
   // Keyboard spacer
+  const insetsBottomSV = useSharedValue(insets.bottom)
+  useEffect(() => {
+    insetsBottomSV.value = insets.bottom
+  }, [insets.bottom])
   const { height } = useGradualAnimation()
-  const keyboardPadding = useAnimatedStyle(() => ({ height: height.value }), [])
+  const keyboardPadding = useAnimatedStyle(() => ({
+    height: height.value > 0 ? Math.max(0, height.value - insetsBottomSV.value) : 0,
+  }), [])
 
   // Sizes
   const backIconSize = ui.moderateScale(24, 0.35)
@@ -525,7 +533,7 @@ const ChatRoom = () => {
 
 export default ChatRoom
 
-const createStyles = (ui) =>
+const createStyles = (ui, insetsBottom = 0) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -648,7 +656,8 @@ const createStyles = (ui) =>
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: ui.spacing(16),
-      paddingVertical: ui.verticalScale(12),
+      paddingTop: ui.verticalScale(12),
+      paddingBottom: ui.verticalScale(12) + insetsBottom,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
       borderTopWidth: 1,
       borderTopColor: COLORS.third,
