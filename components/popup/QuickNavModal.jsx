@@ -29,6 +29,7 @@ const QuickNavModal = ({ visible, onClose }) => {
 
   const unreadFriendRequestsCount = useSocketStore((s) => s.unreadFriendRequestsCount)
   const unreadEventsCount = useSocketStore((s) => s.unreadEventsCount)
+  const unreadInvitesCount = useSocketStore((s) => s.unreadInvitesCount)
   const totalUnreadMessages = useSocketStore(selectTotalUnreadMessages)
 
   const progress = useSharedValue(0)
@@ -67,7 +68,7 @@ const QuickNavModal = ({ visible, onClose }) => {
       key: 'events',
       label: 'Eventy',
       icon: 'calendar',
-      count: unreadEventsCount,
+      count: unreadEventsCount + unreadInvitesCount,
       path: '/(auth)/my-events',
     },
     {

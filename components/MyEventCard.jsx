@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useMemo} from 'react'
-import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native'
+import { useState, useRef, useMemo} from 'react'
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../constants/colors'
 import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
@@ -16,41 +16,12 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
   const ui = useResponsiveScale()
   const styles = useMemo(() => createStyles(ui), [ui])
   const markEventAsRead = useSocketStore((s) => s.markEventAsRead)
-  const needsMarking = !isInvited && statusData?.readBy === false
+  const clearInvite = useSocketStore((s) => s.clearInvite)
+  const isInvited = status === 'invited'
+  const needsMarking = statusData?.readBy === false
   const [isRead, setIsRead] = useState(!needsMarking)
   const [isPressed, setIsPressed] = useState(false)
-  const cardRef = useRef(null)
   const hasMarkedRead = useRef(!needsMarking)
-
-  useEffect(() => {
-    if (hasMarkedRead.current) return
-
-    const checkAndMark = () => {
-      if (hasMarkedRead.current || !cardRef.current) return
-      cardRef.current.measureInWindow((x, y, width, height) => {
-        const screenH = Dimensions.get('window').height
-        if (y + height > 0 && y < screenH) {
-          hasMarkedRead.current = true
-          setIsRead(true)
-          markEventAsRead(event._id).catch(() => {})
-        }
-      })
-    }
-
-    const mountTimeout = setTimeout(checkAndMark, 300)
-    const interval = setInterval(() => {
-      if (hasMarkedRead.current) {
-        clearInterval(interval)
-        return
-      }
-      checkAndMark()
-    }, 800)
-
-    return () => {
-      clearTimeout(mountTimeout)
-      clearInterval(interval)
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!event) return null
 
@@ -128,9 +99,16 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
     'cancelled',
   ].includes(status)
 
-  const isInvited = status === 'invited'
-
   const handlePress = () => {
+    if (!hasMarkedRead.current) {
+      hasMarkedRead.current = true
+      setIsRead(true)
+      if (isInvited) {
+        clearInvite(event._id)
+      } else {
+        markEventAsRead(event._id).catch(() => {})
+      }
+    }
     if (onPress) onPress()
   }
 
@@ -140,7 +118,6 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
 
   return (
     <TouchableOpacity
-      ref={cardRef}
       style={[styles.card, { opacity: isDisabled ? 0.6 : 1 }]}
       onPress={handlePress}
       activeOpacity={0.8}
@@ -159,7 +136,7 @@ const MyEventCard = ({ event, status, onPress, statusData }) => {
         </View>
 
         {/* Notification badge */}
-        {isInvited && (
+        {isInvited && !isRead && (
           <View style={[styles.notificationBadge, styles.invitedBadge]}>
             <Text style={styles.notificationText}>Zaproszono</Text>
           </View>

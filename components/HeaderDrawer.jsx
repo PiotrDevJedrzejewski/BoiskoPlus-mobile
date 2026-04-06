@@ -13,13 +13,14 @@ const HeaderDrawer = () => {
   const insets = useSafeAreaInsets()
   const { openDrawer } = useDrawer()
   const unreadEventsCount = useSocketStore((s) => s.unreadEventsCount)
+  const unreadInvitesCount = useSocketStore((s) => s.unreadInvitesCount)
   const unreadFriendRequestsCount = useSocketStore((s) => s.unreadFriendRequestsCount)
   const totalUnreadMessages = useSocketStore(selectTotalUnreadMessages)
   const ui = useResponsiveScale()
   const styles = useMemo(() => createStyles(ui), [ui])
   const [quickNavVisible, setQuickNavVisible] = useState(false)
 
-  const totalBadge = unreadEventsCount + unreadFriendRequestsCount + totalUnreadMessages
+  const totalBadge = unreadEventsCount + unreadInvitesCount + unreadFriendRequestsCount + totalUnreadMessages
 
   return (
     <>
