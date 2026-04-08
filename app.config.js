@@ -21,6 +21,8 @@ export default {
       infoPlist: {
         NSLocationWhenInUseUsageDescription:
           'Aplikacja potrzebuje jednorazowego dostępu do lokalizacji, aby wskazać Twoje położenie na mapie.',
+        NSPhotoLibraryUsageDescription:
+          'Aplikacja potrzebuje dostępu do galerii, aby umożliwić zmianę zdjęcia profilowego.',
       },
       googleServicesFile: './GoogleService-Info.plist',
     },
@@ -47,6 +49,8 @@ export default {
       'expo-audio',
       'expo-font',
       'expo-web-browser',
+      'expo-location',
+      'expo-image-picker',
       '@react-native-google-signin/google-signin',
       [
         'expo-notifications',

@@ -95,7 +95,7 @@ const DrawerModal = () => {
               <Ionicons name='close' size={28} color={COLORS.primary} />
             </Pressable>
 
-            <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: insets.bottom }} showsVerticalScrollIndicator={false}>
               {/* Tab screens */}
               <DrawerItem icon='home' label='Panel Główny' onPress={() => navigateTo('/(auth)/(map-screens)/dashboard-home')} styles={styles} ui={ui} />
               <DrawerItem icon='map' label='Mapa' onPress={() => navigateTo('/(auth)/(map-screens)/show-map')} styles={styles} ui={ui} />
