@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { COLORS } from '../../constants/colors'
 import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
@@ -18,6 +19,7 @@ const PANEL_HEIGHT = Dimensions.get('window').height * 0.65
 
 const CustomTypePickerModal = ({ visible, selectedValue, options, title, iconMap, onSelect, onClose }) => {
   const ui = useResponsiveScale()
+  const insets = useSafeAreaInsets()
   const styles = React.useMemo(() => createStyles(ui), [ui])
   const anim = useRef(new Animated.Value(0)).current
   const isMounted = useRef(true)
@@ -93,9 +95,13 @@ const CustomTypePickerModal = ({ visible, selectedValue, options, title, iconMap
               end={{ x: 0, y: 1 }}
               style={styles.panelInner}
             >
-              <View style={styles.handle} />
-              <Text style={styles.title}>{title}</Text>
-              <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.titleRow}>
+                <Text style={styles.title}>{title}</Text>
+                <Pressable style={styles.closeBtn} onPress={close} android_ripple={{ color: COLORS.background }}>
+                  <Ionicons name='close' size={ui.moderateScale(22, 0.35)} color={COLORS.primary} />
+                </Pressable>
+              </View>
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom }}>
                 {options.map((type, index) => (
                   <View key={type.value}>
                     <Pressable
@@ -159,25 +165,27 @@ const createStyles = (ui) => StyleSheet.create({
     flex: 1,
     paddingTop: ui.verticalScale(12),
   },
-  handle: {
-    width: ui.scale(40),
-    height: ui.verticalScale(4),
-    borderRadius: ui.moderateScale(2, 0.35),
-    backgroundColor: COLORS.primary,
-    opacity: 0.4,
-    alignSelf: 'center',
+  titleRow: {
     marginBottom: ui.verticalScale(12),
+    paddingBottom: ui.verticalScale(12),
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: ui.spacing(16, 0.35),
+    alignItems: 'center',
   },
   title: {
     fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
     textAlign: 'center',
-    marginBottom: ui.verticalScale(8),
-    paddingBottom: ui.verticalScale(8),
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.15)',
-    marginHorizontal: ui.spacing(16, 0.35),
+  },
+  closeBtn: {
+    position: 'absolute',
+    right: 8,
+    top: 0,
+    bottom: 2,
+    justifyContent: 'center',
+    padding: 4,
   },
   item: {
     flexDirection: 'row',

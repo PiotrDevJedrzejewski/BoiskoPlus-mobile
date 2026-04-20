@@ -64,6 +64,9 @@ export const useSocketStore = create((set, get) => ({
   // ── Online users ──
   onlineUsers: new Set(),
 
+  // ── Reconnect trigger ──
+  reconnectKey: 0,
+
   // ═════════════════════════════════════════════════
   // SETTERS (support functional updaters like useState)
   // ═════════════════════════════════════════════════
@@ -332,6 +335,40 @@ export const useSocketStore = create((set, get) => ({
     })),
 
   // ═════════════════════════════════════════════════
+  // FORCE RECONNECT (auth error / stale session recovery)
+  // ═════════════════════════════════════════════════
+
+  forceReconnect: () => {
+    const { chatSocket, notificationSocket } = get()
+
+    if (chatSocket) {
+      chatListeners.forEach((handler, event) => chatSocket.off(event, handler))
+      chatListeners.clear()
+      chatSocket.disconnect()
+    }
+
+    if (notificationSocket) {
+      notificationListeners.forEach((handler, event) =>
+        notificationSocket.off(event, handler)
+      )
+      notificationListeners.clear()
+      notificationSocket.disconnect()
+    }
+
+    joinedRooms.clear()
+
+    set((s) => ({
+      chatSocket: null,
+      notificationSocket: null,
+      chatConnectionState: ConnectionState.DISCONNECTED,
+      notificationConnectionState: ConnectionState.DISCONNECTED,
+      reconnectKey: s.reconnectKey + 1,
+    }))
+
+    console.log('[SocketStore] forceReconnect triggered')
+  },
+
+  // ═════════════════════════════════════════════════
   // DISCONNECT (wylogowanie / cleanup)
   // ═════════════════════════════════════════════════
 
@@ -368,6 +405,7 @@ export const useSocketStore = create((set, get) => ({
       unreadInvitesList: [],
       unreadInvitesCount: 0,
       onlineUsers: new Set(),
+      reconnectKey: 0,
     })
   },
 }))

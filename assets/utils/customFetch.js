@@ -4,6 +4,10 @@ import Constants from 'expo-constants'
 import { Platform } from 'react-native'
 import { logHttp } from './debugLogger'
 
+// ─── 401 event bus (simple callback for AuthContext) ──
+let _onUnauthorized = null
+export const setOnUnauthorized = (cb) => { _onUnauthorized = cb }
+
 // Pobierz URL serwera z konfiguracji Expo
 const getBaseURL = () => {
   const isDev = process.env.EXPO_MODE === 'development' || __DEV__
@@ -86,6 +90,8 @@ customFetch.interceptors.response.use(
       } catch (e) {
         console.error('Błąd usuwania tokena:', e)
       }
+      // Powiadom AuthContext o wygasłej sesji
+      _onUnauthorized?.()
     }
 
     // Obsługa timeout

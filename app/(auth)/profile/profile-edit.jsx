@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { COLORS } from '../../../constants/colors'
 import { useAuth } from '../../../context/AuthContext'
-import DatePicker from '../../../components/DatePicker'
+import DatePicker from '../../../components/popup/DatePicker'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 

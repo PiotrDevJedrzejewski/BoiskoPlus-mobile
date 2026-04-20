@@ -19,7 +19,7 @@ import { useRouter } from 'expo-router'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 import { gameTypeIcons } from '../assets/utils/gameTypeIcons'
 import CustomTypePickerModal from './popup/CustomTypePickerModal'
-import DatePicker from './DatePicker'
+import DatePicker from './popup/DatePicker'
 import HourPicker from './popup/HourPicker'
 
 const GAME_TYPES = [

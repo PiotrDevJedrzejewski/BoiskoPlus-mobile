@@ -12,6 +12,7 @@ import { DashboardProvider } from '../../context/DashboardContext'
 import { FriendshipProvider } from '../../context/FriendshipContext'
 import { DrawerProvider } from '../../context/DrawerContext'
 import { MapProvider } from '../../context/MapContext'
+import NetworkGuard from '../../components/NetworkGuard'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
 // Overlays
@@ -110,6 +111,7 @@ export default function AuthLayout() {
           <FriendshipProvider>
             <MapProvider>
               <DrawerProvider>
+              <NetworkGuard>
               <View style={styles.container}>
                 {/* Header at top */}
                 <HeaderDrawer />
@@ -136,6 +138,7 @@ export default function AuthLayout() {
                 {/* Drawer overlay — on top of everything */}
                 <DrawerModal />
               </View>
+              </NetworkGuard>
             </DrawerProvider>
             </MapProvider>
           </FriendshipProvider>

@@ -7,6 +7,7 @@ import customFetch, {
   setAuthToken,
   removeAuthToken,
   hasAuthToken,
+  setOnUnauthorized,
 } from '../assets/utils/customFetch'
 import { router } from 'expo-router'
 import { storage } from '../assets/utils/firebase'
@@ -77,6 +78,16 @@ export const AuthProvider = ({ children }) => {
     })
     setSystemPermissionsGeo({ status: 'undetermined' })
   }, [])
+
+  // Register 401 interceptor → auto-logout
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      console.warn('[Auth] 401 received — auto-logout')
+      clearLocalStorageAndState()
+      router.replace('/')
+    })
+    return () => setOnUnauthorized(null)
+  }, [clearLocalStorageAndState])
 
   const authorized = useCallback(async () => {
     setLoading(true)

@@ -18,7 +18,7 @@ import { Toast } from 'toastify-react-native'
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
 import { auth } from '../assets/utils/firebase'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
-import DatePicker from '../components/DatePicker'
+import DatePicker from '../components/popup/DatePicker'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../assets/utils/debugLogger'
 

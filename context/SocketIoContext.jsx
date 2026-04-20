@@ -15,6 +15,7 @@
  */
 
 import { useRef, useEffect } from 'react'
+import { AppState } from 'react-native'
 import { useAudioPlayer } from 'expo-audio'
 import Constants from 'expo-constants'
 import * as SecureStore from 'expo-secure-store'
@@ -118,6 +119,8 @@ export const SocketIoProvider = ({ children }) => {
   // EFFECT: Inicjalizacja socketów
   // ═════════════════════════════════════════════════
 
+  const reconnectKey = useSocketStore((s) => s.reconnectKey)
+
   useEffect(() => {
     let cancelled = false
 
@@ -153,12 +156,28 @@ export const SocketIoProvider = ({ children }) => {
       const store = useSocketStore.getState()
       const _joinedRooms = _getJoinedRooms()
 
+      // ── Handler for auth failure (server says session expired) ──
+      const handleAuthError = () => {
+        console.warn('[Socket] Server auth error — forcing full reconnect')
+        if (!cancelled) {
+          useSocketStore.getState().forceReconnect()
+        }
+      }
+
       // ── Chat socket ──
       store.setChatConnectionState(ConnectionState.CONNECTING)
       const newChatSocket = io(`${socketUrl}/chat`, socketOptions)
 
       newChatSocket.on('connect', () => {
         useSocketStore.getState().setChatConnectionState(ConnectionState.CONNECTED)
+
+        // Verify server recognizes us after (re)connect
+        newChatSocket.emit('healthCheck', (result) => {
+          if (!result?.success) {
+            console.warn('[Chat] Health check failed — forcing reconnect')
+            useSocketStore.getState().forceReconnect()
+          }
+        })
       })
       newChatSocket.on('disconnect', (reason) => {
         useSocketStore.getState().setChatConnectionState(
@@ -174,6 +193,7 @@ export const SocketIoProvider = ({ children }) => {
       newChatSocket.on('roomsRestored', (rooms) => {
         rooms.forEach((roomId) => _joinedRooms.add(roomId))
       })
+      newChatSocket.on('authError', handleAuthError)
 
       store.setChatSocket(newChatSocket)
 
@@ -195,6 +215,7 @@ export const SocketIoProvider = ({ children }) => {
         console.error('[Notifications] Connection error:', error.message)
         useSocketStore.getState().setNotificationConnectionState(ConnectionState.ERROR)
       })
+      newNotificationSocket.on('authError', handleAuthError)
 
       store.setNotificationSocket(newNotificationSocket)
     }
@@ -205,7 +226,7 @@ export const SocketIoProvider = ({ children }) => {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.userID, isAuthChecked])
+  }, [user?.userID, isAuthChecked, reconnectKey])
 
   // ═════════════════════════════════════════════════
   // EFFECT: Rozłącz przy wylogowaniu
@@ -245,6 +266,43 @@ export const SocketIoProvider = ({ children }) => {
       _getJoinedRooms().clear()
     }
   }, [])
+
+  // ═════════════════════════════════════════════════
+  // EFFECT: AppState — odśwież sockety po powrocie z tła
+  // ═════════════════════════════════════════════════
+
+  const appStateRef = useRef(AppState.currentState)
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      const wasBackground =
+        appStateRef.current === 'background' || appStateRef.current === 'inactive'
+      const isNowActive = nextAppState === 'active'
+      appStateRef.current = nextAppState
+
+      if (wasBackground && isNowActive && user?.userID) {
+        const { chatSocket: cs, notificationSocket: ns } =
+          useSocketStore.getState()
+
+        // If sockets are disconnected or missing, force reconnect
+        if (!cs?.connected || !ns?.connected) {
+          console.log('[AppState] Sockets not connected after resume — forcing reconnect')
+          useSocketStore.getState().forceReconnect()
+          return
+        }
+
+        // If sockets look connected, verify with health check
+        cs.emit('healthCheck', (result) => {
+          if (!result?.success) {
+            console.warn('[AppState] Health check failed after resume — forcing reconnect')
+            useSocketStore.getState().forceReconnect()
+          }
+        })
+      }
+    })
+
+    return () => subscription.remove()
+  }, [user?.userID])
 
   // ═════════════════════════════════════════════════
   // EFFECT: Pobierz pokoje i dołącz (BATCH)

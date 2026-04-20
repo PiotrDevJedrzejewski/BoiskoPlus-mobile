@@ -1,8 +1,10 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { Modal, Pressable, StyleSheet, Text, View, FlatList, Animated, Dimensions } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import { COLORS } from '../constants/colors'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { Ionicons } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { COLORS } from '../../constants/colors'
+import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const MONTHS = [
   { value: 1, label: 'Sty' },
@@ -79,7 +81,8 @@ const DatePicker = ({
   disabled = false,
 }) => {
   const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const insets = useSafeAreaInsets()
+  const styles = useMemo(() => createStyles(ui, insets), [ui, insets])
   const parsedValue = parseIsoDate(value)
 
   const currentYear = new Date().getFullYear()
@@ -266,8 +269,12 @@ const DatePicker = ({
                 end={{ x: 0, y: 1 }}
                 style={styles.panelInner}
               >
-                <View style={styles.handle} />
-                <Text style={styles.title}>Wybierz datę</Text>
+                <View style={styles.titleRow}>
+                  <Text style={styles.title}>Wybierz datę</Text>
+                  <Pressable style={styles.closeBtn} onPress={close} android_ripple={{ color: COLORS.background }}>
+                    <Ionicons name='close' size={ui.moderateScale(24, 0.35)} color={COLORS.primary} />
+                  </Pressable>
+                </View>
 
                 <View style={styles.columnsContainer}>
                   {/* Dzień */}
@@ -338,7 +345,7 @@ const DatePicker = ({
 
 export default DatePicker
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (ui, insets = { bottom: 0 }) => StyleSheet.create({
   datePickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -393,25 +400,27 @@ const createStyles = (ui) => StyleSheet.create({
     flex: 1,
     paddingTop: ui.verticalScale(12),
   },
-  handle: {
-    width: ui.scale(40),
-    height: ui.verticalScale(4),
-    borderRadius: ui.moderateScale(2, 0.35),
-    backgroundColor: COLORS.primary,
-    opacity: 0.4,
-    alignSelf: 'center',
+  titleRow: {
     marginBottom: ui.verticalScale(12),
+    paddingBottom: ui.verticalScale(12),
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: ui.spacing(16, 0.35),
+    alignItems: 'center',
   },
   title: {
     fontSize: ui.scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.primary,
     textAlign: 'center',
-    marginBottom: ui.verticalScale(8),
-    paddingBottom: ui.verticalScale(8),
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.15)',
-    marginHorizontal: ui.spacing(16, 0.35),
+  },
+  closeBtn: {
+    position: 'absolute',
+    right: 8,
+    top: 0,
+    bottom: 2,
+    justifyContent: 'center',
+    padding: 4,
   },
   columnsContainer: {
     flex: 1,
@@ -470,6 +479,7 @@ const createStyles = (ui) => StyleSheet.create({
   buttonsRow: {
     flexDirection: 'row',
     padding: ui.spacing(16, 0.4),
+    paddingBottom: ui.spacing(16, 0.4) + insets.bottom,
     gap: ui.spacing(12, 0.35),
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.1)',
