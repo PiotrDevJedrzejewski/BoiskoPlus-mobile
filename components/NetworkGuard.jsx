@@ -7,8 +7,23 @@ import { COLORS } from '../constants/colors'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 import spinner from '../assets/utils/spinner.json'
 
+// ─── DEBUG SWITCH ─────────────────────────────────────────────────────────────
+// 0 = normalna praca
+// 1 = wymuś overlay "brak połączenia" (symulacja offline)
+// UWAGA: działa tylko w trybie __DEV__ — w produkcji ignorowane
+const DEBUG_FORCE_OFFLINE = 0
+// ─────────────────────────────────────────────────────────────────────────────
+
 const PING_INTERVAL_MS = 10_000
-const PING_TIMEOUT_MS = 8_000
+// Server-level ping when ONLINE — detects Render cold-start / server down
+// (device-level drops are caught instantly via Network.addNetworkStateListener)
+const ONLINE_SERVER_PING_INTERVAL_MS = 60_000
+// Render.com cold-start can take 30-60 s — give it time before declaring unreachable
+const PING_TIMEOUT_MS = 35_000
+// Consecutive server-level failures required before showing the overlay
+// (guards against Render.com cold-start false positives)
+// Device-level disconnect (isConnected=false) always shows the overlay immediately
+const SERVER_FAILURES_BEFORE_OFFLINE = 2
 
 /**
  * NetworkGuard — fullscreen blocking overlay when there's no connection.
@@ -31,12 +46,15 @@ const NetworkGuard = ({ serverUrl, children }) => {
   const [offlineReason, setOfflineReason] = useState(null)
 
   const intervalRef = useRef(null)
+  const onlinePingRef = useRef(null)
   const appStateRef = useRef(AppState.currentState)
   const mountedRef = useRef(true)
+  const consecutiveFailuresRef = useRef(0)
 
-  // On Android emulators Network.isInternetReachable can return null/false
-  // even when connected — skip that check in __DEV__ mode
-  const isEmulator = __DEV__
+  // isInternetReachable on Android EMULATORS (not real devices) can return null/false
+  // even when the emulator has internet — detect via __DEV__ + android only.
+  // Physical devices with dev builds should NOT skip this check.
+  const isAndroidEmulator = __DEV__ && Platform.OS === 'android'
 
   const pingUrl = serverUrl || (
     process.env.EXPO_PUBLIC_SERVER_URL ||
@@ -45,6 +63,16 @@ const NetworkGuard = ({ serverUrl, children }) => {
 
   // ─── Core check ──────────────────────────────
   const checkConnection = useCallback(async () => {
+    // Debug switch — wymusza offline overlay bez konieczności rozłączania urządzenia
+    if (__DEV__ && DEBUG_FORCE_OFFLINE === 1) {
+      console.log('[NetworkGuard] DEBUG_FORCE_OFFLINE=1 → symulacja offline')
+      if (mountedRef.current) {
+        setOfflineReason('no_network')
+        setIsOffline(true)
+      }
+      return false
+    }
+
     try {
       const networkState = await Network.getNetworkStateAsync()
       const { isConnected, isInternetReachable, type } = networkState
@@ -53,10 +81,12 @@ const NetworkGuard = ({ serverUrl, children }) => {
 
       // On emulators isInternetReachable is often null — treat null as unknown and continue
       const definitivelyOffline =
-        isConnected === false || (!isEmulator && isInternetReachable === false)
+        isConnected === false || (!isAndroidEmulator && isInternetReachable === false)
 
       if (definitivelyOffline) {
-        console.log('[NetworkGuard] OFFLINE — no network connection')
+        consecutiveFailuresRef.current += 1
+        console.log(`[NetworkGuard] OFFLINE — no network connection (failure #${consecutiveFailuresRef.current})`)
+        // Device-level disconnect: show overlay immediately (no threshold)
         if (mountedRef.current) {
           setOfflineReason('no_network')
           setIsOffline(true)
@@ -80,34 +110,88 @@ const NetworkGuard = ({ serverUrl, children }) => {
 
         if (mountedRef.current) {
           if (res.ok) {
+            consecutiveFailuresRef.current = 0
             setIsOffline(false)
             setOfflineReason(null)
             setRetryCount(0)
           } else {
-            setOfflineReason('server_error')
-            setIsOffline(true)
+            consecutiveFailuresRef.current += 1
+            console.log(`[NetworkGuard] Server error (failure #${consecutiveFailuresRef.current})`)
+            if (consecutiveFailuresRef.current >= SERVER_FAILURES_BEFORE_OFFLINE) {
+              setOfflineReason('server_error')
+              setIsOffline(true)
+            }
           }
         }
         return res.ok
       } catch (fetchErr) {
         clearTimeout(timeoutId)
-        const reason = fetchErr?.name === 'AbortError' ? 'server_unreachable' : 'server_unreachable'
-        console.log(`[NetworkGuard] Server unreachable:`, fetchErr?.message)
-        if (mountedRef.current) {
-          setOfflineReason(reason)
+        consecutiveFailuresRef.current += 1
+        console.log(`[NetworkGuard] Server unreachable (failure #${consecutiveFailuresRef.current}):`, fetchErr?.message)
+        if (mountedRef.current && consecutiveFailuresRef.current >= SERVER_FAILURES_BEFORE_OFFLINE) {
+          setOfflineReason('server_unreachable')
           setIsOffline(true)
         }
         return false
       }
     } catch (err) {
-      console.log('[NetworkGuard] Network check error:', err?.message)
-      if (mountedRef.current) {
+      consecutiveFailuresRef.current += 1
+      console.log(`[NetworkGuard] Network check error (failure #${consecutiveFailuresRef.current}):`, err?.message)
+      if (mountedRef.current && consecutiveFailuresRef.current >= SERVER_FAILURES_BEFORE_OFFLINE) {
         setOfflineReason('no_network')
         setIsOffline(true)
       }
       return false
     }
-  }, [pingUrl, isEmulator])
+  }, [pingUrl, isAndroidEmulator])
+
+  // ─── Network state listener (device-level: WiFi/airplane mode instant detection) ──
+  useEffect(() => {
+    const sub = Network.addNetworkStateListener((state) => {
+      const { isConnected, isInternetReachable } = state
+      console.log('[NetworkGuard] Network state change:', { isConnected, isInternetReachable })
+
+      const definitivelyOffline =
+        isConnected === false || (!isAndroidEmulator && isInternetReachable === false)
+
+      if (definitivelyOffline) {
+        console.log('[NetworkGuard] Listener: device offline — showing overlay immediately')
+        consecutiveFailuresRef.current += 1
+        if (mountedRef.current) {
+          setOfflineReason('no_network')
+          setIsOffline(true)
+        }
+      } else {
+        // Device is back online — verify server before clearing overlay
+        checkConnection()
+      }
+    })
+
+    return () => sub.remove()
+  }, [checkConnection, isAndroidEmulator])
+
+  // ─── Background server ping when ONLINE (Render cold-start / server down detection) ──
+  useEffect(() => {
+    if (isOffline) {
+      // Offline retry loop takes over — stop the background ping
+      if (onlinePingRef.current) {
+        clearInterval(onlinePingRef.current)
+        onlinePingRef.current = null
+      }
+      return
+    }
+
+    onlinePingRef.current = setInterval(() => {
+      checkConnection()
+    }, ONLINE_SERVER_PING_INTERVAL_MS)
+
+    return () => {
+      if (onlinePingRef.current) {
+        clearInterval(onlinePingRef.current)
+        onlinePingRef.current = null
+      }
+    }
+  }, [isOffline, checkConnection])
 
   // ─── Retry loop (only when offline) ──────────
   useEffect(() => {
@@ -163,6 +247,10 @@ const NetworkGuard = ({ serverUrl, children }) => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
+      }
+      if (onlinePingRef.current) {
+        clearInterval(onlinePingRef.current)
+        onlinePingRef.current = null
       }
     }
   }, [checkConnection])

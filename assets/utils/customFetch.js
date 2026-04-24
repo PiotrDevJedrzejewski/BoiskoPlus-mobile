@@ -62,7 +62,7 @@ customFetch.interceptors.request.use(
     // Debug w trybie development
     if (__DEV__) {
       config._startTime = Date.now()
-      console.log('Request:', config.method?.toUpperCase(), config.url)
+      console.log('Request:', config.method?.toUpperCase(), (config.baseURL || '') + config.url)
     }
 
     return config
