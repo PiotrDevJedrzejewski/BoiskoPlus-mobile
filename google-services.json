@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "995067049325-5s8eh2se6ragec2q2ibiishcfja9jtbe.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.boiskoplusmobile.app",
+            "certificate_hash": "7a2d6965892159eda92475c9631a95a792cfc4bd"
+          }
+        },
+        {
           "client_id": "995067049325-m055ecgsi8btuud4l4m5sk36hfo21hn7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
