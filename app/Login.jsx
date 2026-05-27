@@ -7,6 +7,7 @@ import {
   ScrollView,
   Pressable,
   Alert,
+  Platform,
 } from 'react-native'
 import { COLORS } from '../constants/colors'
 import React, { useState, useEffect, useMemo} from 'react'
@@ -22,12 +23,14 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import Constants from 'expo-constants'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../assets/utils/debugLogger'
+import * as AppleAuthentication from 'expo-apple-authentication'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const Login = () => {
   dbg('LoginScreen')
   useDebugMount('LoginScreen')
   const router = useRouter()
-  const { login, loginWithGoogle } = useAuth()
+  const { login, loginWithGoogle, loginWithApple } = useAuth()
   const ui = useResponsiveScale()
   const styles = useMemo(() => createStyles(ui), [ui])
 
@@ -157,6 +160,88 @@ const Login = () => {
     router.push('/register')
   }
 
+  // Apple Sign-In
+  const handleAppleSignIn = async () => {
+    if (__DEV__) console.log('[Apple Sign-In] Starting flow from login')
+    setIsLoading(true)
+    try {
+      const isAvailable = await AppleAuthentication.isAvailableAsync()
+      if (__DEV__) console.log('[Apple Sign-In] isAvailable:', isAvailable)
+      if (!isAvailable) {
+        Alert.alert('Niedostępne', 'Logowanie przez Apple nie jest dostępne na tym urządzeniu.')
+        return
+      }
+
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      })
+      if (__DEV__) console.log('[Apple Sign-In] Credential received, appleUserId:', credential.user)
+      if (__DEV__) console.log('[Apple Sign-In] email:', credential.email, 'givenName:', credential.fullName?.givenName)
+
+      const { identityToken, user: appleUserId, email, fullName } = credential
+      if (!identityToken) {
+        Alert.alert('Błąd', 'Nie udało się uzyskać tokena Apple.')
+        return
+      }
+
+      // Cache key per user — Apple zwraca email/imię tylko przy pierwszym logowaniu
+      const CACHE_KEY = `apple_user_cache_${appleUserId}`
+      let cachedData = {}
+      try {
+        const stored = await AsyncStorage.getItem(CACHE_KEY)
+        if (stored) cachedData = JSON.parse(stored)
+        if (__DEV__) console.log('[Apple Sign-In] Cache loaded:', cachedData)
+      } catch {}
+
+      const resolvedEmail = email || cachedData.email || null
+      const resolvedName = fullName?.givenName || cachedData.name || ''
+      const resolvedSurname = fullName?.familyName || cachedData.surname || ''
+
+      if (email || fullName?.givenName) {
+        try {
+          await AsyncStorage.setItem(CACHE_KEY, JSON.stringify({
+            email: resolvedEmail,
+            name: resolvedName,
+            surname: resolvedSurname,
+          }))
+          if (__DEV__) console.log('[Apple Sign-In] Cache saved')
+        } catch {}
+      }
+
+      const result = await loginWithApple(identityToken, appleUserId)
+      if (__DEV__) console.log('[Apple Sign-In] Result:', result)
+
+      if (!result.success && result.userNotFound) {
+        if (__DEV__) console.log('[Apple Sign-In] User not found, redirecting to registration')
+        router.push({
+          pathname: '/register-with-oauth',
+          params: {
+            email: resolvedEmail || '',
+            name: resolvedName,
+            surname: resolvedSurname,
+            appleIdentityToken: identityToken,
+            appleUserId,
+          },
+        })
+      } else if (!result.success) {
+        Alert.alert('Błąd logowania', result.error)
+      }
+      // sukces: redirect handled by loginWithApple → authorized() in AuthContext
+    } catch (error) {
+      if (error.code === 'ERR_REQUEST_CANCELED') {
+        if (__DEV__) console.log('[Apple Sign-In] Cancelled by user')
+        return
+      }
+      if (__DEV__) console.error('[Apple Sign-In] Exception:', error)
+      Alert.alert('Błąd', 'Wystąpił błąd podczas logowania przez Apple.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.auth}>
       <View style={styles.authMask} />
@@ -235,18 +320,31 @@ const Login = () => {
               Zarejestruj się
             </Text>
           </Text>
-          {/* TODO: Google Auth - do implementacji później */}
-          <Pressable
-            style={styles.authFormAlternateIcon}
-            onPress={handleGoogleSignIn}
-            disabled={isLoading}
-          >
-            <Image
-              source={require('../assets/images/google-icon.png')}
-              style={styles.googleIconImage}
-            />
-          </Pressable>
-          <Text style={styles.googleText}>Zaloguj się za pomocą Google</Text>
+          <View style={styles.oauthRow}>
+                          <Pressable
+                style={styles.authFormAlternateIcon}
+                onPress={handleAppleSignIn}
+                disabled={isLoading || Platform.OS !== 'ios'}
+              >
+                <Image
+                  source={require('../assets/images/appleWhite.png')}
+                  style={styles.appleIconImage}
+                />
+                {Platform.OS !== 'ios' && (
+                  <View style={styles.disabledOverlay} />
+                )}
+              </Pressable>
+            <Pressable
+              style={styles.authFormAlternateIcon}
+              onPress={handleGoogleSignIn}
+              disabled={isLoading}
+            >
+              <Image
+                source={require('../assets/images/google-icon.png')}
+                style={styles.googleIconImage}
+              />
+            </Pressable>
+          </View>
         </View>
       </View>
     </ScrollView>
@@ -340,6 +438,12 @@ const createStyles = (ui) => StyleSheet.create({
     color: COLORS.secondary,
     fontWeight: 'bold',
   },
+  oauthRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 15,
+  },
   authFormAlternateIcon: {
     width: ui.moderateScale(50, 0.35),
     height: ui.moderateScale(50, 0.35),
@@ -347,16 +451,26 @@ const createStyles = (ui) => StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: ui.verticalScale(10),
   },
   googleIconImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'contain',
   },
-  googleText: {
-    fontSize: ui.scaleFont(14, 0.35),
-    color: COLORS.primary,
+  appleIconImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: ui.moderateScale(25, 0.35),
+    resizeMode: 'contain',
+  },
+  disabledOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    borderRadius: ui.moderateScale(25, 0.35),
   },
   loader: {
     width: ui.scale(50),

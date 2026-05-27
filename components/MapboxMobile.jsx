@@ -39,7 +39,7 @@ const throttle = (func, delay) => {
 const MapboxMobile = ({ isInteractive = true }) => {
   const { filteredEvents, mapTheme, userLocation, geolocationAccepted } =
     useDashboard()
-  const { mapRef, camera, showMarkers, showEvents, setIsMapReady } = useMap()
+  const { mapRef, cameraRef, camera, showMarkers, showEvents, setIsMapReady } = useMap()
 
   // Reset isMapReady przy unmount — loading screen pokaże się ponownie przy powrocie
   useEffect(() => {
@@ -341,9 +341,9 @@ const MapboxMobile = ({ isInteractive = true }) => {
         onDidFinishLoadingMap={handleMapLoad}
         onRegionIsChanging={handleRegionChange}
       >
-        {/* Kamera sterowana przez MapContext */}
+        {/* Kamera sterowana przez MapContext - ref imperatywny dla niezawodnej nawigacji na iOS/Android */}
         <Mapbox.Camera
-          key={camera._key}
+          ref={cameraRef}
           zoomLevel={camera.zoomLevel}
           centerCoordinate={camera.centerCoordinate}
           animationMode='flyTo'

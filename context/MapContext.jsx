@@ -43,6 +43,7 @@ export const MapProvider = ({ children }) => {
 
   const { consents, consentsLoading, getSavedLocation, systemPermissionsGeo, setSystemPermissionsGeo, updateConsents } = useAuth()
   const mapRef = useRef(null)
+  const cameraRef = useRef(null)
   const hasInitializedRef = useRef(false)
   const permissionsCheckedRef = useRef(false)
 
@@ -70,25 +71,29 @@ export const MapProvider = ({ children }) => {
     region: '',
   })
 
-  // Kamera mapy
+  // Kamera mapy - stan tylko do inicjalnego renderu; nawigacja przez cameraRef
   const [camera, setCamera] = useState({
     centerCoordinate: [19.5, 52.0], // Polska - cały kraj
     zoomLevel: 6,
-    // date to force re-render of Camera when coordinates change (Mapbox bug workaround) 
-    //Te same współrzędne = brak re-renderu, więc dodajemy unikalny klucz przy każdej zmianie, aby wymusić aktualizację kamery
-    _key: Date.now(),
   })
 
   // Komponent mapy do współdzielenia między ekranami
   const [mapComponent, setMapComponent] = useState(null)
 
   const flyTo = useCallback((coordinates, zoom = 14) => {
+    // Imperatywne wywołanie - działa poprawnie na iOS i Android bez remountowania Camera
+    if (cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: coordinates,
+        zoomLevel: zoom,
+        animationMode: 'flyTo',
+        animationDuration: 1000,
+      })
+    }
+    // Synchronizuj state (dla inicjalnego renderu / fallback)
     setCamera({
       centerCoordinate: coordinates,
       zoomLevel: zoom,
-      // date to force re-render of Camera when coordinates change (Mapbox bug workaround) 
-      //Te same współrzędne = brak re-renderu, więc dodajemy unikalny klucz przy każdej zmianie, aby wymusić aktualizację kamery
-      _key: Date.now(),
     })
   }, [])
 
@@ -232,6 +237,7 @@ export const MapProvider = ({ children }) => {
 
   const mapContextValue = useMemo(() => ({
     mapRef,
+    cameraRef,
     showMarkers,
     setShowMarkers,
     showEvents,

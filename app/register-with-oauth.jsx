@@ -38,11 +38,11 @@ const RegisterWithOAuth = () => {
   dbg('RegisterWithOAuthScreen')
   useDebugMount('RegisterWithOAuthScreen')
   const router = useRouter()
-  const { completeOAuth } = useAuth()
+  const { completeOAuth, completeAppleOAuth } = useAuth()
   const ui = useResponsiveScale()
   const styles = useMemo(() => createStyles(ui), [ui])
 
-  const { email, name: paramName, surname: paramSurname, googleIdToken, avatarUrl } = useLocalSearchParams()
+  const { email, name: paramName, surname: paramSurname, googleIdToken, avatarUrl, appleIdentityToken, appleUserId } = useLocalSearchParams()
 
   const [nick, setNick] = useState('')
   const [birthDate, setBirthDate] = useState('')
@@ -78,22 +78,39 @@ const RegisterWithOAuth = () => {
       return
     }
 
-    if (!email || !googleIdToken) {
-      Toast.error('Brak wymaganych danych z Google. Spróbuj ponownie.')
+    if (!googleIdToken && !appleIdentityToken) {
+      Toast.error('Brak danych z Google/Apple. Spróbuj ponownie.')
+      return
+    }
+
+    if (!email && !appleIdentityToken) {
+      Toast.error('Brak emaila. Spróbuj ponownie.')
       return
     }
 
     setIsLoading(true)
+    if (__DEV__) console.log('[RegisterWithOAuth] submitting, isApple:', !!appleIdentityToken)
     try {
-      const result = await completeOAuth({
-        nick,
-        birthDate,
-        email,
-        name,
-        surname,
-        googleIdToken,
-        avatarUrl: avatarUrl || '',
-      })
+      const result = appleIdentityToken
+        ? await completeAppleOAuth({
+            identityToken: appleIdentityToken,
+            appleUserId,
+            nick,
+            birthDate,
+            email,
+            name,
+            surname,
+            avatarUrl: avatarUrl || '',
+          })
+        : await completeOAuth({
+            nick,
+            birthDate,
+            email,
+            name,
+            surname,
+            googleIdToken,
+            avatarUrl: avatarUrl || '',
+          })
 
       if (result.success) {
         Toast.success('Rejestracja zakończona! Możesz korzystać z aplikacji.')
@@ -107,7 +124,7 @@ const RegisterWithOAuth = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [nick, birthDate, name, surname, email, googleIdToken, avatarUrl, completeOAuth, maxBirthDate])
+  }, [nick, birthDate, name, surname, email, googleIdToken, appleIdentityToken, appleUserId, avatarUrl, completeOAuth, completeAppleOAuth, maxBirthDate])
 
   if (isLoading) {
     return (

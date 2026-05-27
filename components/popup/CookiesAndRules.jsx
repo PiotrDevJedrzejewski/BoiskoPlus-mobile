@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useRouter } from 'expo-router'
+import { useRouter, usePathname } from 'expo-router'
 import { useAuth } from '../../context/AuthContext'
 import Button1 from '../../components/Button1'
 import React from 'react'
@@ -11,6 +11,7 @@ import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 
 const CookiesAndRules = () => {
   const router = useRouter()
+  const pathname = usePathname()
   const ui = useResponsiveScale()
   const styles = useMemo(() => createStyles(ui), [ui])
   const {
@@ -24,9 +25,10 @@ const CookiesAndRules = () => {
   } = useAuth()
 
   const isReadyToSave = pendingConsents.rulesAccepted
+  const isOnIndexScreen = pathname === '/'
 
   return (
-    <Modal visible={needsConsent} transparent animationType='fade'>
+    <Modal visible={needsConsent && isOnIndexScreen} transparent animationType='fade'>
       <View style={styles.modalBackdrop}>
         <LinearGradient
           colors={[COLORS.third, COLORS.background]}

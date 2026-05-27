@@ -2,23 +2,25 @@ import 'dotenv/config'
 
 export default {
   expo: {
-    name: 'Boisko+',
+    name: 'BoiskoPlus',
     slug: 'boiskoplus',
     version: '1.0.4',
     orientation: 'portrait',
-    icon: './assets/images/boiskoSplash.png',
+    icon: './assets/images/BoiskoPlusNewLogoForMobile.png',
     scheme: 'boiskoplusmobile',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
     splash: {
-      image: './assets/images/Boisko+ConceptArt.png',
+      image: './assets/images/BoiskoPlusNewLogoForMobile.png',
       resizeMode: 'contain',
       backgroundColor: '#ffffff',
     },
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.boiskoplusmobile.app',
+      usesAppleSignIn: true,
       infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
         NSLocationWhenInUseUsageDescription:
           'Aplikacja potrzebuje jednorazowego dostępu do lokalizacji, aby wskazać Twoje położenie na mapie.',
         NSPhotoLibraryUsageDescription:
@@ -28,7 +30,7 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/images/boiskoSplash.png',
+        foregroundImage: './assets/images/BoiskoPlusNewLogoForMobile.png',
         backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,
@@ -51,11 +53,12 @@ export default {
       'expo-web-browser',
       'expo-location',
       'expo-image-picker',
+      'expo-apple-authentication',
       '@react-native-google-signin/google-signin',
       [
         'expo-notifications',
         {
-          icon: './assets/images/boiskoSplash.png',
+          icon: './assets/images/BoiskoPlusNewLogoForMobile.png',
           color: '#1DB954',
           defaultChannel: 'default',
         },

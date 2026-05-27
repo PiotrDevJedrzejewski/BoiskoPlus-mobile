@@ -258,6 +258,68 @@ export const AuthProvider = ({ children }) => {
     }
   }, [authorized])
 
+  // Funkcja do logowania przez Apple Sign-In
+  const loginWithApple = useCallback(async (identityToken, appleUserId) => {
+    if (__DEV__) console.log('[Apple Sign-In] loginWithApple called, appleUserId:', appleUserId)
+    try {
+      const response = await customFetch.post('/auth-mobile/login-apple', {
+        identityToken,
+        appleUserId,
+      })
+      if (__DEV__) console.log('[Apple Sign-In] loginWithApple success')
+      if (response.data.token) {
+        await setAuthToken(response.data.token)
+        await authorized()
+      }
+      return { success: true }
+    } catch (error) {
+      if (__DEV__) console.log('[Apple Sign-In] loginWithApple error:', error.response?.data?.msg)
+      const msg = error.response?.data?.msg || 'Błąd logowania przez Apple'
+      const userNotFound =
+        error.response?.status === 409 &&
+        error.response?.data?.code === 'APPLE_SIGNUP_REQUIRED'
+      return { success: false, error: msg, userNotFound }
+    }
+  }, [authorized])
+
+  // Funkcja do dokończenia rejestracji przez Apple Sign-In
+  const completeAppleOAuth = useCallback(async ({
+    identityToken,
+    appleUserId,
+    nick,
+    birthDate,
+    email,
+    name,
+    surname,
+    avatarUrl,
+  }) => {
+    if (__DEV__) console.log('[Apple Sign-In] completeAppleOAuth called, nick:', nick)
+    try {
+      const response = await customFetch.post('/auth-mobile/register-apple', {
+        identityToken,
+        appleUserId,
+        nick,
+        birthDate,
+        email,
+        name,
+        surname,
+        avatarUrl: avatarUrl || '',
+      })
+      if (__DEV__) console.log('[Apple Sign-In] completeAppleOAuth success')
+      if (response.data.token) {
+        await setAuthToken(response.data.token)
+        await authorized()
+      }
+      return { success: true }
+    } catch (error) {
+      if (__DEV__) console.log('[Apple Sign-In] completeAppleOAuth error:', error.response?.data?.msg)
+      return {
+        success: false,
+        error: error.response?.data?.msg || 'Błąd podczas rejestracji przez Apple',
+      }
+    }
+  }, [authorized])
+
   // Funkcja do rejestracji (nie loguje automatycznie - wymaga weryfikacji email)
   const register = useCallback(async (userData) => {
     // Walidacja hasła (6-20 znaków)
@@ -744,6 +806,8 @@ export const AuthProvider = ({ children }) => {
     login,
     loginWithGoogle,
     completeOAuth,
+    loginWithApple,
+    completeAppleOAuth,
     register,
     forgotPassword,
     resetPassword,
@@ -771,7 +835,7 @@ export const AuthProvider = ({ children }) => {
     systemPermissionsGeo,
     setSystemPermissionsGeo,
   }), [
-    user, loading, userStats, login, loginWithGoogle, completeOAuth, register,
+    user, loading, userStats, login, loginWithGoogle, completeOAuth, loginWithApple, completeAppleOAuth, register,
     forgotPassword, resetPassword, changePassword, updateProfile, refetchUser,
     logout, deleteAccount, isAuthChecked, consents, consentsLoading, updateConsents,
     pendingConsents, setRulesAccepted, setMarketingAccepted, setLocationAccepted,
