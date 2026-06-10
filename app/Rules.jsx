@@ -1,123 +1,68 @@
-import { useMemo } from 'react'
-import { StyleSheet, Text, View, ScrollView } from 'react-native'
+import { useMemo, useState } from 'react'
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native'
 import { COLORS } from '../constants/colors'
 import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../assets/utils/debugLogger'
+import { regulaminSections, regulaminMeta } from '../assets/data/regulaminData'
+import { cookiesSections, cookiesMeta } from '../assets/data/cookiesData'
+import { privacySections, privacyMeta } from '../assets/data/privacyData'
+
+const TABS = [
+  { label: 'Regulamin', sections: regulaminSections, meta: regulaminMeta },
+  { label: 'Prywatność', sections: privacySections, meta: privacyMeta },
+  { label: 'Cookies', sections: cookiesSections, meta: cookiesMeta },
+]
 
 const Rules = () => {
   dbg('RulesScreen')
   useDebugMount('RulesScreen')
   const ui = useResponsiveScale()
   const styles = useMemo(() => createStyles(ui), [ui])
+  const [activeTab, setActiveTab] = useState(0)
+
+  const { sections, meta } = TABS[activeTab]
 
   return (
     <ScrollView style={styles.rulesContainer}>
       <View style={styles.rulesContent}>
-        <Text style={styles.title}>Regulamin</Text>
-        <Text style={styles.subtitle}>
-          REGULAMIN SERWISU I APLIKACJI boiskoplus.pl obowiązuje od dnia
-          28.10.2025 roku
-        </Text>
-        <Text style={styles.paragraph}>
-          §1. Postanowienia ogólne Regulamin określa zasady korzystania z
-          serwisu internetowego boiskoplus.pl oraz aplikacji mobilnej BoiskoPlus
-          (dalej łącznie: Serwis), prowadzonego przez: TRADEO, jednoosobową
-          działalność gospodarczą z siedzibą w [adres, np. Skierniewice, ul.
-          Broniewskiego 71 ], NIP: 8361883924, adres e-mail:
-          kontakt@boiskoplus.pl. Serwis boiskoplus.pl umożliwia Użytkownikom:
-          tworzenie kont i profili sportowych, umawianie się na mecze i
-          wydarzenia sportowe, dodawanie obiektów sportowych (boisk, hal,
-          orlików), komentowanie i wysyłanie wiadomości do innych Użytkowników,
-          korzystanie z funkcji społecznościowych ułatwiających organizację gier
-          zespołowych. Korzystanie z Serwisu jest dobrowolne i bezpłatne, jednak
-          w przyszłości możliwe będzie wprowadzenie usług płatnych (pakietów
-          premium lub reklam) – o czym Użytkownicy zostaną poinformowani z
-          odpowiednim wyprzedzeniem. Niniejszy Regulamin jest udostępniony
-          nieodpłatnie na stronie internetowej boiskoplus.pl w sposób
-          umożliwiający jego pobranie, utrwalenie i wydruk.
-        </Text>
-        <Text style={styles.paragraph}>
-          §2. Definicje Na potrzeby niniejszego Regulaminu przyjmuje się
-          następujące znaczenia pojęć: Serwis / Aplikacja – platforma
-          internetowa i aplikacja mobilna dostępna pod adresem boiskoplus.pl,
-          umożliwiająca komunikację i organizację wydarzeń sportowych.
-          Usługodawca – TRADEO, NIP: 8361883924. Użytkownik – każda osoba
-          fizyczna, która korzysta z Serwisu, w tym tworzy konto, uczestniczy w
-          wydarzeniach lub komunikuje się z innymi użytkownikami. Konto –
-          indywidualna przestrzeń Użytkownika w Serwisie, tworzona po
-          rejestracji. Wydarzenie sportowe – spotkanie sportowe organizowane
-          przez Użytkowników (np. mecz, trening, turniej). Profil – publiczna
-          lub półpubliczna część Konta zawierająca dane i informacje o
-          Użytkowniku. Regulamin – niniejszy dokument określający zasady
-          korzystania z Serwisu.
-        </Text>
-        <Text style={styles.paragraph}>
-          §3. Zasady korzystania z Serwisu Korzystanie z Serwisu wymaga: dostępu
-          do Internetu, aktualnej przeglądarki internetowej lub aplikacji
-          mobilnej, aktywnego adresu e-mail. Rejestracja w Serwisie jest
-          dobrowolna. Użytkownik może w dowolnym momencie usunąć swoje Konto,
-          wysyłając prośbę na adres kontaktowy Usługodawcy. Użytkownik
-          zobowiązuje się do korzystania z Serwisu w sposób zgodny z prawem,
-          zasadami współżycia społecznego i niniejszym Regulaminem. Zabronione
-          jest: publikowanie treści niezgodnych z prawem, wulgarnych,
-          obraźliwych lub naruszających dobra osobiste innych osób, podszywanie
-          się pod inne osoby, wykorzystywanie Serwisu do celów reklamowych lub
-          komercyjnych bez zgody Usługodawcy, próby ingerencji w działanie
-          Serwisu lub pozyskiwania danych innych Użytkowników. Usługodawca
-          zastrzega sobie prawo do: czasowego lub trwałego zablokowania Konta
-          Użytkownika naruszającego Regulamin, usunięcia treści sprzecznych z
-          prawem lub zasadami społeczności, wprowadzania nowych funkcji lub
-          zmian w Serwisie.
-        </Text>
-        <Text style={styles.paragraph}>
-          §4. Odpowiedzialność Usługodawca dokłada starań, by Serwis działał
-          nieprzerwanie i bez błędów, jednak nie ponosi odpowiedzialności za
-          przerwy w działaniu spowodowane: siłą wyższą, awarią sieci lub
-          urządzeń, modernizacjami lub konserwacją Serwisu, działaniami osób
-          trzecich niezależnych od Usługodawcy. Usługodawca nie ponosi
-          odpowiedzialności za: zachowania Użytkowników i publikowane przez nich
-          treści, skutki umawiania się przez Użytkowników na mecze i wydarzenia,
-          jakiekolwiek szkody powstałe w wyniku kontaktów między Użytkownikami.
-          Użytkownik ponosi pełną odpowiedzialność za swoje działania i
-          publikowane treści w Serwisie. Usługodawca zastrzega, że Serwis nie
-          jest pośrednikiem ani organizatorem wydarzeń sportowych – pełni
-          wyłącznie funkcję platformy łączącej Użytkowników.
-        </Text>
-        <Text style={styles.paragraph}>
-          §5. Dane osobowe i prywatność Administratorem danych osobowych
-          Użytkowników jest TRADEO, NIP: 8361883924. Dane osobowe są
-          przetwarzane zgodnie z przepisami RODO (UE 2016/679) oraz krajowymi
-          przepisami o ochronie danych osobowych, w celu: świadczenia usług
-          drogą elektroniczną, utrzymania Konta Użytkownika, kontaktu i obsługi
-          technicznej, marketingu własnych usług (za zgodą Użytkownika).
-          Użytkownik ma prawo do: wglądu do swoich danych, ich poprawiania,
-          ograniczenia przetwarzania lub usunięcia, cofnięcia zgody na
-          przetwarzanie danych, wniesienia skargi do Prezesa Urzędu Ochrony
-          Danych Osobowych. Szczegółowe zasady przetwarzania danych określa
-          Polityka Prywatności i Plików Cookies, dostępna w Serwisie.
-        </Text>
-        <Text style={styles.paragraph}>
-          §6. Reklamacje Użytkownik może składać reklamacje dotyczące
-          funkcjonowania Serwisu na adres: kontakt@boiskoplus.pl . Reklamacja
-          powinna zawierać opis problemu oraz dane umożliwiające identyfikację
-          Użytkownika. Usługodawca rozpatruje reklamacje w terminie 14 dni od
-          otrzymania.
-        </Text>
-        <Text style={styles.paragraph}>
-          §7. Zmiany Regulaminu Usługodawca może wprowadzać zmiany w
-          Regulaminie, w szczególności w przypadku: zmian w obowiązującym
-          prawie, zmian w funkcjonowaniu Serwisu lub wprowadzania nowych
-          funkcji. O każdej zmianie Regulaminu Użytkownicy zostaną poinformowani
-          co najmniej 7 dni przed jej wejściem w życie. Korzystanie z Serwisu po
-          wejściu w życie zmian oznacza ich akceptację.
-        </Text>
-        <Text style={styles.paragraph}>
-          §8. Postanowienia końcowe W sprawach nieuregulowanych Regulaminem
-          zastosowanie mają przepisy: Kodeksu cywilnego, ustawy o świadczeniu
-          usług drogą elektroniczną, ustawy o prawach konsumenta, RODO.
-          Regulamin wchodzi w życie z dniem jego opublikowania na stronie
-          boiskoplus.pl.
-        </Text>
+        <View style={styles.tabRow}>
+          {TABS.map((tab, index) => (
+            <TouchableOpacity
+              key={tab.label}
+              style={[styles.tabButton, activeTab === index && styles.tabButtonActive]}
+              onPress={() => setActiveTab(index)}
+              activeOpacity={0.75}
+            >
+              <Text style={[styles.tabButtonText, activeTab === index && styles.tabButtonTextActive]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={styles.title}>{meta.title}</Text>
+        <Text style={styles.subtitle}>{meta.subtitle}</Text>
+
+        {sections.map((section) => (
+          <View key={section.title} style={styles.section}>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+
+            {section.paragraphs?.map((p) => (
+              <Text key={p} style={styles.paragraph}>{p}</Text>
+            ))}
+
+            {section.items?.map((item) => (
+              <View key={item} style={styles.itemRow}>
+                <Text style={styles.bullet}>{'\u2022'}</Text>
+                <Text style={styles.itemText}>{item}</Text>
+              </View>
+            ))}
+
+            {section.paragraphsAfter?.map((p) => (
+              <Text key={p} style={styles.paragraph}>{p}</Text>
+            ))}
+          </View>
+        ))}
       </View>
     </ScrollView>
   )
@@ -134,27 +79,80 @@ const createStyles = (ui) => StyleSheet.create({
     padding: ui.spacing(20, 0.45),
     paddingBottom: ui.verticalScale(40),
   },
+  tabRow: {
+    flexDirection: 'row',
+    marginBottom: ui.verticalScale(24),
+    gap: ui.spacing(8, 0.4),
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: ui.verticalScale(8),
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.third,
+    alignItems: 'center',
+  },
+  tabButtonActive: {
+    backgroundColor: COLORS.secondary,
+    borderColor: COLORS.secondary,
+  },
+  tabButtonText: {
+    fontSize: ui.scaleFont(13, 0.35),
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.primary,
+  },
+  tabButtonTextActive: {
+    color: COLORS.background,
+  },
   title: {
     fontSize: ui.scaleFont(28, 0.45),
     fontFamily: 'Montserrat-Bold',
     color: COLORS.secondary,
-    marginBottom: ui.verticalScale(10),
+    marginBottom: ui.verticalScale(8),
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: ui.scaleFont(12, 0.35),
     fontFamily: 'Montserrat-Italic',
     color: COLORS.secondary,
-    marginBottom: ui.verticalScale(20),
+    marginBottom: ui.verticalScale(24),
     textAlign: 'center',
     opacity: 0.8,
   },
+  section: {
+    marginBottom: ui.verticalScale(20),
+  },
+  sectionTitle: {
+    fontSize: ui.scaleFont(15, 0.35),
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.secondary,
+    marginBottom: ui.verticalScale(8),
+  },
   paragraph: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: ui.scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
     color: COLORS.primary,
-    lineHeight: ui.verticalScale(22),
-    marginBottom: ui.verticalScale(15),
+    lineHeight: ui.verticalScale(21),
+    marginBottom: ui.verticalScale(8),
+    textAlign: 'justify',
+  },
+  itemRow: {
+    flexDirection: 'row',
+    marginBottom: ui.verticalScale(6),
+    paddingLeft: ui.spacing(4, 0.4),
+  },
+  bullet: {
+    fontSize: ui.scaleFont(13, 0.35),
+    color: COLORS.secondary,
+    marginRight: ui.spacing(6, 0.4),
+    lineHeight: ui.verticalScale(21),
+  },
+  itemText: {
+    flex: 1,
+    fontSize: ui.scaleFont(13, 0.35),
+    fontFamily: 'Lato-Regular',
+    color: COLORS.primary,
+    lineHeight: ui.verticalScale(21),
     textAlign: 'justify',
   },
 })

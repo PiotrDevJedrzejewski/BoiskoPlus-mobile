@@ -132,7 +132,7 @@ const Register = () => {
         code: error.code,
         response: error.response?.data,
       })
-      
+
       if (error.response?.data?.msg) {
         Toast.error(error.response.data.msg)
       } else if (error.code === 'auth/account-exists-with-different-credential') {
@@ -208,8 +208,8 @@ const Register = () => {
       }
 
       await customFetch.post('/auth/register', submitData)
-      
-      Toast.success('Rejestracja zakończona pomyślnie! Sprawdź email, aby zweryfikować konto.')
+
+      Toast.success('Rejestracja zakończona pomyślnie!')
       router.replace('/login')
     } catch (error) {
       console.error('Registration failed:', error.response ? error.response.data : error.message)
@@ -297,7 +297,7 @@ const Register = () => {
         const stored = await AsyncStorage.getItem(CACHE_KEY)
         if (stored) cachedData = JSON.parse(stored)
         if (__DEV__) console.log('[Apple Sign-In] Cache loaded:', cachedData)
-      } catch {}
+      } catch { }
 
       const resolvedEmail = email || cachedData.email || null
       const resolvedName = fullName?.givenName || cachedData.name || ''
@@ -311,7 +311,7 @@ const Register = () => {
             surname: resolvedSurname,
           }))
           if (__DEV__) console.log('[Apple Sign-In] Cache saved')
-        } catch {}
+        } catch { }
       }
 
       const result = await loginWithApple(identityToken, appleUserId)
@@ -361,177 +361,177 @@ const Register = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.auth}>
-        <View style={styles.authMask} />
-        <View style={styles.authFormContainer}>
-          <Text style={styles.authFormTitle}>Register</Text>
+      <View style={styles.authMask} />
+      <View style={styles.authFormContainer}>
+        <Text style={styles.authFormTitle}>Register</Text>
 
-          <View style={styles.authForm}>
-            {/* Nick Input */}
-            <View style={styles.authFormGroup}>
-              <Text style={styles.label}>Nazwa użytkownika</Text>
-              <TextInput
-                style={styles.input}
-                placeholder='Nick/login/pseudonim'
-                placeholderTextColor='#999'
-                value={formData.nickName}
-                onChangeText={(value) => handleChange('nickName', value)}
-                maxLength={20}
-                autoCapitalize='none'
-              />
-              <Text style={styles.smallText}>3-20 znaków</Text>
-            </View>
+        <View style={styles.authForm}>
+          {/* Nick Input */}
+          <View style={styles.authFormGroup}>
+            <Text style={styles.label}>Nazwa użytkownika</Text>
+            <TextInput
+              style={styles.input}
+              placeholder='Nick/login/pseudonim'
+              placeholderTextColor='#999'
+              value={formData.nickName}
+              onChangeText={(value) => handleChange('nickName', value)}
+              maxLength={20}
+              autoCapitalize='none'
+            />
+            <Text style={styles.smallText}>3-20 znaków</Text>
+          </View>
 
-            {/* Name Input */}
-            <View style={styles.authFormGroup}>
-              <Text style={styles.label}>Imię</Text>
-              <TextInput
-                style={styles.input}
-                placeholder='Wprowadź imię'
-                placeholderTextColor='#999'
-                value={formData.name}
-                onChangeText={(value) => handleChange('name', value)}
-                maxLength={20}
-              />
-            </View>
-
-            {/* Surname Input */}
-            <View style={styles.authFormGroup}>
-              <Text style={styles.label}>Nazwisko</Text>
-              <TextInput
-                style={styles.input}
-                placeholder='Wprowadź nazwisko'
-                placeholderTextColor='#999'
-                value={formData.surname}
-                onChangeText={(value) => handleChange('surname', value)}
-                maxLength={20}
-              />
-            </View>
-
-            {/* Email Input */}
-            <View style={styles.authFormGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder='Wprowadź email'
-                placeholderTextColor='#999'
-                value={formData.email}
-                onChangeText={(value) => handleChange('email', value)}
-                keyboardType='email-address'
-                autoCapitalize='none'
-                autoCorrect={false}
-              />
-            </View>
-
-            {/* Phone Number Input */}
-            <View style={styles.authFormGroup}>
-              <Text style={styles.label}>Numer telefonu (opcjonalnie)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder='Wprowadź numer telefonu'
-                placeholderTextColor='#999'
-                value={formData.phoneNumber}
-                onChangeText={(value) => handleChange('phoneNumber', value)}
-                keyboardType='phone-pad'
-                maxLength={15}
-              />
-            </View>
-
-            {/* Birth Date Input */}
-            <View style={styles.authFormGroup}>
-              <Text style={styles.label}>Data urodzenia</Text>
-              <DatePicker
-                value={birthDate}
-                onChange={setBirthDate}
-                minimumDate={new Date(1900, 0, 1)}
-                maximumDate={maxBirthDate}
-              />
-            </View>
-
-            {/* Password Input */}
-            <View style={styles.authFormGroup}>
-              <Text style={styles.label}>Hasło</Text>
-              <TextInput
-                style={styles.input}
-                placeholder='Wprowadź hasło'
-                placeholderTextColor='#999'
-                secureTextEntry={!showPassword[0]}
-                value={formData.password}
-                onChangeText={(value) => handleChange('password', value)}
-                maxLength={20}
-              />
-              <Pressable
-                style={styles.authFormShow}
-                onPress={() => setShowPassword([!showPassword[0], showPassword[1]])}
-              >
-                <Text style={styles.showButtonText}>
-                  {showPassword[0] ? 'Ukryj' : 'Pokaż'}
-                </Text>
-              </Pressable>
-              <Text style={styles.smallText}>6-20 znaków</Text>
-            </View>
-
-            {/* Password Confirm Input */}
-            <View style={styles.authFormGroup}>
-              <Text style={styles.label}>Potwierdź hasło</Text>
-              <TextInput
-                style={styles.input}
-                placeholder='Potwierdź hasło'
-                placeholderTextColor='#999'
-                secureTextEntry={!showPassword[1]}
-                value={formData.passwordConfirm}
-                onChangeText={(value) => handleChange('passwordConfirm', value)}
-                maxLength={20}
-              />
-              <Pressable
-                style={styles.authFormShow}
-                onPress={() => setShowPassword([showPassword[0], !showPassword[1]])}
-              >
-                <Text style={styles.showButtonText}>
-                  {showPassword[1] ? 'Ukryj' : 'Pokaż'}
-                </Text>
-              </Pressable>
-            </View>
-
-            {/* Submit Button */}
-            <Button1
-              text='Zarejestruj się'
-              width={'100%'}
-              height={ui.verticalScale(50)}
-              fontSize={ui.scaleFont(20, 0.4)}
-              lineColor='#fff'
-              backgroundColor={COLORS.secondary}
-              color={COLORS.background}
-              onPress={handleSubmit}
+          {/* Name Input */}
+          <View style={styles.authFormGroup}>
+            <Text style={styles.label}>Imię</Text>
+            <TextInput
+              style={styles.input}
+              placeholder='Wprowadź imię'
+              placeholderTextColor='#999'
+              value={formData.name}
+              onChangeText={(value) => handleChange('name', value)}
+              maxLength={20}
             />
           </View>
 
-          {/* Alternate Options */}
-          <View style={styles.authFormAlternate}>
-            <Pressable onPress={() => router.push('/login')}>
-              <Text style={styles.authFormAlternateText}>
-                Masz już konto? <Text style={styles.link}>Zaloguj się</Text>
+          {/* Surname Input */}
+          <View style={styles.authFormGroup}>
+            <Text style={styles.label}>Nazwisko</Text>
+            <TextInput
+              style={styles.input}
+              placeholder='Wprowadź nazwisko'
+              placeholderTextColor='#999'
+              value={formData.surname}
+              onChangeText={(value) => handleChange('surname', value)}
+              maxLength={20}
+            />
+          </View>
+
+          {/* Email Input */}
+          <View style={styles.authFormGroup}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder='Wprowadź email'
+              placeholderTextColor='#999'
+              value={formData.email}
+              onChangeText={(value) => handleChange('email', value)}
+              keyboardType='email-address'
+              autoCapitalize='none'
+              autoCorrect={false}
+            />
+          </View>
+
+          {/* Phone Number Input */}
+          <View style={styles.authFormGroup}>
+            <Text style={styles.label}>Numer telefonu (opcjonalnie)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder='Wprowadź numer telefonu'
+              placeholderTextColor='#999'
+              value={formData.phoneNumber}
+              onChangeText={(value) => handleChange('phoneNumber', value)}
+              keyboardType='phone-pad'
+              maxLength={15}
+            />
+          </View>
+
+          {/* Birth Date Input */}
+          <View style={styles.authFormGroup}>
+            <Text style={styles.label}>Data urodzenia</Text>
+            <DatePicker
+              value={birthDate}
+              onChange={setBirthDate}
+              minimumDate={new Date(1900, 0, 1)}
+              maximumDate={maxBirthDate}
+            />
+          </View>
+
+          {/* Password Input */}
+          <View style={styles.authFormGroup}>
+            <Text style={styles.label}>Hasło</Text>
+            <TextInput
+              style={styles.input}
+              placeholder='Wprowadź hasło'
+              placeholderTextColor='#999'
+              secureTextEntry={!showPassword[0]}
+              value={formData.password}
+              onChangeText={(value) => handleChange('password', value)}
+              maxLength={20}
+            />
+            <Pressable
+              style={styles.authFormShow}
+              onPress={() => setShowPassword([!showPassword[0], showPassword[1]])}
+            >
+              <Text style={styles.showButtonText}>
+                {showPassword[0] ? 'Ukryj' : 'Pokaż'}
               </Text>
             </Pressable>
-            <View style={styles.oauthRow}>
-                              <Pressable style={styles.authFormAlternateIcon} onPress={handleAppleSignIn} disabled={isLoading || Platform.OS !== 'ios'}>
-                  <Image
-                    source={require('../assets/images/appleWhite.png')}
-                    style={styles.appleIconImage}
-                  />
-                  {Platform.OS !== 'ios' && (
-                    <View style={styles.disabledOverlay} />
-                  )}
-                </Pressable>
-              <Pressable style={styles.authFormAlternateIcon} onPress={handleGoogleSignIn} disabled={isLoading}>
-                <Image
-                  source={require('../assets/images/google-icon.png')}
-                  style={styles.googleIconImage}
-                />
-              </Pressable>
+            <Text style={styles.smallText}>6-20 znaków</Text>
+          </View>
 
-            </View>
+          {/* Password Confirm Input */}
+          <View style={styles.authFormGroup}>
+            <Text style={styles.label}>Potwierdź hasło</Text>
+            <TextInput
+              style={styles.input}
+              placeholder='Potwierdź hasło'
+              placeholderTextColor='#999'
+              secureTextEntry={!showPassword[1]}
+              value={formData.passwordConfirm}
+              onChangeText={(value) => handleChange('passwordConfirm', value)}
+              maxLength={20}
+            />
+            <Pressable
+              style={styles.authFormShow}
+              onPress={() => setShowPassword([showPassword[0], !showPassword[1]])}
+            >
+              <Text style={styles.showButtonText}>
+                {showPassword[1] ? 'Ukryj' : 'Pokaż'}
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Submit Button */}
+          <Button1
+            text='Zarejestruj się'
+            width={'100%'}
+            height={ui.verticalScale(50)}
+            fontSize={ui.scaleFont(20, 0.4)}
+            lineColor='#fff'
+            backgroundColor={COLORS.secondary}
+            color={COLORS.background}
+            onPress={handleSubmit}
+          />
+        </View>
+
+        {/* Alternate Options */}
+        <View style={styles.authFormAlternate}>
+          <Pressable onPress={() => router.push('/login')}>
+            <Text style={styles.authFormAlternateText}>
+              Masz już konto? <Text style={styles.link}>Zaloguj się</Text>
+            </Text>
+          </Pressable>
+          <View style={styles.oauthRow}>
+            <Pressable style={styles.authFormAlternateIcon} onPress={handleAppleSignIn} disabled={isLoading || Platform.OS !== 'ios'}>
+              <Image
+                source={require('../assets/images/appleWhite.png')}
+                style={styles.appleIconImage}
+              />
+              {Platform.OS !== 'ios' && (
+                <View style={styles.disabledOverlay} />
+              )}
+            </Pressable>
+            <Pressable style={styles.authFormAlternateIcon} onPress={handleGoogleSignIn} disabled={isLoading}>
+              <Image
+                source={require('../assets/images/google-icon.png')}
+                style={styles.googleIconImage}
+              />
+            </Pressable>
+
           </View>
         </View>
+      </View>
     </ScrollView>
   )
 }

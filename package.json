@@ -10,7 +10,8 @@
     "dev": "npx expo start --dev-client",
     "clean": "rm -rf node_modules && npm install",
     "clean:build": "rm -rf node_modules && npm install && eas build --profile development --platform android",
-    "google": "eas build --profile production --platform android"
+    "google": "eas build --profile production --platform android",
+    "apple": "eas build --profile production --platform ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

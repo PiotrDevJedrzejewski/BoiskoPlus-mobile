@@ -13,7 +13,7 @@ export default {
     splash: {
       image: './assets/images/BoiskoPlusNewLogoForMobile.png',
       resizeMode: 'contain',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#012115',
     },
     ios: {
       supportsTablet: true,
@@ -30,8 +30,8 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/images/BoiskoPlusNewLogoForMobile.png',
-        backgroundColor: '#ffffff',
+        foregroundImage: './assets/images/BoiskoPlusNewLogoForMobileSmaller.png',
+        backgroundColor: '#012115',
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
@@ -59,7 +59,7 @@ export default {
         'expo-notifications',
         {
           icon: './assets/images/BoiskoPlusNewLogoForMobile.png',
-          color: '#1DB954',
+          color: '#012115',
           defaultChannel: 'default',
         },
       ],

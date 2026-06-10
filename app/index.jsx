@@ -94,7 +94,7 @@ const Home = () => {
               onPress={() => router.push('/rules')}
               style={styles.description}
             >
-              Regulamin
+              Regulamin i Polityka Prywatności
             </Text>
           </View>
         </View>

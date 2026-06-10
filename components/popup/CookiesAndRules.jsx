@@ -63,7 +63,7 @@ const CookiesAndRules = () => {
                 ]}
               />
               <Text style={styles.optionText}>
-                *Akceptuję regulamin (wymagane)
+                *Akceptuję regulamin i politykę prywatności
               </Text>
             </Pressable>
             <Pressable
@@ -99,7 +99,7 @@ const CookiesAndRules = () => {
               </Text>
             </Pressable>
             <Pressable onPress={() => router.push('/rules')}>
-              <Text style={styles.rulesLink}>Zobacz regulamin</Text>
+              <Text style={styles.rulesLink}>Zobacz regulamin i politykę prywatności</Text>
             </Pressable>
           </View>
 

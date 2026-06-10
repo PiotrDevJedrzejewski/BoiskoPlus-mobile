@@ -29,7 +29,7 @@
         "buildType": "app-bundle"
       },
       "ios": {
-        "buildConfiguration": "Debug"
+        "buildConfiguration": "Release"
       }
     }
   }
