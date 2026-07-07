@@ -1,8 +1,8 @@
 import 'react-native-gesture-handler' // MUST be at the top!
+import { useEffect } from 'react'
 import { Stack } from 'expo-router'
-import { COLORS } from '../constants/colors'
 import { useFonts } from 'expo-font'
-import HeaderStack from '../components/HeaderStack'
+import HeaderStack from '../Navigation/HeaderStack'
 import LottieView from 'lottie-react-native'
 import spinner from '../assets/utils/spinner.json'
 import { View } from 'react-native'
@@ -10,6 +10,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import ToastManager from 'toastify-react-native'
 import { dbg, useDebugMount, scheduleSummary } from '../assets/utils/debugLogger'
+import { useThemeStore } from '../context/themeStore'
 
 // Only AuthProvider at root — all other providers scoped to (auth) layout
 import { AuthProvider } from '../context/AuthContext'
@@ -18,6 +19,15 @@ const Layout = () => {
   dbg('RootLayout')
   useDebugMount('RootLayout')
   scheduleSummary(5)
+
+  const colors = useThemeStore((s) => s.theme.colors)
+  const isThemeReady = useThemeStore((s) => s.isReady)
+  const initTheme = useThemeStore((s) => s.initTheme)
+
+  useEffect(() => {
+    initTheme()
+  }, [])
+
   const [fontsLoaded] = useFonts({
     'Montserrat-Bold': require('../assets/fonts/Montserrat-Bold.ttf'),
     'Montserrat-Regular': require('../assets/fonts/Montserrat-Regular.ttf'),
@@ -27,14 +37,14 @@ const Layout = () => {
     ObjectFont: require('../assets/fonts/object.ttf'),
   })
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || !isThemeReady) {
     return (
       <View
         style={{
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: COLORS.background,
+          backgroundColor: colors.background,
         }}
       >
         <LottieView
@@ -50,30 +60,31 @@ const Layout = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
-      <AuthProvider>
-        <Stack
-          screenOptions={{
-            headerStyle: { backgroundColor: COLORS.background },
-            headerTintColor: COLORS.secondary,
-            headerTitleStyle: {
-              fontSize: 16,
-            },
-            header: (props) => <HeaderStack {...props} />,
-            gestureEnabled: false,
-          }}
-        >
-          {/* Public screens */}
-          <Stack.Screen name='index' options={{ headerShown: true }} />
-          <Stack.Screen name='login' options={{ headerShown: true }} />
-          <Stack.Screen name='register' options={{ headerShown: true }} />
-          <Stack.Screen name='rules' options={{ headerShown: true }} />
-          {/* Protected screens — providers are inside (auth)/_layout.jsx */}
-          <Stack.Screen name='(auth)' options={{ headerShown: false, gestureEnabled: false }} />
-        </Stack>
-        <ToastManager />
-      </AuthProvider>
+        <AuthProvider>
+          <Stack
+            screenOptions={{
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.secondary,
+              headerTitleStyle: {
+                fontSize: 16,
+              },
+              header: (props) => <HeaderStack {...props} />,
+              gestureEnabled: false,
+            }}
+          >
+            {/* Public screens */}
+            <Stack.Screen name='index' options={{ headerShown: true }} />
+            <Stack.Screen name='login' options={{ headerShown: true }} />
+            <Stack.Screen name='register' options={{ headerShown: true }} />
+            <Stack.Screen name='rules' options={{ headerShown: true }} />
+            {/* Protected screens — providers are inside (auth)/_layout.jsx */}
+            <Stack.Screen name='(auth)' options={{ headerShown: false, gestureEnabled: false }} />
+          </Stack>
+          <ToastManager />
+        </AuthProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
   )
 }
 export default Layout
+

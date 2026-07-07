@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo} from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
   StyleSheet,
   Text,
@@ -24,7 +24,7 @@ import {
   filterCitySuggestions,
 } from '../../../assets/utils/citySearchUtils'
 import customFetch from '../../../assets/utils/customFetch'
-import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
+import placesData from '../../../assets/data/orliki_hale_polska.json'
 import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
 import LottieView from 'lottie-react-native'
@@ -230,11 +230,11 @@ const FindEvent = () => {
     // Użyj lokalizacji użytkownika lub fallback na userLocation
     let finalCity = userInput.City.trim() || (consents.locationAccepted ? userLocation.City : '')
     let finalRegion = userInput.region || (consents.locationAccepted ? userLocation.region : '')
-    
+
     // Współrzędne
     let finalLatitude = userInput.latitude
     let finalLongitude = userInput.longitude
-    
+
     if (!userInput.City.trim() && consents.locationAccepted) {
       finalLatitude = userLocation.latitude
       finalLongitude = userLocation.longitude
@@ -282,7 +282,7 @@ const FindEvent = () => {
       const response = await customFetch.post('/football-events/search', searchParams, {
         signal: abortController.signal,
       })
-      
+
       const events = response.data.events || []
       if (!isMountedRef.current) {
         return
@@ -291,7 +291,7 @@ const FindEvent = () => {
       setFilteredEvents(response.data)
       setHasMore(response.data.hasMore || false)
       setCurrentPage(1)
-      
+
       // Logika centrowania mapy w zależności od liczby znalezionych eventów
       if (events.length === 0) {
         // Brak eventów - wyśrodkuj na województwie jeśli istnieje
@@ -312,14 +312,14 @@ const FindEvent = () => {
         const validCoords = eventsToCenter
           .filter(event => event.geolocation?.coordinates)
           .map(event => event.geolocation.coordinates)
-        
+
         if (validCoords.length > 0) {
           const avgLongitude = validCoords.reduce((sum, coords) => sum + coords[0], 0) / validCoords.length
           const avgLatitude = validCoords.reduce((sum, coords) => sum + coords[1], 0) / validCoords.length
           flyTo([avgLongitude, avgLatitude], 12)
         }
       }
-      
+
     } catch (err) {
       if (err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') {
         return
@@ -431,138 +431,138 @@ const FindEvent = () => {
 
         {/* Podpowiedzi */}
         <View style={styles.suggestionsContainer}>
-        <CitySuggestions
-          suggestions={suggestions}
-          onSuggestionClick={handleSuggestionClick}
-        />
+          <CitySuggestions
+            suggestions={suggestions}
+            onSuggestionClick={handleSuggestionClick}
+          />
         </View>
 
 
         {/* Szukaj po nazwie */}
         {showAdvancedSearch && (
-        <View style={styles.inputRow}>
-          <View style={styles.eventNameWrapper}>
-          <TextInput
-            style={styles.inputLocation}
-            placeholder='Nazwa wydarzenia...'
-            placeholderTextColor={COLORS.gray}
-            value={userInput.eventName}
-            maxLength={EVENT_NAME_MAX}
-            onChangeText={(text) => {
-              if (text.length <= EVENT_NAME_MAX) {
-                setUserInput((prev) => ({ ...prev, eventName: text }))
-              }
-            }}
-            autoCorrect={false}
-            autoCapitalize='none'
-          />
-          {userInput.eventName.length > 0 && (
-            <Text style={styles.eventNameCounter}>
-              {userInput.eventName.length}/{EVENT_NAME_MAX}
-            </Text>
-          )}
+          <View style={styles.inputRow}>
+            <View style={styles.eventNameWrapper}>
+              <TextInput
+                style={styles.inputLocation}
+                placeholder='Nazwa wydarzenia...'
+                placeholderTextColor={COLORS.gray}
+                value={userInput.eventName}
+                maxLength={EVENT_NAME_MAX}
+                onChangeText={(text) => {
+                  if (text.length <= EVENT_NAME_MAX) {
+                    setUserInput((prev) => ({ ...prev, eventName: text }))
+                  }
+                }}
+                autoCorrect={false}
+                autoCapitalize='none'
+              />
+              {userInput.eventName.length > 0 && (
+                <Text style={styles.eventNameCounter}>
+                  {userInput.eventName.length}/{EVENT_NAME_MAX}
+                </Text>
+              )}
+            </View>
           </View>
-        </View>
         )}
 
         {/* Typ gry i dystans i wiecej */}
         {showAdvancedSearch && (
-        <View style={styles.inputRowSecond}>
-          <Pressable style={styles.pickerWrapper} onPress={() => setShowGameTypeModal(true)}>
-            <Text
-              style={[
-                styles.pickerButtonText,
-                !userInput.gameType && styles.pickerButtonPlaceholder,
-              ]}
-              numberOfLines={1}
-            >
-              {GAME_TYPES.find((t) => t.value === userInput.gameType)?.label || 'Wybierz typ gry'}
-            </Text>
-            <Ionicons name='chevron-down' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
-          </Pressable>
-              
-          <View style={styles.distanceWrapper}>
-            <TextInput
-              style={styles.inputDistance}
-              placeholder='1'
-              placeholderTextColor={COLORS.gray}
-              keyboardType='numeric'
-              value={userInput.distance.toString()}
-              onChangeText={(text) => {
-                let value = parseInt(text) || 1
-                if (value < 1) value = 1
-                if (value > 50) value = 50
-                setUserInput((prev) => ({ ...prev, distance: value }))
-              }}
-            />
-            <Text style={styles.kmLabel}>km</Text>
+          <View style={styles.inputRowSecond}>
+            <Pressable style={styles.pickerWrapper} onPress={() => setShowGameTypeModal(true)}>
+              <Text
+                style={[
+                  styles.pickerButtonText,
+                  !userInput.gameType && styles.pickerButtonPlaceholder,
+                ]}
+                numberOfLines={1}
+              >
+                {GAME_TYPES.find((t) => t.value === userInput.gameType)?.label || 'Wybierz typ gry'}
+              </Text>
+              <Ionicons name='chevron-down' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
+            </Pressable>
+
+            <View style={styles.distanceWrapper}>
+              <TextInput
+                style={styles.inputDistance}
+                placeholder='1'
+                placeholderTextColor={COLORS.gray}
+                keyboardType='numeric'
+                value={userInput.distance.toString()}
+                onChangeText={(text) => {
+                  let value = parseInt(text) || 1
+                  if (value < 1) value = 1
+                  if (value > 50) value = 50
+                  setUserInput((prev) => ({ ...prev, distance: value }))
+                }}
+              />
+              <Text style={styles.kmLabel}>km</Text>
+            </View>
           </View>
-        </View>
         )}
 
         {/* Przyciski */}
         <View style={styles.actionRow}>
-        <Pressable style={styles.controlSearchButton} onPress={() => setShowAdvancedSearch((prev) => !prev)}>
-          {showAdvancedSearch ?(<Ionicons name='arrow-up' size={actionIconSize} color={COLORS.background} />): (
-            <Ionicons name='settings-sharp' size={actionIconSize} color={COLORS.background} />
-          )}
-        </Pressable>
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={handleSubmit}
-          activeOpacity={0.8}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator size='small' color={COLORS.background} />
-          ) : (
-            <Text style={styles.searchButtonText}>Szukaj</Text>
-          )}
-        </TouchableOpacity>
+          <Pressable style={styles.controlSearchButton} onPress={() => setShowAdvancedSearch((prev) => !prev)}>
+            {showAdvancedSearch ? (<Ionicons name='arrow-up' size={actionIconSize} color={COLORS.background} />) : (
+              <Ionicons name='settings-sharp' size={actionIconSize} color={COLORS.background} />
+            )}
+          </Pressable>
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={handleSubmit}
+            activeOpacity={0.8}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size='small' color={COLORS.background} />
+            ) : (
+              <Text style={styles.searchButtonText}>Szukaj</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </View>
 
       {/* Lista wydarzeń - pokazywana gdy showList === true */}
       {showList && !loading && hasSearched && (
         <Animated.View style={[styles.eventList, { opacity: listOpacity }]}>
-        <ScrollView
-          contentContainerStyle={styles.eventListContent}
-          showsVerticalScrollIndicator={false}
-          pointerEvents='auto'
-        >
-          {filteredByGameType?.events?.length > 0 ? (
-            filteredByGameType.events.map((event) => (
-              <FindEventListElement
-                key={event._id}
-                event={event}
-                onPress={() => handleEventPress(event._id)}
+          <ScrollView
+            contentContainerStyle={styles.eventListContent}
+            showsVerticalScrollIndicator={false}
+            pointerEvents='auto'
+          >
+            {filteredByGameType?.events?.length > 0 ? (
+              filteredByGameType.events.map((event) => (
+                <FindEventListElement
+                  key={event._id}
+                  event={event}
+                  onPress={() => handleEventPress(event._id)}
+                />
+              ))
+            ) : (
+              <View style={styles.noResults}>
+                <Ionicons name='search' size={stateIconSize} color={COLORS.gray} />
+                <Text style={styles.noResultsText}>
+                  Brak wydarzeń spełniających kryteria
+                </Text>
+              </View>
+            )}
+            {hasMore && !loadingMore && (
+              <TouchableOpacity
+                style={styles.loadMoreButton}
+                onPress={handleLoadMore}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.loadMoreText}>Załaduj więcej</Text>
+              </TouchableOpacity>
+            )}
+            {loadingMore && (
+              <ActivityIndicator
+                size='small'
+                color={COLORS.secondary}
+                style={{ marginVertical: ui.verticalScale(16) }}
               />
-            ))
-          ) : (
-            <View style={styles.noResults}>
-              <Ionicons name='search' size={stateIconSize} color={COLORS.gray} />
-              <Text style={styles.noResultsText}>
-                Brak wydarzeń spełniających kryteria
-              </Text>
-            </View>
-          )}
-          {hasMore && !loadingMore && (
-            <TouchableOpacity
-              style={styles.loadMoreButton}
-              onPress={handleLoadMore}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.loadMoreText}>Załaduj więcej</Text>
-            </TouchableOpacity>
-          )}
-          {loadingMore && (
-            <ActivityIndicator
-              size='small'
-              color={COLORS.secondary}
-              style={{ marginVertical: ui.verticalScale(16) }}
-            />
-          )}
-        </ScrollView>
+            )}
+          </ScrollView>
         </Animated.View>
       )}
 
@@ -582,15 +582,15 @@ const FindEvent = () => {
       {!loading && !hasSearched && (
         <View style={styles.infoContainer}>
           <View style={styles.infoWrapper}>
-          <Ionicons
-            name='information-circle'
+            <Ionicons
+              name='information-circle'
               size={stateIconSize}
-            color={COLORS.secondary}
-          />
-          <Text style={styles.infoText}>
-            Wprowadź lokalizację i kliknij "Szukaj" aby znaleźć wydarzenia w
-            Twojej okolicy
-          </Text>
+              color={COLORS.secondary}
+            />
+            <Text style={styles.infoText}>
+              Wprowadź lokalizację i kliknij "Szukaj" aby znaleźć wydarzenia w
+              Twojej okolicy
+            </Text>
           </View>
         </View>
       )}

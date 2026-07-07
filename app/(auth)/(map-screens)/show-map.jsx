@@ -10,7 +10,7 @@ import {
 import { COLORS } from '../../../constants/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect } from 'expo-router'
-import { useCallback, useState, useEffect, useRef, useMemo} from 'react'
+import { useCallback, useState, useEffect, useRef, useMemo } from 'react'
 import { useMap } from '../../../context/MapContext'
 import { useDashboard } from '../../../context/DashboardContext'
 import { useAuth } from '../../../context/AuthContext'
@@ -20,7 +20,8 @@ import {
   validateCityInput,
 } from '../../../assets/utils/citySearchUtils'
 import customFetch from '../../../assets/utils/customFetch'
-import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
+// import placesData from '../../../assets/data/miejscowosci_wojewodztwa.json'
+import placesData from '../../../assets/data/orliki_hale_polska.json'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Toast } from 'toastify-react-native'
@@ -164,11 +165,11 @@ const ShowMap = () => {
     // Użyj lokalizacji użytkownika lub fallback na userLocation
     let finalCity = cityInput.trim() || (consents.locationAccepted ? userLocation.City : '')
     let finalRegion = userInput.region || (consents.locationAccepted ? userLocation.region : '')
-    
+
     // Współrzędne - użyj userLocation tylko jeśli użytkownik nie wpisał własnego miasta
     let finalLatitude = null
     let finalLongitude = null
-    
+
     if (!cityInput.trim() && consents.locationAccepted) {
       // Użyj współrzędnych z userLocation tylko gdy nie ma własnego miasta
       finalLatitude = userLocation.latitude
@@ -212,14 +213,14 @@ const ShowMap = () => {
       }, {
         signal: abortController.signal,
       })
-      
+
       const events = response.data.events || []
       if (!isMountedRef.current) {
         return
       }
 
       setFilteredEvents(response.data)
-      
+
       // Logika centrowania mapy w zależności od liczby znalezionych eventów
       if (events.length === 0) {
         // Brak eventów - wyśrodkuj na województwie jeśli istnieje
@@ -240,14 +241,14 @@ const ShowMap = () => {
         const validCoords = eventsToCenter
           .filter(event => event.geolocation?.coordinates)
           .map(event => event.geolocation.coordinates)
-        
+
         if (validCoords.length > 0) {
           const avgLongitude = validCoords.reduce((sum, coords) => sum + coords[0], 0) / validCoords.length
           const avgLatitude = validCoords.reduce((sum, coords) => sum + coords[1], 0) / validCoords.length
           flyTo([avgLongitude, avgLatitude], 12)
         }
       }
-      
+
     } catch (err) {
       if (err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') {
         return
@@ -282,7 +283,7 @@ const ShowMap = () => {
     try {
       // Pobierz aktualną lokalizację z GPS
       const locationResult = await getCurrentLocation()
-      
+
       if (!locationResult.success) {
         Toast.error('System blokuje lokalizację', 'top')
         return
@@ -292,7 +293,7 @@ const ShowMap = () => {
 
       // Reverse geocoding - pobierz nazwę miasta/regionu z backendu
       const geocodeResult = await reverseGeocode(latitude, longitude)
-      
+
       const newLocation = {
         latitude,
         longitude,
@@ -303,13 +304,13 @@ const ShowMap = () => {
 
       // Zapisz lokalizację w AsyncStorage
       await saveLocation(newLocation)
-      
+
       // Zaktualizuj state w MapContext
       setUserLocation(newLocation)
 
       // Wyśrodkuj mapę na aktualnej lokalizacji
       flyTo([longitude, latitude], 14)
-      
+
       Toast.success('Lokalizacja zaktualizowana', 'top')
     } catch (error) {
       console.error('Błąd pobierania lokalizacji:', error)

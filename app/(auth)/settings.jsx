@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo} from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { StyleSheet, Text, View, ScrollView, Alert } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
@@ -21,12 +21,12 @@ const Settings = () => {
   const ui = useResponsiveScale()
   const styles = useMemo(() => createStyles(ui), [ui])
   const [userLocation, setUserLocation] = useState(null)
-  const { 
-    consents, 
-    updateConsents, 
-    systemPermissionsGeo, 
-    setSystemPermissionsGeo, 
-    consentsLoading 
+  const {
+    consents,
+    updateConsents,
+    systemPermissionsGeo,
+    setSystemPermissionsGeo,
+    consentsLoading
   } = useAuth()
 
   // Load location from AsyncStorage on mount
@@ -35,7 +35,7 @@ const Settings = () => {
       try {
         const stored = await AsyncStorage.getItem(LOCATION_STORAGE_KEY)
         if (stored) setUserLocation(JSON.parse(stored))
-      } catch {}
+      } catch { }
     }
     loadLocation()
   }, [])
@@ -126,7 +126,7 @@ const Settings = () => {
     if (value) {
       // Użytkownik włącza zgodę - najpierw zaktualizuj naszą zgodę
       await updateConsents({ locationAccepted: true })
-      
+
       // Następnie sprawdź uprawnienia systemowe
       const result = await checkSystemLocationPermissions({
         consents: { ...consents, locationAccepted: true },
@@ -135,7 +135,7 @@ const Settings = () => {
         updateConsents,
         consentsLoading,
       })
-      
+
       // Jeśli użytkownik odmówił systemowo, funkcja automatycznie cofa naszą zgodę
       if (!result.success && result.reason === 'user_denied') {
         Alert.alert(
@@ -198,19 +198,19 @@ const Settings = () => {
             onPress={handleClearLocation}
           />
 
-            <View style={styles.locationInfo}>
-              <Text style={styles.locationInfoText}>
-                Aktualna lokalizacja: {userLocation?.City || 'brak'}, {userLocation?.Country || ''}
-              </Text>
-            </View>
+          <View style={styles.locationInfo}>
+            <Text style={styles.locationInfoText}>
+              Aktualna lokalizacja: {userLocation?.City || 'brak'}, {userLocation?.Country || ''}
+            </Text>
+          </View>
 
-            <SettingRow
-              icon='navigate'
-              label='Zgoda na geolokalizację'
-              isSwitch
-              switchValue={consents?.locationAccepted || false}
-              onSwitchChange={handleLocationToggle}
-            />
+          <SettingRow
+            icon='navigate'
+            label='Zgoda na geolokalizację'
+            isSwitch
+            switchValue={consents?.locationAccepted || false}
+            onSwitchChange={handleLocationToggle}
+          />
           <SettingRow
             icon='business'
             label='Zgoda marketingowa'
@@ -250,7 +250,6 @@ export default Settings
 const createStyles = (ui) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',

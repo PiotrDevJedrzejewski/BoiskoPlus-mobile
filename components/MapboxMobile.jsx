@@ -14,15 +14,15 @@ Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN || '')
 const throttle = (func, delay) => {
   let lastCall = 0
   let timeoutId = null
-  
+
   return (...args) => {
     const now = Date.now()
     const timeSinceLastCall = now - lastCall
-    
+
     if (timeoutId) {
       clearTimeout(timeoutId)
     }
-    
+
     if (timeSinceLastCall >= delay) {
       lastCall = now
       func(...args)
@@ -49,24 +49,24 @@ const MapboxMobile = ({ isInteractive = true }) => {
   // State dla wybranych elementów (musi być state bo wymaga re-renderu przy otwarciu modalu)
   const [selectedClusterEvents, setSelectedClusterEvents] = useState(null)
   const [selectedPlace, setSelectedPlace] = useState(null)
-  
+
   // Dane orlików - state bo ładowane asynchronicznie i triggerują inicjalizację supercluster
   const [predefinedPlaces, setPredefinedPlaces] = useState([])
-  
+
   // Ref dla instancji Supercluster - nie wymaga re-renderu przy tworzeniu
   const eventsSuperclusterRef = useRef(null)
   const orlikSuperclusterRef = useRef(null)
-  
+
   // Ref dla aktualnego regionu mapy - nie wymaga re-renderu przy zmianie
   const mapRegionRef = useRef({
     bounds: null,
     zoom: camera.zoomLevel,
   })
-  
+
   // State dla klastrów - wymaga re-renderu bo renderujemy je na mapie
   const [eventClusters, setEventClusters] = useState([])
   const [orlikClusters, setOrlikClusters] = useState([])
-  
+
   // Map dla szybkiego lookup klastrów po ID - O(1) zamiast O(n)
   const eventClustersMapRef = useRef(new Map())
   const orlikClustersMapRef = useRef(new Map())
@@ -88,12 +88,12 @@ const MapboxMobile = ({ isInteractive = true }) => {
     // Aktualizuj klastry eventów
     if (eventsSuperclusterRef.current) {
       const clusters = eventsSuperclusterRef.current.getClusters(boundsArray, zoomLevel)
-      
+
       // Zbuduj Map dla szybkiego lookup
       const newMap = new Map()
       clusters.forEach((cluster, index) => {
-        const id = cluster.properties.cluster 
-          ? `cluster-${cluster.properties.cluster_id}` 
+        const id = cluster.properties.cluster
+          ? `cluster-${cluster.properties.cluster_id}`
           : `event-${cluster.properties._id}`
         newMap.set(id, cluster)
       })
@@ -104,12 +104,12 @@ const MapboxMobile = ({ isInteractive = true }) => {
     // Aktualizuj klastry orlików
     if (orlikSuperclusterRef.current && showMarkers) {
       const clusters = orlikSuperclusterRef.current.getClusters(boundsArray, zoomLevel)
-      
+
       // Zbuduj Map dla szybkiego lookup
       const newMap = new Map()
       clusters.forEach((cluster, index) => {
-        const id = cluster.properties.cluster 
-          ? `orlik-cluster-${cluster.properties.cluster_id}` 
+        const id = cluster.properties.cluster
+          ? `orlik-cluster-${cluster.properties.cluster_id}`
           : `orlik-${cluster.properties.id}`
         newMap.set(id, cluster)
       })
@@ -130,7 +130,7 @@ const MapboxMobile = ({ isInteractive = true }) => {
   // Załaduj dane predefiniowanych miejsc (Orliki) z lokalnego pliku JSON
   useEffect(() => {
     try {
-      const orlikData = require('../assets/data/orliki_lodzkie_z_geolokalizacja.json')
+      const orlikData = require('../assets/data/orliki_hale_polska.json')
       if (orlikData.features) {
         setPredefinedPlaces(orlikData.features)
       }
@@ -146,17 +146,17 @@ const MapboxMobile = ({ isInteractive = true }) => {
       features: (filteredEvents.events || [])
         .filter((event) => event && event._id && event.geolocation?.coordinates)
         .map((event, index) => ({
-        type: 'Feature',
-        id: index,
-        properties: {
-          ...event,
-          _id: event._id,
-        },
-        geometry: {
-          type: 'Point',
-          coordinates: event.geolocation.coordinates,
-        },
-      })),
+          type: 'Feature',
+          id: index,
+          properties: {
+            ...event,
+            _id: event._id,
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: event.geolocation.coordinates,
+          },
+        })),
     }),
     [filteredEvents.events]
   )
@@ -176,7 +176,7 @@ const MapboxMobile = ({ isInteractive = true }) => {
     })
     cluster.load(eventsGeojson.features)
     eventsSuperclusterRef.current = cluster
-    
+
     // Aktualizuj klastry po załadowaniu nowych danych
     updateClusters()
   }, [eventsGeojson, updateClusters])
@@ -206,7 +206,7 @@ const MapboxMobile = ({ isInteractive = true }) => {
     })
     cluster.load(orlikFeatures)
     orlikSuperclusterRef.current = cluster
-    
+
     // Aktualizuj klastry po załadowaniu nowych danych
     updateClusters()
   }, [predefinedPlaces, showMarkers, updateClusters])
@@ -215,7 +215,7 @@ const MapboxMobile = ({ isInteractive = true }) => {
   const handleRegionChange = useCallback((feature) => {
     const bounds = feature.properties.visibleBounds
     const zoom = feature.properties.zoomLevel
-    
+
     if (bounds && bounds.length === 2) {
       // Aktualizuj ref (bez re-renderu)
       mapRegionRef.current = {
@@ -225,7 +225,7 @@ const MapboxMobile = ({ isInteractive = true }) => {
         },
         zoom,
       }
-      
+
       // Throttled update klastrów
       throttledUpdateClusters()
     }
@@ -285,8 +285,8 @@ const MapboxMobile = ({ isInteractive = true }) => {
     type: 'FeatureCollection',
     features: eventClusters.map((cluster) => ({
       ...cluster,
-      id: cluster.properties.cluster 
-        ? `cluster-${cluster.properties.cluster_id}` 
+      id: cluster.properties.cluster
+        ? `cluster-${cluster.properties.cluster_id}`
         : `event-${cluster.properties._id}`,
     })),
   }), [eventClusters])
@@ -295,8 +295,8 @@ const MapboxMobile = ({ isInteractive = true }) => {
     type: 'FeatureCollection',
     features: orlikClusters.map((cluster) => ({
       ...cluster,
-      id: cluster.properties.cluster 
-        ? `orlik-cluster-${cluster.properties.cluster_id}` 
+      id: cluster.properties.cluster
+        ? `orlik-cluster-${cluster.properties.cluster_id}`
         : `orlik-${cluster.properties.id}`,
     })),
   }), [orlikClusters])
