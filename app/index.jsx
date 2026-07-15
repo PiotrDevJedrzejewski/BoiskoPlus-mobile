@@ -28,7 +28,7 @@ const Home = () => {
   // Przekieruj zalogowanego użytkownika do dashboard
   useEffect(() => {
     if (!loading && user) {
-      router.replace('/(auth)/(map-screens)/dashboard-home')
+      router.replace('/(auth)/dashboard-home')
     }
   }, [user, loading])
 
@@ -96,8 +96,10 @@ const Home = () => {
             >
               Regulamin i Polityka Prywatności
             </Text>
+
           </View>
         </View>
+
       </ImageBackground>
     </>
   )

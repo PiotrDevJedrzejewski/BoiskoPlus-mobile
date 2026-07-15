@@ -1,11 +1,12 @@
 import { memo, useMemo } from 'react'
-import { StyleSheet, FlatList, View, Text, TouchableOpacity } from 'react-native'
-import { COLORS } from '../constants/colors'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { StyleSheet, FlatList, View, Text, Pressable } from 'react-native'
+
+import { useThemedStyles } from '../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../Theme/ScalableStyles'
 
 const CitySuggestions = ({ suggestions, onSuggestionClick }) => {
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
 
   const flatItems = useMemo(() => {
     if (!suggestions || suggestions.length === 0) {
@@ -51,12 +52,12 @@ const CitySuggestions = ({ suggestions, onSuggestionClick }) => {
     }
 
     return (
-      <TouchableOpacity
+      <Pressable
         style={styles.suggestionItem}
         onPress={() => onSuggestionClick(item.city, item.province)}
       >
         <Text style={styles.suggestionCity}>{item.city}</Text>
-      </TouchableOpacity>
+      </Pressable>
     )
   }
 
@@ -77,36 +78,33 @@ const CitySuggestions = ({ suggestions, onSuggestionClick }) => {
 
 export default memo(CitySuggestions)
 
-const createStyles = (ui) => StyleSheet.create({
-  suggestionsContainer: {
-    maxHeight: ui.verticalScale(300),
-    backgroundColor: COLORS.backgroundSecondary,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(8, 0.35),
-    marginTop: ui.verticalScale(4),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  provinceHeader: {
-    backgroundColor: COLORS.background,
-    paddingHorizontal: ui.spacing(12, 0.35),
-    paddingVertical: ui.verticalScale(6),
-  },
-  provinceText: {
-    color: COLORS.secondary,
-    fontSize: ui.scaleFont(14, 0.35),
-    fontWeight: 'bold',
-  },
-  suggestionItem: {
-    paddingVertical: ui.verticalScale(8),
-    paddingHorizontal: ui.spacing(16),
-  },
-  suggestionCity: {
-    fontSize: ui.scaleFont(14, 0.35),
-    color: COLORS.primary,
-  },
-})
+const createStyles = (colors) =>
+  StyleSheet.create({
+    suggestionsContainer: {
+      maxHeight: verticalScale(300),
+      backgroundColor: colors.backgroundSecondary,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginTop: verticalScale(4),
+      marginHorizontal: scale(8),
+      borderRadius: BORDER_RADIUS.md,
+    },
+    provinceHeader: {
+      backgroundColor: colors.primaryCard,
+      paddingHorizontal: scale(12),
+      paddingVertical: verticalScale(6),
+    },
+    provinceText: {
+      color: colors.PrimaryGreen,
+      fontSize: scaleFont(14),
+      fontWeight: 'bold',
+    },
+    suggestionItem: {
+      paddingVertical: verticalScale(8),
+      paddingHorizontal: scale(16),
+    },
+    suggestionCity: {
+      fontSize: scaleFont(14),
+      color: colors.primaryText,
+    },
+  })

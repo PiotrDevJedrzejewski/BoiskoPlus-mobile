@@ -8,7 +8,6 @@ import { NotificationProvider } from '../../context/NotificationContext'
 import { DashboardProvider } from '../../context/DashboardContext'
 import { FriendshipProvider } from '../../context/FriendshipContext'
 import { DrawerProvider } from '../../context/DrawerContext'
-import { MapProvider } from '../../context/MapContext'
 import NetworkGuard from '../../components/NetworkGuard'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
@@ -32,42 +31,42 @@ export default function AuthLayout() {
       <SocketIoProvider>
         <DashboardProvider>
           <FriendshipProvider>
-            <MapProvider>
-              <DrawerProvider>
-                <NetworkGuard>
-                  <View style={styles.container}>
-                    {/* Header at top */}
-                    <HeaderDrawer />
+            <DrawerProvider>
+              <NetworkGuard>
+                <View style={styles.container}>
+                  {/* Header at top */}
+                  <HeaderDrawer />
 
-                    {/* Stack content fills the middle */}
-                    <View style={styles.content}>
-                      <Stack
-                        screenOptions={{
-                          headerShown: false,
-                          gestureEnabled: false,
-                          contentStyle: { backgroundColor: 'transparent' },
-                          animation: 'slide_from_right',
-                        }}
-                      >
-                        <Stack.Screen name='(map-screens)' options={{ animation: 'none' }} />
-                        <Stack.Screen name='chat' options={{ animation: 'none' }} />
-                        <Stack.Screen name='chat-room' options={{ animation: 'slide_from_right' }} />
-                      </Stack>
-                    </View>
-
-                    {/* TabBar at bottom — always visible */}
-
-
-                    <View style={styles.tabBar}>
-                      <CustomTabBar />
-                    </View>
-
-                    {/* Drawer overlay — on top of everything */}
-                    <DrawerModal />
+                  {/* Stack content fills the middle */}
+                  <View style={styles.content}>
+                    <Stack
+                      screenOptions={{
+                        headerShown: false,
+                        gestureEnabled: false,
+                        contentStyle: { backgroundColor: 'transparent' },
+                        animation: 'slide_from_right',
+                      }}
+                    >
+                      <Stack.Screen name='dashboard-home' options={{ animation: 'none' }} />
+                      <Stack.Screen name='show-map' options={{ animation: 'none' }} />
+                      <Stack.Screen name='find-event' />
+                      <Stack.Screen name='chat' options={{ animation: 'none' }} />
+                      <Stack.Screen name='chat-room' options={{ animation: 'slide_from_right' }} />
+                    </Stack>
                   </View>
-                </NetworkGuard>
-              </DrawerProvider>
-            </MapProvider>
+
+                  {/* TabBar at bottom — always visible */}
+
+
+                  <View style={styles.tabBar}>
+                    <CustomTabBar />
+                  </View>
+
+                  {/* Drawer overlay — on top of everything */}
+                  <DrawerModal />
+                </View>
+              </NetworkGuard>
+            </DrawerProvider>
           </FriendshipProvider>
         </DashboardProvider>
       </SocketIoProvider>

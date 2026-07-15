@@ -80,8 +80,16 @@ assets/
     getUserLocation.js  # Geolocation helper
     citySearchUtils.js  # Polish city autocomplete logic
     variablesPolandRegion.js
+    scaleUI.UX.js       # DEPRECATED — being migrated to Theme/, do not use in new code
     spinner.json        # Lottie animation
     typing.json         # Lottie animation (chat typing indicator)
+
+Theme/                  # New design-tokens module (WIP migration target for scaleUI.UX.js)
+  index.js              # Entry point — loadTheme()/getTheme()/setTheme(), AsyncStorage-backed light/dark switch
+  StyleConstants.js      # SPACING (Fibonacci), PADDING, MARGIN, BORDER_RADIUS, FONT_SIZE (xs-xxl)
+  ScalableStyles.js      # scale/verticalScale/moderateScale/scaleFont — lightweight replacement for scaleUI.UX.js
+  ColorsLight.js         # Light theme palette
+  ColorsDark.js          # Dark theme palette (default)
   fonts/
   images/
   sounds/
@@ -112,7 +120,8 @@ context/
   DashboardContext.jsx
   DrawerContext.jsx
   FriendshipContext.jsx
-  MapContext.jsx
+  mapStore.js             # Zustand store for map state (show-map.jsx + MapboxMobile.jsx only)
+  useMapManager.js        # Map lifecycle hook (NOT a Provider) — location init/permissions, called only in show-map.jsx
   NotificationContext.jsx
   SocketIoContext.jsx     # Socket.IO lifecycle manager (NOT a context provider — renders children directly)
   socketStore.js          # Zustand store for all socket state (source of truth)
@@ -166,6 +175,10 @@ babel.config.js
 - Dark/light map theme toggle
 - Predefined sport courts (orliki) with geolocation
 - Geocoding via Mapbox API (both address → coords and coords → city)
+- State lives in `context/mapStore.js` (Zustand, selector-based — no MapContext/Provider anymore). Only `app/(auth)/show-map.jsx` and `components/MapboxMobile.jsx` consume it.
+- `context/useMapManager.js` is a hook (not a Provider) called once inside `show-map.jsx`; owns AuthContext-dependent side effects (initial location, permission checks, consent-change reactions). It is NOT wrapped around the whole `(auth)` tree — only the map screen needs it.
+- `mapRef`/`cameraRef` are plain imperative refs registered via `registerCameraRef`/`registerMapRef` (not reactive store state) so `flyTo()` can imperatively drive the camera without triggering re-renders.
+- Cross-screen navigation: to center the map on a specific point before navigating to `show-map` from an unrelated screen (e.g. `events-managment/*`), call `useMapStore.getState().setPendingFlyTo({ coordinates: [lon, lat], zoom })` then navigate — no subscription needed in the calling screen. `show-map.jsx` consumes and clears `pendingFlyTo` once `isMapReady` is true.
 
 ### Navigation
 - Expo Router 6 (file-based, `app/` directory)
@@ -174,7 +187,9 @@ babel.config.js
 - Deep links scheme: `boiskoplusmobile://`
 
 ### UI Scaling
-- Custom scaling utilities in `assets/utils/scaleUI.UX.js` for consistent sizing across devices
+- **DEPRECATED**: `assets/utils/scaleUI.UX.js` — too heavy (recomputes via `useMemo`/hook on every consumer). Being phased out.
+- **Ongoing goal**: gradually migrate every screen/component from `scaleUI.UX.js` to the new `Theme/` module (`Theme/ScalableStyles.js` for scaling, `Theme/StyleConstants.js` for spacing/padding/margin/borderRadius/fontSize, `Theme/ColorsLight.js` + `Theme/ColorsDark.js` via `Theme/index.js` for colors).
+- Do not add new `scaleUI.UX.js` imports — new/edited screens should pull from `Theme/` instead.
 
 ---
 
@@ -283,6 +298,6 @@ Socket.IO namespaces: `/chat`, `/notifications`
 - API calls go through `customFetch` (never raw `fetch` or bare `axios`)
 - Toast alerts via `toastify-react-native` (not Alert.alert for user-facing messages)
 - Lottie animations for loading states (`assets/utils/spinner.json`, `typing.json`)
-- UI scaling via `scaleUI.UX.js` utilities
+- UI scaling: `scaleUI.UX.js` is **deprecated** — migrate to `Theme/` (see UI Scaling section); do not use it in new code
 - Debug logging via `assets/utils/debugLogger.js` (`dbg`, `logHttp`, etc.)
 - `expo-secure-store` for sensitive data (JWT), `AsyncStorage` for non-sensitive persistence

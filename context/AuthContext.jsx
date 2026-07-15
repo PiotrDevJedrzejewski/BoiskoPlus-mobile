@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }) => {
         setUserStats(userStatsResponse.data.stats)
         setIsAuthChecked(true)
         setLoading(false)
-        router.replace('/(auth)/(map-screens)/dashboard-home')
+        router.replace('/(auth)/dashboard-home')
         return
       } else {
         setUser(null)

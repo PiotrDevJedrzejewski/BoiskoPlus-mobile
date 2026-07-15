@@ -1,29 +1,25 @@
-import { useCallback, useMemo } from 'react'
 import { StyleSheet, Text, View, ScrollView, Pressable, Image } from 'react-native'
-import { useRouter, useFocusEffect } from 'expo-router'
-// import CardDashboard from '../../../components/CardDashboard'
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
-import Entypo from '@expo/vector-icons/Entypo'
-import { BlurView } from 'expo-blur'
 import { LinearGradient } from 'expo-linear-gradient'
-import { useMap } from '../../../context/MapContext'
-import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
+import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
-import { useThemedStyles } from '../../../context/themeStore'
-import { SPACING, BORDER_RADIUS } from '../../../Theme/StyleConstants'
-import { scale, verticalScale, moderateScale, scaleFont } from '../../../Theme/ScalableStyles'
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
-import DashboardProfileBG from '../../../assets/images/V2/DBProfileBG.png'
-import RecommendCardBG from '../../../assets/images/V2/IMG_2313.png'
+import DashboardProfileBG from '../../assets/images/V2/DBProfileBG.png'
+import RecommendCardBG from '../../assets/images/V2/IMG_2313.png'
+import PlaceCard from '../../components/Cards/PlaceCard'
+import EventSimpleCard from '../../components/Cards/EventSimpleCard'
 
 const DashboardHome = () => {
   dbg('DashboardHomeScreen')
   useDebugMount('DashboardHomeScreen')
   const router = useRouter()
-  const { setIsInteractive, setOverlayOpacity } = useMap()
 
   const { styles, colors } = useThemedStyles(createStyles)
 
@@ -139,51 +135,9 @@ const DashboardHome = () => {
           <Text style={styles.NearEvent_title_more}>ZOBACZ WIĘCEJ ►</Text>
         </View>
 
-        <View style={styles.NearEvent_card}>
-          <Image source={RecommendCardBG} style={styles.NearEvent_card_backgroundImage} />
-          <View style={styles.NearEvent_card_content}>
-            <Text style={styles.NearEvent_card_content_date}>JUTRO · 18:00</Text>
-            <Text style={styles.NearEvent_card_content_title}>Koszykówka 3V3</Text>
-            <View style={styles.NearEvent_card_content_players}>
-              <Ionicons name="person" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_content_players_text}>3/6 GRACZY</Text>
-            </View>
-            <View style={styles.NearEvent_card_additionalInfo} >
-              <Entypo name="location-pin" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_additionalInfo_text}>1.2 KM</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.NearEvent_card}>
-          <Image source={RecommendCardBG} style={styles.NearEvent_card_backgroundImage} />
-          <View style={styles.NearEvent_card_content}>
-            <Text style={styles.NearEvent_card_content_date}>JUTRO · 18:00</Text>
-            <Text style={styles.NearEvent_card_content_title}>Koszykówka 3V3</Text>
-            <View style={styles.NearEvent_card_content_players}>
-              <Ionicons name="person" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_content_players_text}>3/6 GRACZY</Text>
-            </View>
-            <View style={styles.NearEvent_card_additionalInfo} >
-              <Entypo name="location-pin" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_additionalInfo_text}>1.2 KM</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.NearEvent_card}>
-          <Image source={RecommendCardBG} style={styles.NearEvent_card_backgroundImage} />
-          <View style={styles.NearEvent_card_content}>
-            <Text style={styles.NearEvent_card_content_date}>JUTRO · 18:00</Text>
-            <Text style={styles.NearEvent_card_content_title}>Koszykówka 3V3</Text>
-            <View style={styles.NearEvent_card_content_players}>
-              <Ionicons name="person" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_content_players_text}>3/6 GRACZY</Text>
-            </View>
-            <View style={styles.NearEvent_card_additionalInfo} >
-              <Entypo name="location-pin" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_additionalInfo_text}>1.2 KM</Text>
-            </View>
-          </View>
-        </View>
+        <EventSimpleCard date="JUTRO · 18:00" title="Koszykówka 3V3" playersCurrent={3} playersMax={6} geoDistance={1.2} />
+        <EventSimpleCard date="JUTRO · 18:00" title="Koszykówka 3V3" playersCurrent={3} playersMax={6} geoDistance={1.2} />
+        <EventSimpleCard date="JUTRO · 18:00" title="Koszykówka 3V3" playersCurrent={3} playersMax={6} geoDistance={1.2} />
 
       </View>
       {/* 3 close obiekts */}
@@ -194,51 +148,9 @@ const DashboardHome = () => {
           <Text style={styles.NearEvent_title_more}>MAPA ►</Text>
         </View>
 
-        <View style={styles.NearEvent_card}>
-          <Image source={RecommendCardBG} style={styles.NearEvent_card_backgroundImage} />
-          <View style={styles.NearEvent_card_content}>
-            <Text style={styles.NearEvent_card_content_date}>Oril Centrum</Text>
-            <Text style={styles.NearEvent_card_content_title}>★★★★☆</Text>
-            <View style={styles.NearEvent_card_content_players}>
-
-              <Text style={styles.NearEvent_card_content_players_text}>Mszczonowska 2137</Text>
-            </View>
-            <View style={styles.NearEvent_card_additionalInfo} >
-              <Entypo name="location-pin" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_additionalInfo_text}>1.2 KM</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.NearEvent_card}>
-          <Image source={RecommendCardBG} style={styles.NearEvent_card_backgroundImage} />
-          <View style={styles.NearEvent_card_content}>
-            <Text style={styles.NearEvent_card_content_date}>JUTRO · 18:00</Text>
-            <Text style={styles.NearEvent_card_content_title}>Koszykówka 3V3</Text>
-            <View style={styles.NearEvent_card_content_players}>
-              <Ionicons name="person" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_content_players_text}>3/6 GRACZY</Text>
-            </View>
-            <View style={styles.NearEvent_card_additionalInfo} >
-              <Entypo name="location-pin" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_additionalInfo_text}>1.2 KM</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.NearEvent_card}>
-          <Image source={RecommendCardBG} style={styles.NearEvent_card_backgroundImage} />
-          <View style={styles.NearEvent_card_content}>
-            <Text style={styles.NearEvent_card_content_date}>JUTRO · 18:00</Text>
-            <Text style={styles.NearEvent_card_content_title}>Koszykówka 3V3</Text>
-            <View style={styles.NearEvent_card_content_players}>
-              <Ionicons name="person" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_content_players_text}>3/6 GRACZY</Text>
-            </View>
-            <View style={styles.NearEvent_card_additionalInfo} >
-              <Entypo name="location-pin" size={14} color={colors.PrimaryGreen} />
-              <Text style={styles.NearEvent_card_additionalInfo_text}>1.2 KM</Text>
-            </View>
-          </View>
-        </View>
+        <PlaceCard type="Orlik" name="Orlik Centrum" rating={2.3} address="Mszczonowska 2137" geoDistance={1.2} />
+        <PlaceCard type="Orlik" name="Orlik Centrum" rating={3.7} address="Mszczonowska 2137" geoDistance={1.2} />
+        <PlaceCard type="Orlik" name="Orlik Centrum" rating={4.5} address="Mszczonowska 2137" geoDistance={1.2} />
       </View>
       <View style={{ height: 120 }} />
     </ScrollView >
@@ -360,7 +272,6 @@ const createStyles = (colors) =>
       flex: 1,
       position: 'relative',
       overflow: 'hidden',
-      // backgroundColor: "red",
       height: moderateScale(300),
       borderRadius: BORDER_RADIUS.lg,
       borderWidth: 1,
@@ -502,70 +413,5 @@ const createStyles = (colors) =>
       fontSize: scaleFont(10),
       color: colors.PrimaryGreen,
       fontWeight: 'bold',
-    },
-    NearEvent_card: {
-      flex: 1,
-      position: 'relative',
-      overflow: 'hidden',
-      height: moderateScale(80),
-      borderRadius: BORDER_RADIUS.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      marginBottom: SPACING.md,
-      backgroundColor: colors.secondaryCard,
-    },
-    NearEvent_card_backgroundImage: {
-      position: 'absolute',
-      height: '100%',
-      width: '33%',
-      left: 0,
-      top: 0,
-      resizeMode: 'cover',
-      borderRadius: BORDER_RADIUS.lg,
-      zIndex: 1,
-    },
-    NearEvent_card_content: {
-      flex: 1,
-      marginLeft: '33%',
-      padding: SPACING.md,
-      justifyContent: 'center',
-      alignItems: 'flex-start',
-    },
-    NearEvent_card_content_date: {
-      fontSize: scaleFont(12),
-      color: colors.PrimaryGreen,
-    },
-    NearEvent_card_content_title: {
-      fontSize: scaleFont(14),
-      color: colors.primaryText,
-      fontWeight: 'bold',
-    },
-    NearEvent_card_content_players: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.sm,
-      marginTop: SPACING.sm,
-    },
-    NearEvent_card_content_players_text: {
-      fontSize: scaleFont(12),
-      color: colors.secondaryText,
-    },
-    NearEvent_card_additionalInfo: {
-      position: 'absolute',
-      right: SPACING.md,
-      bottom: SPACING.md,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'flex-end',
-      gap: SPACING.xs,
-    },
-    NearEvent_card_additionalInfo_text: {
-      fontSize: scaleFont(12),
-      color: colors.secondaryText,
-    },
-
-    CloseObiekts: {
-      backgroundColor: 'purple',
-      height: 200,
     },
   })

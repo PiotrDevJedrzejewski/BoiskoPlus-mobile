@@ -92,7 +92,7 @@ const CustomTabBar = React.memo(function CustomTabBar() {
             <View style={styles.row}>
                 <Pressable
                     style={styles.tabItem}
-                    onPress={() => handlePress('(map-screens)/dashboard-home')}
+                    onPress={() => handlePress('dashboard-home')}
                 >
                     <Ionicons
                         name={startActive ? 'home' : 'home-outline'}
@@ -106,7 +106,7 @@ const CustomTabBar = React.memo(function CustomTabBar() {
 
                 <Pressable
                     style={styles.tabItem}
-                    onPress={() => handlePress('(map-screens)/find-event')}
+                    onPress={() => handlePress('find-event')}
                 >
                     <Ionicons
                         name={findEventActive ? 'calendar' : 'calendar-outline'}
@@ -123,7 +123,7 @@ const CustomTabBar = React.memo(function CustomTabBar() {
 
                 <Pressable
                     style={styles.tabItem}
-                    onPress={() => handlePress('(map-screens)/show-map')}
+                    onPress={() => handlePress('show-map')}
                 >
                     <Ionicons
                         name={mapActive ? 'football' : 'football-outline'}

@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native'
 import Mapbox from '@rnmapbox/maps'
 import Supercluster from 'supercluster'
 import { useDashboard } from '../context/DashboardContext'
-import { useMap } from '../context/MapContext'
+import { useMapStore, registerCameraRef, registerMapRef } from '../context/mapStore'
 import EventMarkerEventList from './popup/EventMarkerEventList'
 import EventMarkerEventCreate from './popup/EventMarkerEventCreate'
 
@@ -39,11 +39,23 @@ const throttle = (func, delay) => {
 const MapboxMobile = ({ isInteractive = true }) => {
   const { filteredEvents, mapTheme, userLocation, geolocationAccepted } =
     useDashboard()
-  const { mapRef, cameraRef, camera, showMarkers, showEvents, setIsMapReady } = useMap()
+  const mapRef = useRef(null)
+  const cameraRef = useRef(null)
+  const camera = useMapStore((s) => s.camera)
+  const showMarkers = useMapStore((s) => s.showMarkers)
+  const showEvents = useMapStore((s) => s.showEvents)
+  const setIsMapReady = useMapStore((s) => s.setIsMapReady)
 
-  // Reset isMapReady przy unmount — loading screen pokaże się ponownie przy powrocie
+  // Rejestruj refy w store (imperatywne, nie reaktywne) + reset isMapReady
+  // przy unmount — loading screen pokaże się ponownie przy powrocie
   useEffect(() => {
-    return () => setIsMapReady(false)
+    registerCameraRef(cameraRef)
+    registerMapRef(mapRef)
+    return () => {
+      registerCameraRef(null)
+      registerMapRef(null)
+      setIsMapReady(false)
+    }
   }, [setIsMapReady])
 
   // State dla wybranych elementów (musi być state bo wymaga re-renderu przy otwarciu modalu)
@@ -341,7 +353,7 @@ const MapboxMobile = ({ isInteractive = true }) => {
         onDidFinishLoadingMap={handleMapLoad}
         onRegionIsChanging={handleRegionChange}
       >
-        {/* Kamera sterowana przez MapContext - ref imperatywny dla niezawodnej nawigacji na iOS/Android */}
+        {/* Kamera sterowana przez mapStore (zustand) - ref imperatywny dla niezawodnej nawigacji na iOS/Android */}
         <Mapbox.Camera
           ref={cameraRef}
           zoomLevel={camera.zoomLevel}

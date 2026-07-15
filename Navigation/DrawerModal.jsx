@@ -98,9 +98,9 @@ const DrawerModal = () => {
 
                         <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: insets.bottom }} showsVerticalScrollIndicator={false}>
                             {/* Tab screens */}
-                            <DrawerItem icon='home' label='Panel Główny' onPress={() => navigateTo('/(auth)/(map-screens)/dashboard-home')} styles={styles} />
-                            <DrawerItem icon='map' label='Mapa' onPress={() => navigateTo('/(auth)/(map-screens)/show-map')} styles={styles} />
-                            <DrawerItem icon='search' label='Szukaj' onPress={() => navigateTo('/(auth)/(map-screens)/find-event')} styles={styles} />
+                            <DrawerItem icon='home' label='Panel Główny' onPress={() => navigateTo('/(auth)/dashboard-home')} styles={styles} />
+                            <DrawerItem icon='map' label='Mapa' onPress={() => navigateTo('/(auth)/show-map')} styles={styles} />
+                            <DrawerItem icon='search' label='Szukaj' onPress={() => navigateTo('/(auth)/find-event')} styles={styles} />
                             <DrawerItem icon='chatbubbles' label='Czat' onPress={() => navigateTo('/(auth)/chat')} styles={styles} />
                             <DrawerItem icon='people' label='Znajomi' onPress={() => navigateTo('/(auth)/friends')} styles={styles} />
                             <DrawerItem icon='calendar' label='Moje Wydarzenia' onPress={() => navigateTo('/(auth)/events-managment/events-dashboard')} styles={styles} />

@@ -107,7 +107,7 @@ const Register = () => {
 
         console.log('[Google Auth] User exists, logging in...')
         Toast.success('Zalogowano pomyślnie przez Google!')
-        router.replace('/(auth)/(map-screens)/dashboard-home')
+        router.replace('/(auth)/dashboard-home')
       } catch (loginError) {
         if (loginError.response?.status === 401 || loginError.response?.status === 404) {
           console.log('[Google Auth] User not found, redirecting to complete registration')

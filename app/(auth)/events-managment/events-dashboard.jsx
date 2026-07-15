@@ -88,7 +88,7 @@ const EventsDashboard = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.push('/(auth)/(map-screens)/dashboard-home')}
+          onPress={() => router.push('/(auth)/dashboard-home')}
           activeOpacity={0.8}
         >
           <Ionicons name='arrow-back' size={ui.moderateScale(28, 0.35)} color={COLORS.primary} />
