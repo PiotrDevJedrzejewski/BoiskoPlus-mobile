@@ -5,36 +5,40 @@ import {
   View,
   ScrollView,
   TextInput,
-  TouchableOpacity,
   Switch,
   Alert,
   Pressable,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Slider } from '@miblanchard/react-native-slider'
-import { COLORS } from '../constants/colors'
 import customFetch from '../assets/utils/customFetch'
 import { Toast } from 'toastify-react-native'
 import { useRouter } from 'expo-router'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+
 import { gameTypeIcons } from '../assets/utils/gameTypeIcons'
 import CustomTypePickerModal from './popup/CustomTypePickerModal'
 import DatePicker from './popup/DatePicker'
 import HourPicker from './popup/HourPicker'
 
+import { useThemedStyles } from '../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../Theme/ScalableStyles'
+import BottomSpacer from './BottomSpacer'
+import GameTypeButton from './GameTypeButton'
+
 const GAME_TYPES = [
-  { label: 'Wybierz typ gry', value: '' },
   { label: 'Piłka nożna', value: 'football' },
-  { label: 'Siatkówka', value: 'volleyball' },
   { label: 'Koszykówka', value: 'basketball' },
+  { label: 'Siatkówka', value: 'volleyball' },
+  { label: 'Tenis', value: 'tennis' },
   { label: 'Piłka ręczna', value: 'handball' },
+  { label: 'Badminton', value: 'badminton' },
+  { label: 'Karty', value: 'cards' },
+  // add more below
   { label: 'Rugby', value: 'rugby' },
   { label: 'Hokej', value: 'hockey' },
-  { label: 'Tenis', value: 'tennis' },
-  { label: 'Badminton', value: 'badminton' },
   { label: 'Tenis stołowy', value: 'table tennis' },
   { label: 'Kręgle', value: 'bowling' },
-  { label: 'Karty', value: 'cards' },
   { label: 'Planszówki', value: 'board games' },
   { label: 'Inne', value: 'other' },
 ]
@@ -85,6 +89,7 @@ const defaultEventData = {
 const parsePredefinedPlace = (predefinedPlace) => {
   if (!predefinedPlace) return null
 
+
   const city = predefinedPlace.properties?.miasto || ''
   const address = predefinedPlace.properties?.adres || ''
   const geolocation_source = predefinedPlace.properties?.geolocation_source || ''
@@ -125,6 +130,9 @@ const parsePredefinedPlace = (predefinedPlace) => {
 }
 
 const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, eventId = null }) => {
+
+  const { styles, colors } = useThemedStyles(createStyles)
+
   const [eventData, setEventData] = useState(
     initialData
       ? { ...initialData, ageRange: initialData.ageRange ?? [0, 100] }
@@ -133,8 +141,6 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
   const [loading, setLoading] = useState(false)
   const [pickerModal, setPickerModal] = useState(null)
   const router = useRouter()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
 
   const postalPart2Ref = useRef(null)
   const [postalPart1, setPostalPart1] = useState(() => {
@@ -150,7 +156,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
   useEffect(() => {
     if (predefinedPlace && mode === 'add') {
       const parsedAddress = parsePredefinedPlace(predefinedPlace)
-      
+
       if (parsedAddress) {
         setEventData((prev) => ({
           ...prev,
@@ -168,6 +174,12 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
       }
     }
   }, [predefinedPlace, mode])
+
+  const adjustPlayerCount = (delta) => {
+    const current = parseInt(eventData.playerCount, 10) || 0
+    const next = Math.min(999, Math.max(0, current + delta))
+    handleChange('playerCount', String(next))
+  }
 
   const handleChange = (name, value) => {
     if (name.includes('.')) {
@@ -282,6 +294,23 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
+        {/* Typ gry */}
+        <Text style={styles.label}>Typ rozgrywki</Text>
+        <View style={styles.gameTypeRow}>
+        {GAME_TYPES.slice(0, 7).map((type) => (
+          <GameTypeButton
+            key={type.value}
+            value={type.value}
+            title={type.label}
+            isSelected={eventData.gameType === type.value}
+            pressHandler={() => handleChange('gameType', type.value)}
+          />
+        ))}
+          <Pressable style={styles.btn} onPress={() => Toast.info('Wkrótce dodamy możliwość wyboru innych typów gier!', 'top')}>{/* () => handleChange('gameType', 'other')*/}
+          <Ionicons name='add-circle' size={40} color={eventData.gameType === 'other' ? colors.PrimaryGreen : colors.primaryText} />
+          <Text style={{ color: eventData.gameType === 'other' ? colors.PrimaryGreen : colors.primaryText }}>Inne</Text>
+        </Pressable>
+        </View>
       {/* Nazwa wydarzenia */}
       <Text style={styles.label}>Nazwa wydarzenia</Text>
       <TextInput
@@ -289,20 +318,10 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         value={eventData.eventName}
         onChangeText={(value) => handleChange('eventName', value)}
         placeholder='Np. Mecz towarzyski na orliku'
-        placeholderTextColor={COLORS.gray}
+        placeholderTextColor={colors.thirdText}
       />
 
-      {/* Typ gry */}
-      <Text style={styles.label}>Typ rozgrywki</Text>
-      <Pressable
-        style={styles.pickerWrapper}
-        onPress={() => setPickerModal({ field: 'gameType', options: GAME_TYPES, title: 'Wybierz typ gry', iconMap: gameTypeIcons })}
-      >
-        <Text style={styles.pickerButtonText} numberOfLines={1}>
-          {getOptionLabel(GAME_TYPES, eventData.gameType)}
-        </Text>
-        <Ionicons name='chevron-down' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
-      </Pressable>
+
 
       {/* Data i godzina */}
       <Text style={styles.label}>Data</Text>
@@ -324,7 +343,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         onChangeText={(value) => handleChange('duration', value)}
         keyboardType='numeric'
         placeholder='90'
-        placeholderTextColor={COLORS.gray}
+        placeholderTextColor={colors.thirdText}
       />
 
       {/* Adres - Miasto */}
@@ -338,8 +357,17 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
           }
         }}
         placeholder='Np. Łódź'
-        placeholderTextColor={COLORS.gray}
-      />
+        placeholderTextColor={colors.thirdText}
+        />
+
+      {/* Adres - Ulica i numer */}
+      <Text style={styles.label}>Nie pamiętasz adresu?</Text>
+        <Pressable style={styles.mapJump} onPress={() => router.push('/(auth)/show-map')}>
+          <Text style={styles.mapJumpText}>
+              Wybierz obiekt na mapie
+          </Text>
+          <Ionicons name='map' size={18} color={colors.PrimaryGreen} />
+        </Pressable>
 
       {/* Adres - Ulica i numer */}
       <View style={styles.row}>
@@ -354,7 +382,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
               }
             }}
             placeholder='Np. Sportowa'
-            placeholderTextColor={COLORS.gray}
+            placeholderTextColor={colors.thirdText}
           />
         </View>
         <View style={styles.numberColumn}>
@@ -369,7 +397,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
             }}
             keyboardType='numeric'
             placeholder='15'
-            placeholderTextColor={COLORS.gray}
+            placeholderTextColor={colors.thirdText}
           />
         </View>
       </View>
@@ -387,7 +415,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
           }}
           keyboardType='numeric'
           placeholder='XX'
-          placeholderTextColor={COLORS.gray}
+          placeholderTextColor={colors.thirdText}
           maxLength={2}
         />
         <Text style={styles.postalSeparator}>-</Text>
@@ -401,7 +429,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
           }}
           keyboardType='numeric'
           placeholder='XXX'
-          placeholderTextColor={COLORS.gray}
+          placeholderTextColor={colors.thirdText}
           maxLength={3}
         />
       </View>
@@ -415,24 +443,32 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         <Text style={styles.pickerButtonText} numberOfLines={1}>
           {getOptionLabel(FIELD_TYPES, eventData.fieldType)}
         </Text>
-        <Ionicons name='chevron-down' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
+        <Ionicons name='chevron-down' size={scaleFont(18, 0.35)} color={colors.thirdText} />
       </Pressable>
 
       {/* Liczba graczy */}
       <Text style={styles.label}>Ilu graczy szukasz</Text>
-      <TextInput
-        style={styles.input}
-        value={eventData.playerCount}
-        onChangeText={(value) => {
-          const digits = value.replace(/\D/g, '')
-          if (digits === '' || parseInt(digits) <= 999) {
-            handleChange('playerCount', digits)
-          }
-        }}
-        keyboardType='numeric'
-        placeholder='0'
-        placeholderTextColor={COLORS.gray}
-      />
+        <View style={styles.playerCountWrapper}>
+          <Pressable style={styles.playerCountButton} onPress={() => adjustPlayerCount(1)}>
+            <Ionicons name='add' size={scaleFont(24, 0.35)} color={colors.PrimaryGreen} style={ styles.playerBtnText} />
+          </Pressable>
+          <TextInput
+          value={eventData.playerCount}
+          onChangeText={(value) => {
+            const digits = value.replace(/\D/g, '')
+            if (digits === '' || parseInt(digits) <= 999) {
+              handleChange('playerCount', digits)
+            }
+          }}
+          keyboardType='numeric'
+          placeholder='0'
+          placeholderTextColor={colors.thirdText}
+          style={styles.playerCountInput}
+          />
+          <Pressable style={styles.playerCountButton} onPress={() => adjustPlayerCount(-1)}>
+            <Ionicons name='remove' size={scaleFont(24, 0.35)} color={colors.PrimaryGreen} style={ styles.playerBtnText}/>
+          </Pressable>
+        </View>
 
       {/* Poziom */}
       <Text style={styles.label}>Poziom</Text>
@@ -443,7 +479,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         <Text style={styles.pickerButtonText} numberOfLines={1}>
           {getOptionLabel(LEVELS, eventData.level)}
         </Text>
-        <Ionicons name='chevron-down' size={ui.moderateScale(18, 0.35)} color={COLORS.gray} />
+        <Ionicons name='chevron-down' size={scaleFont(18, 0.35)} color={colors.thirdText} />
       </Pressable>
 
       {/* Cena i płatność */}
@@ -461,7 +497,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
             }}
             keyboardType='numeric'
             placeholder='0'
-            placeholderTextColor={COLORS.gray}
+            placeholderTextColor={colors.thirdText}
           />
         </View>
         <View style={styles.halfColumn}>
@@ -471,7 +507,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
             value={eventData.paymentMethod}
             onChangeText={(value) => handleChange('paymentMethod', value)}
             placeholder='Na miejscu'
-            placeholderTextColor={COLORS.gray}
+            placeholderTextColor={colors.thirdText}
           />
         </View>
       </View>
@@ -490,9 +526,9 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
           minimumValue={0}
           maximumValue={100}
           step={1}
-          minimumTrackTintColor={COLORS.secondary}
-          maximumTrackTintColor={COLORS.gray}
-          thumbTintColor={COLORS.secondary}
+          minimumTrackTintColor={colors.PrimaryGreen}
+          maximumTrackTintColor={colors.thirdText}
+          thumbTintColor={colors.PrimaryGreen}
           trackStyle={styles.sliderTrack}
           thumbStyle={styles.sliderThumb}
         />
@@ -509,7 +545,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         value={eventData.eventDescription}
         onChangeText={(value) => handleChange('eventDescription', value)}
         placeholder='Opisz swoje wydarzenie...'
-        placeholderTextColor={COLORS.gray}
+        placeholderTextColor={colors.thirdText}
         multiline
         numberOfLines={4}
         textAlignVertical='top'
@@ -523,7 +559,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
         onChangeText={(value) => handleChange('phoneNumber', value)}
         keyboardType='phone-pad'
         placeholder='123 456 789'
-        placeholderTextColor={COLORS.gray}
+        placeholderTextColor={colors.thirdText}
       />
 
       {/* Checkboxy */}
@@ -532,9 +568,9 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
           <Switch
             value={eventData.isParticipating}
             onValueChange={(value) => handleChange('isParticipating', value)}
-            trackColor={{ false: COLORS.gray, true: COLORS.third }}
+            trackColor={{ false: colors.thirdText, true: colors.DarkGreen }}
             thumbColor={
-              eventData.isParticipating ? COLORS.secondary : COLORS.grayLight
+              eventData.isParticipating ? colors.PrimaryGreen : colors.thirdText
             }
           />
           <Text style={styles.checkboxLabel}>
@@ -546,9 +582,9 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
           <Switch
             value={eventData.isRecurring}
             onValueChange={(value) => handleChange('isRecurring', value)}
-            trackColor={{ false: COLORS.gray, true: COLORS.third }}
+            trackColor={{ false: colors.thirdText, true: colors.DarkGreen }}
             thumbColor={
-              eventData.isRecurring ? COLORS.secondary : COLORS.grayLight
+              eventData.isRecurring ? colors.PrimaryGreen : colors.thirdText
             }
           />
           <Text style={styles.checkboxLabel}>Wydarzenie cykliczne</Text>
@@ -558,9 +594,9 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
           <Switch
             value={eventData.isPrivate}
             onValueChange={(value) => handleChange('isPrivate', value)}
-            trackColor={{ false: COLORS.gray, true: COLORS.third }}
+            trackColor={{ false: colors.thirdText, true: colors.DarkGreen }}
             thumbColor={
-              eventData.isPrivate ? COLORS.secondary : COLORS.grayLight
+              eventData.isPrivate ? colors.PrimaryGreen : colors.thirdText
             }
           />
           <Text style={styles.checkboxLabel}>Wydarzenie prywatne</Text>
@@ -575,7 +611,7 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
       </View>
 
       {/* Przycisk submit */}
-      <TouchableOpacity
+      <Pressable
         style={[styles.submitButton, loading && styles.submitButtonDisabled]}
         onPress={handleSubmit}
         disabled={loading}
@@ -588,7 +624,8 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
             ? 'Dodaj wydarzenie'
             : 'Zapisz zmiany'}
         </Text>
-      </TouchableOpacity>
+        </Pressable>
+        <BottomSpacer />
     </ScrollView>
       <CustomTypePickerModal
         visible={pickerModal !== null}
@@ -604,74 +641,76 @@ const FormEvent = ({ mode = 'add', initialData = null, predefinedPlace = null, e
     </>
   )
 }
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
   },
   content: {
-    padding: ui.spacing(20, 0.45),
-    paddingBottom: ui.verticalScale(40),
+    padding: SPACING.md,
+    paddingBottom: SPACING.xl,
   },
   label: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginTop: ui.verticalScale(16),
-    marginBottom: ui.verticalScale(8),
+    color: colors.primaryText,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.xs,
   },
   input: {
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: ui.controlRadius,
-    minHeight: ui.controlMinHeight,
-    paddingHorizontal: ui.controlPaddingHorizontal,
-    paddingVertical: ui.controlPaddingVertical,
-    fontSize: ui.scaleFont(16, 0.35),
+    borderColor: colors.border,
+    borderRadius: BORDER_RADIUS.md,
+    minHeight: verticalScale(40),
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   postalCodeWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: ui.spacing(8, 0.35),
+    gap: SPACING.sm,
   },
   postalPart1Input: {
-    width: ui.scale(60),
+    width: scale(50),
     textAlign: 'center',
   },
   postalSeparator: {
-    fontSize: ui.scaleFont(20, 0.4),
-    color: COLORS.primary,
+    fontSize: scaleFont(20, 0.4),
+    color: colors.primaryText,
     fontFamily: 'Montserrat-Bold',
   },
   postalPart2Input: {
-    width: ui.scale(80),
+    width: scale(80),
     textAlign: 'center',
   },
   textArea: {
-    minHeight: ui.verticalScale(100),
-    paddingTop: ui.controlPaddingVertical,
+    minHeight: verticalScale(100),
+    paddingTop: SPACING.sm,
   },
   pickerWrapper: {
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: ui.controlRadius,
-    minHeight: ui.controlMinHeight,
+    borderColor: colors.GlowGreen,
+    borderRadius: BORDER_RADIUS.md,
+    minHeight: verticalScale(40),
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: ui.controlPaddingHorizontal,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
   },
   pickerButtonText: {
     flex: 1,
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   row: {
     flexDirection: 'row',
-    gap: ui.spacing(12, 0.35),
+    gap: SPACING.md,
   },
   halfColumn: {
     flex: 1,
@@ -683,48 +722,48 @@ const createStyles = (ui) => StyleSheet.create({
     flex: 1,
   },
   checkboxContainer: {
-    marginTop: ui.verticalScale(24),
+    marginTop: SPACING.md,
   },
   checkboxRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: ui.verticalScale(16),
+    marginBottom: SPACING.sm,
   },
   checkboxLabel: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(12, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.sm,
   },
   submitButton: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    paddingVertical: ui.verticalScale(16),
+    backgroundColor: colors.PrimaryGreen,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
-    marginTop: ui.verticalScale(24),
+    marginTop: SPACING.lg,
   },
   submitButtonDisabled: {
     opacity: 0.6,
   },
   ageRangeContainer: {
-    marginBottom: ui.verticalScale(4),
+    marginBottom: SPACING.sm,
   },
   ageRangeLabel: {
-    fontSize: ui.scaleFont(15, 0.35),
+    fontSize: scaleFont(15, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.secondary,
+    color: colors.secondaryText,
     textAlign: 'center',
-    marginBottom: ui.verticalScale(4),
+    marginBottom: SPACING.xs,
   },
   sliderTrack: {
-    height: ui.verticalScale(4),
+    height: verticalScale(4),
     borderRadius: 2,
   },
   sliderThumb: {
-    width: ui.scale(22),
-    height: ui.scale(22),
-    borderRadius: ui.scale(11),
-    backgroundColor: COLORS.secondary,
+    width: scale(22),
+    height: scale(22),
+    borderRadius: BORDER_RADIUS.xxl,
+    backgroundColor: colors.PrimaryGreen,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -734,32 +773,110 @@ const createStyles = (ui) => StyleSheet.create({
   ageRangeLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: ui.verticalScale(2),
+    marginTop: SPACING.xs,
   },
   ageRangeMinMax: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
+    color: colors.thirdText,
   },
   privateWarning: {
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: ui.controlRadius,
-    padding: ui.spacing(12, 0.4),
-    marginBottom: ui.verticalScale(8),
+    borderColor: colors.PrimaryYellow,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.sm,
+    marginBottom: SPACING.md,
   },
   privateWarningText: {
-    fontSize: ui.scaleFont(13, 0.3),
+    fontSize: scaleFont(13, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.secondary,
-    lineHeight: ui.scaleFont(20, 0.3),
+    color: colors.PrimaryYellow,
+    lineHeight: scaleFont(20, 0.3),
   },
   submitButtonText: {
-    fontSize: ui.scaleFont(18, 0.4),
+    fontSize: scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
-  },
+    color: colors.background,
+    },
+
+    gameTypeRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: SPACING.xs,
+      marginBottom: SPACING.md,
+      justifyContent: 'center',
+      alignItems: 'flex-start',
+      flexGrow: 1,
+      alignItems: 'stretch'
+    },
+    btn: {
+      paddingVertical: SPACING.sm,
+      paddingHorizontal: SPACING.md,
+      borderRadius: BORDER_RADIUS.md,
+      backgroundColor: colors.neutralButton,
+      backgroundColor: colors.primaryCard,
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      width: "23%",
+      borderWidth: 1,
+      borderColor: colors.PrimaryYellow,
+    },
+    mapJump: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.backgroundSecondary,
+      borderWidth: 1,
+      borderColor: colors.PrimaryGreen,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.md,
+      gap: SPACING.sm,
+      marginVertical: SPACING.sm,
+      marginHorizontal: SPACING.sm,
+    },
+    mapJumpText: {
+      fontSize: scaleFont(16, 0.35),
+      fontFamily: 'Lato-Regular',
+      color: colors.PrimaryGreen,
+    },
+    playerCountWrapper: {
+      alignSelf: 'center',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: SPACING.sm,
+      flex: 1,
+      backgroundColor: colors.backgroundSecondary,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: BORDER_RADIUS.md,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.sm,
+
+    },
+    playerCountInput: {
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.md,
+      fontSize: scaleFont(18, 0.35),
+      fontFamily: 'Lato-Regular',
+      color: colors.primaryText,
+      textAlign: 'center',
+      flex: 1,
+    },
+    playerCountButton: {
+      backgroundColor: colors.divider,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.xs,
+      paddingHorizontal: SPACING.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    playerBtnText: {
+      fontFamily: 'Montserrat-Bold',
+      color: colors.PrimaryGreen,
+    },
 })
 
 export default FormEvent

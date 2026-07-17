@@ -89,7 +89,7 @@ const DrawerModal = () => {
 
                         {/* Close button X */}
                         <Pressable
-                            style={styles.closeButtonX}
+                            style={[styles.closeButtonX, { top: insets.top + scale(10, 0.35) }]}
                             onPress={closeDrawer}
                             android_ripple={{ color: colors.background }}
                         >
@@ -188,7 +188,6 @@ const createStyles = (colors) =>
         },
         closeButtonX: {
             position: 'absolute',
-            top: verticalScale(6),
             right: scale(10, 0.35),
             zIndex: 100,
             padding: scale(8, 0.35),

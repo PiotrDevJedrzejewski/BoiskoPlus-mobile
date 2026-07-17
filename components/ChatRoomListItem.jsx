@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
+import { StyleSheet, Text, View, Pressable, Image } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../constants/colors'
+
 import { getGameTypeIcon } from '../assets/utils/gameTypeIcons'
 import Animated, {
   useSharedValue,
@@ -11,7 +11,10 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated'
 import { useEffect, useMemo} from 'react'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+
+import { useThemedStyles } from '../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../Theme/ScalableStyles'
 
 const defaultAvatar = require('../assets/images/defaultAvatar.png')
 
@@ -23,8 +26,9 @@ const ChatRoomListItem = ({
   unreadCount = 0,
   isUserOnline = () => false,
 }) => {
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+
+  const { styles, colors } = useThemedStyles(createStyles)
+
   let displayName = ''
   let avatar = null
   let gameTypeIcon = null
@@ -36,7 +40,7 @@ const ChatRoomListItem = ({
       ? { uri: room.eventOwnerAvatarUrl }
       : defaultAvatar
     const gameType = room.gameType || 'other'
-    gameTypeIcon = getGameTypeIcon(gameType)
+    gameTypeIcon = getGameTypeIcon(gameType, 16, colors.PrimaryGreen)
   } else {
     const otherUser = room.participants?.find(
       (p) => String(p._id) !== String(currentUser?._id)
@@ -73,7 +77,7 @@ const ChatRoomListItem = ({
   }))
 
   return (
-    <TouchableOpacity
+    <Pressable
       style={[styles.item, isSelected && styles.itemSelected]}
       onPress={onPress}
       activeOpacity={0.8}
@@ -81,7 +85,7 @@ const ChatRoomListItem = ({
       <View style={styles.content}>
         {/* Notification badge */}
         {unreadCount > 0 && (
-          <Animated.View style={[styles.notification, animatedStyle]}>
+          <Animated.View style={[styles.notification, animatedStyle]} pointerEvents='box-none'>
             <Text style={styles.notificationText}>
               {unreadCount > 9 ? '9+' : unreadCount}
             </Text>
@@ -122,18 +126,19 @@ const ChatRoomListItem = ({
         </View>
 
         {/* Arrow */}
-        <Ionicons name='chevron-forward' size={ui.moderateScale(20, 0.35)} color={COLORS.gray} />
+        <Ionicons name='chevron-forward' size={moderateScale(20, 0.35)} color={colors.thirdText} />
       </View>
-    </TouchableOpacity>
+    </Pressable>
   )
 }
 
 export default ChatRoomListItem
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   item: {
-    paddingHorizontal: ui.spacing(16),
-    paddingVertical: ui.verticalScale(8),
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
   },
   itemSelected: {
     backgroundColor: 'rgba(255, 207, 0, 0.1)',
@@ -141,91 +146,91 @@ const createStyles = (ui) => StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(12, 0.35),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondary,
+    borderBottomColor: colors.GlowGreen,
   },
   notification: {
     position: 'absolute',
-    //70 ugly fix
-    top: '70%',
-    right: ui.spacing(40, 0.45),
-    backgroundColor: 'red',
-    borderRadius: ui.moderateScale(12.5, 0.3),
-    width: ui.moderateScale(25, 0.35),
-    height: ui.moderateScale(25, 0.35),
+    right: "15%",
+    backgroundColor: colors.Danger,
+    borderRadius: "50%",
+    width: moderateScale(25, 0.35),
+    height: moderateScale(25, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
-    marginTop: -ui.moderateScale(12.5, 0.35),
   },
   notificationText: {
-    color: COLORS.white,
-    fontSize: ui.scaleFont(14, 0.35),
+    color: colors.primaryText,
+    fontSize: scaleFont(14, 0.35),
     fontWeight: 'bold',
   },
   avatarWrapper: {
     position: 'relative',
-    width: ui.scale(52),
-    height: ui.scale(52),
-    marginRight: ui.spacing(12, 0.35),
+    width: scale(52),
+    height: scale(52),
+    marginRight: SPACING.md,
   },
   avatar: {
-    width: ui.scale(50),
-    height: ui.scale(50),
-    borderRadius: ui.moderateScale(12, 0.35),
+    width: scale(50),
+    height: scale(50),
+    borderRadius: moderateScale(12, 0.35),
   },
   gameTypeIconWrapper: {
     position: 'absolute',
-    bottom: -ui.verticalScale(18),
-    right: -ui.spacing(18, 0.25),
-    transform: [{ scale: 0.55 }],
+    bottom: 0,
+    right:  0,
+    width: scale(24),
+    height: scale(24),
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: "#292929",
-    borderRadius: ui.moderateScale(18, 0.35),
-    padding: ui.spacing(2, 0.35),
-    
+    borderRadius: BORDER_RADIUS.sm,
+    padding: SPACING.xs,
+
   },
   avatarGroupBorder: {
     borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(12, 0.35),
+    // borderColor: COLORS.secondary,
+    borderRadius: BORDER_RADIUS.md,
   },
   onlineStatus: {
     position: 'absolute',
     bottom: 0,
     left: 0,
-    width: ui.scale(12),
-    height: ui.scale(12),
-    borderRadius: ui.moderateScale(6, 0.25),
+    width: scale(12),
+    height: scale(12),
+    borderRadius: "50%",
     borderWidth: 1,
-    borderColor: COLORS.secondary,
+    borderColor: colors.thirdText,
   },
   online: {
-    backgroundColor: '#4caf50',
+    backgroundColor: colors.OnlineDot,
   },
   offline: {
-    backgroundColor: COLORS.gray,
+    backgroundColor: colors.StarEmpty,
   },
   info: {
     flex: 1,
   },
   nickname: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
-    marginBottom: ui.verticalScale(2),
+    color: colors.primaryText,
+    marginBottom: SPACING.xs,
   },
   ownerName: {
-    fontSize: ui.scaleFont(11, 0.3),
+    fontSize: scaleFont(11, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    marginBottom: ui.verticalScale(2),
+    color: colors.thirdText,
+    marginBottom: SPACING.xs,
   },
   lastMessage: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
 })

@@ -1,75 +1,62 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { COLORS } from '../../constants/colors'
 
 // Mapowanie typów gier na ikony
-export const gameTypeIcons = {
-  football: (
-    <MaterialCommunityIcons name='soccer' size={50} color={COLORS.secondary} />
-  ),
-  volleyball: (
-    <MaterialCommunityIcons
-      name='volleyball'
-      size={50}
-      color={COLORS.secondary}
-    />
-  ),
-  basketball: (
-    <MaterialCommunityIcons
-      name='basketball'
-      size={50}
-      color={COLORS.secondary}
-    />
-  ),
-  handball: (
-    <MaterialCommunityIcons
-      name='handball'
-      size={50}
-      color={COLORS.secondary}
-    />
-  ),
-  rugby: (
-    <MaterialCommunityIcons name='rugby' size={50} color={COLORS.secondary} />
-  ),
-  hockey: (
-    <MaterialCommunityIcons
-      name='hockey-sticks'
-      size={50}
-      color={COLORS.secondary}
-    />
-  ),
-  tennis: (
-    <MaterialCommunityIcons name='tennis' size={50} color={COLORS.secondary} />
-  ),
-  badminton: (
-    <MaterialCommunityIcons
-      name='badminton'
-      size={50}
-      color={COLORS.secondary}
-    />
-  ),
-  'table tennis': (
-    <MaterialCommunityIcons
-      name='table-tennis'
-      size={50}
-      color={COLORS.secondary}
-    />
-  ),
-  bowling: (
-    <MaterialCommunityIcons name='bowling' size={50} color={COLORS.secondary} />
-  ),
-  cards: (
-    <MaterialCommunityIcons name='cards' size={50} color={COLORS.secondary} />
-  ),
-  'board games': (
-    <MaterialCommunityIcons
-      name='chess-knight'
-      size={50}
-      color={COLORS.secondary}
-    />
-  ),
-  other: <Ionicons name='help-circle' size={50} color={COLORS.secondary} />,
-}
-
-export const getGameTypeIcon = (gameType) => {
-  return gameTypeIcons[gameType] || gameTypeIcons.other
+export const getGameTypeIcon = (gameType, size = 50, color = "#fff") => {
+  switch (gameType) {
+    case 'football':
+      return <MaterialCommunityIcons name='soccer' size={size} color={color} />
+    case 'volleyball':
+      return (
+        <MaterialCommunityIcons name='volleyball' size={size} color={color} />
+      )
+    case 'basketball':
+      return (
+        <MaterialCommunityIcons name='basketball' size={size} color={color} />
+      )
+    case 'handball':
+      return (
+        <MaterialCommunityIcons name='handball' size={size} color={color} />
+      )
+    case 'rugby':
+      return <MaterialCommunityIcons name='rugby' size={size} color={color} />
+    case 'hockey':
+      return (
+        <MaterialCommunityIcons
+          name='hockey-sticks'
+          size={size}
+          color={color}
+        />
+      )
+    case 'tennis':
+      return <MaterialCommunityIcons name='tennis' size={size} color={color} />
+    case 'badminton':
+      return (
+        <MaterialCommunityIcons name='badminton' size={size} color={color} />
+      )
+    case 'table tennis':
+      return (
+        <MaterialCommunityIcons
+          name='table-tennis'
+          size={size}
+          color={color}
+        />
+      )
+    case 'bowling':
+      return (
+        <MaterialCommunityIcons name='bowling' size={size} color={color} />
+      )
+    case 'cards':
+      return <MaterialCommunityIcons name='cards' size={size} color={color} />
+    case 'board games':
+      return (
+        <MaterialCommunityIcons
+          name='chess-knight'
+          size={size}
+          color={color}
+        />
+      )
+    case 'other':
+    default:
+      return <Ionicons name='help-circle' size={size} color={color} />
+  }
 }

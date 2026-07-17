@@ -9,7 +9,7 @@ import QuickNavModal from '../components/popup/QuickNavModal'
 import { useRouter } from 'expo-router'
 
 import { useThemedStyles } from '../context/themeStore'
-import { SPACING } from '../Theme/StyleConstants'
+import { SPACING,BORDER_RADIUS } from '../Theme/StyleConstants'
 import { scale, verticalScale, moderateScale, scaleFont } from '../Theme/ScalableStyles'
 
 const HeaderDrawer = () => {
@@ -135,8 +135,8 @@ const createStyles = (colors) => StyleSheet.create({
         position: 'absolute',
         top: -verticalScale(5),
         right: -SPACING.xs,
-        backgroundColor: colors.error,
-        borderRadius: moderateScale(10, 0.25),
+        backgroundColor: colors.Danger,
+        borderRadius: BORDER_RADIUS.xl,
         minWidth: scale(18),
         height: scale(18),
         alignItems: 'center',

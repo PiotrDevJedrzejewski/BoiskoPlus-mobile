@@ -3,8 +3,10 @@ import { Modal, Pressable, StyleSheet, Text, View, FlatList, Animated, Dimension
 import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const MONTHS = [
   { value: 1, label: 'Sty' },
@@ -80,9 +82,10 @@ const DatePicker = ({
   placeholderYear = 'RRRR',
   disabled = false,
 }) => {
-  const ui = useResponsiveScale()
   const insets = useSafeAreaInsets()
-  const styles = useMemo(() => createStyles(ui, insets), [ui, insets])
+
+  const { styles, colors } = useThemedStyles(createStyles)
+
   const parsedValue = parseIsoDate(value)
 
   const currentYear = new Date().getFullYear()
@@ -176,7 +179,7 @@ const DatePicker = ({
     <Pressable
       style={[styles.item, tempDay === item && styles.itemSelected]}
       onPress={() => setTempDay(item)}
-      android_ripple={{ color: COLORS.background }}
+      android_ripple={{ color: colors.background }}
     >
       <Text style={[styles.itemText, tempDay === item && styles.itemTextSelected]}>
         {pad2(item)}
@@ -188,7 +191,7 @@ const DatePicker = ({
     <Pressable
       style={[styles.item, tempMonth === item.value && styles.itemSelected]}
       onPress={() => setTempMonth(item.value)}
-      android_ripple={{ color: COLORS.background }}
+      android_ripple={{ color: colors.background }}
     >
       <Text style={[styles.itemText, tempMonth === item.value && styles.itemTextSelected]}>
         {item.label}
@@ -200,7 +203,7 @@ const DatePicker = ({
     <Pressable
       style={[styles.item, tempYear === item && styles.itemSelected]}
       onPress={() => setTempYear(item)}
-      android_ripple={{ color: COLORS.background }}
+      android_ripple={{ color: colors.background }}
     >
       <Text style={[styles.itemText, tempYear === item && styles.itemTextSelected]}>
         {String(item)}
@@ -264,15 +267,15 @@ const DatePicker = ({
           >
             <Pressable style={{ flex: 1 }} onPress={() => {}}>
               <LinearGradient
-                colors={[COLORS.third, COLORS.background]}
+                colors={[colors.thirdText, colors.background]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
                 style={styles.panelInner}
               >
                 <View style={styles.titleRow}>
                   <Text style={styles.title}>Wybierz datę</Text>
-                  <Pressable style={styles.closeBtn} onPress={close} android_ripple={{ color: COLORS.background }}>
-                    <Ionicons name='close' size={ui.moderateScale(24, 0.35)} color={COLORS.primary} />
+                  <Pressable style={styles.closeBtn} onPress={close} android_ripple={{ color: colors.background }}>
+                    <Ionicons name='close' size={24} color={colors.primaryText} />
                   </Pressable>
                 </View>
 
@@ -326,7 +329,7 @@ const DatePicker = ({
 
                 {!!localError && <Text style={styles.errorText}>{localError}</Text>}
 
-                <View style={styles.buttonsRow}>
+                <View style={[styles.buttonsRow, { paddingBottom: insets.bottom + SPACING.md }]}>
                   <Pressable style={[styles.btn, styles.cancelBtn]} onPress={close}>
                     <Text style={styles.cancelBtnText}>Anuluj</Text>
                   </Pressable>
@@ -345,44 +348,45 @@ const DatePicker = ({
 
 export default DatePicker
 
-const createStyles = (ui, insets = { bottom: 0 }) => StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   datePickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: ui.spacing(8, 0.35),
+    gap: SPACING.sm,
   },
   disabled: {
     opacity: 0.6,
   },
   dateBox: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: ui.moderateScale(10, 0.35),
-    padding: ui.spacing(8, 0.35),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.sm,
+    padding: SPACING.sm,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: colors.border,
   },
   dateText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontWeight: '600',
-    color: COLORS.background,
+    color: colors.primaryText,
   },
   datePlaceholder: {
-    color: '#999',
+    color: colors.thirdText,
   },
   dateLabel: {
-    fontSize: ui.scaleFont(10, 0.25),
-    color: '#666',
-    marginTop: ui.verticalScale(4),
+    fontSize: scaleFont(10, 0.25),
+    color: colors.thirdText,
+    marginTop: SPACING.xs,
   },
   dateSeparator: {
-    paddingHorizontal: ui.spacing(2, 0.2),
+    paddingHorizontal: SPACING.sm,
   },
   dateSeparatorText: {
-    fontSize: ui.scaleFont(25, 0.4),
-    color: '#999',
+    fontSize: scaleFont(25, 0.4),
+    color: colors.thirdText,
     fontWeight: '300',
   },
   backdrop: {
@@ -392,26 +396,26 @@ const createStyles = (ui, insets = { bottom: 0 }) => StyleSheet.create({
   },
   panel: {
     height: PANEL_HEIGHT,
-    borderTopLeftRadius: ui.moderateScale(20, 0.35),
-    borderTopRightRadius: ui.moderateScale(20, 0.35),
+    borderTopLeftRadius: BORDER_RADIUS.xl,
+    borderTopRightRadius: BORDER_RADIUS.xl,
     overflow: 'hidden',
   },
   panelInner: {
     flex: 1,
-    paddingTop: ui.verticalScale(12),
+    paddingTop: SPACING.md,
   },
   titleRow: {
-    marginBottom: ui.verticalScale(12),
-    paddingBottom: ui.verticalScale(12),
+    marginBottom: SPACING.sm,
+    paddingBottom: SPACING.sm,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: ui.spacing(16, 0.35),
+    paddingHorizontal: SPACING.md,
     alignItems: 'center',
   },
   title: {
-    fontSize: ui.scaleFont(18, 0.4),
+    fontSize: scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
+    color: colors.primaryText,
     textAlign: 'center',
   },
   closeBtn: {
@@ -433,11 +437,11 @@ const createStyles = (ui, insets = { bottom: 0 }) => StyleSheet.create({
     flex: 1.4,
   },
   columnLabel: {
-    fontSize: ui.scaleFont(13, 0.3),
+    fontSize: scaleFont(13, 0.3),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
+    color: colors.primaryText,
     opacity: 0.7,
-    paddingVertical: ui.verticalScale(8),
+    paddingVertical: SPACING.xs,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.1)',
     textAlign: 'center',
@@ -447,9 +451,9 @@ const createStyles = (ui, insets = { bottom: 0 }) => StyleSheet.create({
   },
   columnDivider: {
     width: 1,
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primaryText,
     opacity: 0.15,
-    marginVertical: ui.verticalScale(8),
+    marginVertical: SPACING.sm,
   },
   item: {
     height: ITEM_HEIGHT,
@@ -460,50 +464,49 @@ const createStyles = (ui, insets = { bottom: 0 }) => StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.07)',
   },
   itemText: {
-    fontSize: ui.scaleFont(18, 0.35),
+    fontSize: scaleFont(18, 0.35),
     fontFamily: 'Montserrat-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   itemTextSelected: {
-    color: COLORS.secondary,
+    color: colors.PrimaryGreen,
     fontFamily: 'Montserrat-Bold',
-    fontSize: ui.scaleFont(20, 0.35),
+    fontSize: scaleFont(20, 0.35),
   },
   errorText: {
     textAlign: 'center',
-    fontSize: ui.scaleFont(13, 0.35),
-    color: COLORS.error,
-    paddingHorizontal: ui.spacing(16, 0.35),
-    paddingTop: ui.verticalScale(4),
+    fontSize: scaleFont(13, 0.35),
+    color: colors.Danger,
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.sm,
   },
   buttonsRow: {
     flexDirection: 'row',
-    padding: ui.spacing(16, 0.4),
-    paddingBottom: ui.spacing(16, 0.4) + insets.bottom,
-    gap: ui.spacing(12, 0.35),
+    padding: SPACING.md,
+    gap: SPACING.sm,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.1)',
   },
   btn: {
     flex: 1,
-    paddingVertical: ui.verticalScale(14),
-    borderRadius: ui.moderateScale(10, 0.35),
+    paddingVertical: SPACING.sm,
+    borderRadius: SPACING.sm,
     alignItems: 'center',
   },
   cancelBtn: {
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
   cancelBtnText: {
-    color: COLORS.primary,
+    color: colors.primaryText,
     fontFamily: 'Montserrat-Bold',
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
   },
   confirmBtn: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: colors.PrimaryGreen,
   },
   confirmBtnText: {
-    color: COLORS.background,
+    color: colors.background,
     fontFamily: 'Montserrat-Bold',
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
   },
 })

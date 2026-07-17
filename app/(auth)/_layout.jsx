@@ -1,7 +1,6 @@
 import React from 'react'
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet,Text } from 'react-native'
 import { Stack, Redirect } from 'expo-router'
-import { COLORS } from '../../constants/colors'
 import { useAuth } from '../../context/AuthContext'
 import { SocketIoProvider } from '../../context/SocketIoContext'
 import { NotificationProvider } from '../../context/NotificationContext'
@@ -11,20 +10,27 @@ import { DrawerProvider } from '../../context/DrawerContext'
 import NetworkGuard from '../../components/NetworkGuard'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
+
 // Overlays
 import HeaderDrawer from '../../Navigation/HeaderDrawer'
 import CustomTabBar from '../../Navigation/CustomTabBar'
 import DrawerModal from '../../Navigation/DrawerModal'
 
-export default function AuthLayout() {
+const AuthLayout = () => {
   dbg('AuthLayout')
   useDebugMount('AuthLayout')
   const { user, isAuthChecked } = useAuth()
+
 
   // Auth guard — redirect to home if not authenticated
   if (isAuthChecked && !user) {
     return <Redirect href='/' />
   }
+
+  const { styles, colors } = useThemedStyles(createStyles)
 
   return (
     <NotificationProvider>
@@ -61,7 +67,6 @@ export default function AuthLayout() {
                   <View style={styles.tabBar}>
                     <CustomTabBar />
                   </View>
-
                   {/* Drawer overlay — on top of everything */}
                   <DrawerModal />
                 </View>
@@ -74,21 +79,24 @@ export default function AuthLayout() {
   )
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
     position: 'relative',
+      backgroundColor: colors.background,
   },
   tabBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    // gap filler 
+    // gap filler
     transform: [{ scaleX: 1.01 }],
   },
   content: {
     flex: 1,
   },
 })
+
+export default AuthLayout

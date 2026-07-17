@@ -29,10 +29,10 @@ import { gameTypeIcons } from '../../assets/utils/gameTypeIcons'
 import CustomTypePickerModal from '../../components/popup/CustomTypePickerModal'
 import EventSimpleCard from '../../components/Cards/EventSimpleCard'
 
-
 import { useThemedStyles } from '../../context/themeStore'
 import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
 import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
+import BottomSpacer from '../../components/BottomSpacer'
 
 const GAME_TYPES = [
   { label: 'Wybierz typ gry', value: '' },
@@ -434,9 +434,8 @@ const FindEvent = () => {
         <EventSimpleCard date="JUTRO · 18:00" title="Koszykówka 3V3" playersCurrent={3} playersMax={6} geoDistance={1.2} />
         <EventSimpleCard date="JUTRO · 18:00" title="Koszykówka 3V3" playersCurrent={3} playersMax={6} geoDistance={1.2} />
         <EventSimpleCard date="JUTRO · 18:00" title="Koszykówka 3V3" playersCurrent={3} playersMax={6} geoDistance={1.2} />
+        <BottomSpacer />
       </ScrollView>
-      <View style={{ height: 100 }}>
-        </View>
     </View>
   )
 }
@@ -463,6 +462,8 @@ const createStyles = (colors) => StyleSheet.create({
   },
   searchHeaderText: {
     color: colors.primaryText,
+    fontFamily: 'ObjectFont',
+    fontSize: scaleFont(18, 0.25),
   },
   filters: {
     flexDirection: 'row',

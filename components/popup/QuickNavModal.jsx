@@ -16,16 +16,21 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
-import { COLORS } from '../../constants/colors'
 import { useSocketStore, selectTotalUnreadMessages } from '../../context/socketStore'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
+
 
 const ANIMATION_DURATION = 200
 
 const QuickNavModal = ({ visible, onClose }) => {
   const router = useRouter()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+
+  const insets = useSafeAreaInsets()
+  const { styles, colors } = useThemedStyles(createStyles)
 
   const unreadFriendRequestsCount = useSocketStore((s) => s.unreadFriendRequestsCount)
   const unreadEventsCount = useSocketStore((s) => s.unreadEventsCount)
@@ -100,13 +105,13 @@ const QuickNavModal = ({ visible, onClose }) => {
   return (
     <GestureDetector gesture={backdropTap}>
       <Animated.View style={[styles.overlay, overlayAnimatedStyle]}>
-        <Animated.View style={[styles.container, containerAnimatedStyle]}>
+        <Animated.View style={[styles.container, containerAnimatedStyle, { marginTop: SPACING.md + insets.top }]}>
           {/* Header label */}
           <View style={styles.header}>
             <Ionicons
               name='notifications'
-              size={ui.moderateScale(18, 0.35)}
-              color={COLORS.secondary}
+              size={18}
+              color={colors.secondaryText}
             />
             <Text style={styles.headerText}>Powiadomienia</Text>
           </View>
@@ -122,14 +127,14 @@ const QuickNavModal = ({ visible, onClose }) => {
                   ]}
                   onPress={() => navigate(btn.path)}
                   android_ripple={{
-                    color: COLORS.backgroundSecondary,
+                    color: colors.backgroundSecondary,
                     borderless: false,
                   }}
                 >
                   <Ionicons
                     name={btn.icon}
-                    size={ui.moderateScale(26, 0.35)}
-                    color={COLORS.primary}
+                    size={26}
+                    color={colors.primaryText}
                   />
                   {/* Badge - position absolute top-right */}
                   {btn.count > 0 && (
@@ -152,7 +157,7 @@ const QuickNavModal = ({ visible, onClose }) => {
 
 export default QuickNavModal
 
-const createStyles = (ui) =>
+const createStyles = (colors) =>
   StyleSheet.create({
     overlay: {
       ...StyleSheet.absoluteFillObject,
@@ -162,15 +167,14 @@ const createStyles = (ui) =>
       zIndex: 80,
     },
     container: {
-      marginTop: ui.verticalScale(70),
-      marginRight: ui.spacing(12, 0.35),
-      backgroundColor: COLORS.backgroundSecondary,
-      borderRadius: ui.moderateScale(16, 0.3),
-      paddingVertical: ui.verticalScale(16),
-      paddingHorizontal: ui.spacing(16, 0.35),
+      marginRight: SPACING.md,
+      backgroundColor: colors.backgroundSecondary,
+      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.md,
       borderWidth: 1,
-      borderColor: COLORS.third,
-      minWidth: ui.scale(240),
+      borderColor: colors.border,
+      minWidth: scale(240),
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.4,
@@ -180,60 +184,60 @@ const createStyles = (ui) =>
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: ui.spacing(6, 0.3),
-      marginBottom: ui.verticalScale(16),
-      paddingBottom: ui.verticalScale(10),
+      gap: SPACING.sm,
+      marginBottom: SPACING.md,
+      paddingBottom: SPACING.sm,
       borderBottomWidth: 1,
-      borderBottomColor: COLORS.third,
+      borderBottomColor: colors.border,
     },
     headerText: {
-      color: COLORS.secondary,
-      fontSize: ui.scaleFont(15, 0.35),
+      color: colors.primaryText,
+      fontSize: scaleFont(15, 0.35),
       fontFamily: 'Montserrat-Bold',
     },
     buttonsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      gap: ui.spacing(10, 0.3),
+      gap: SPACING.sm,
     },
     buttonWrapper: {
       alignItems: 'center',
-      gap: ui.verticalScale(6),
+      gap: SPACING.xs,
     },
     roundButton: {
-      width: ui.scale(58),
-      height: ui.scale(58),
-      borderRadius: ui.scale(29),
-      backgroundColor: COLORS.background,
+      width: scale(58),
+      height: scale(58),
+      borderRadius: scale(29),
+      backgroundColor: colors.background,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
-      borderColor: COLORS.third,
+      borderColor: colors.border,
     },
     roundButtonPressed: {
-      backgroundColor: COLORS.third,
+      backgroundColor: colors.backgroundSecondary,
     },
     buttonLabel: {
-      color: COLORS.primary,
-      fontSize: ui.scaleFont(11, 0.3),
+      color: colors.primaryText,
+      fontSize: scaleFont(11, 0.3),
       fontFamily: 'Montserrat-Bold',
       textAlign: 'center',
     },
     badge: {
       position: 'absolute',
-      top: -ui.verticalScale(4),
-      right: -ui.spacing(4, 0.3),
-      backgroundColor: COLORS.error,
-      borderRadius: ui.moderateScale(10, 0.25),
-      minWidth: ui.scale(18),
-      height: ui.scale(18),
+      top: -4,
+      right: -4,
+      backgroundColor: colors.Danger,
+      borderRadius: BORDER_RADIUS.xxl,
+      minWidth: scale(18),
+      height: scale(18),
       alignItems: 'center',
       justifyContent: 'center',
-      paddingHorizontal: ui.spacing(3, 0.25),
+      paddingHorizontal: SPACING.xs,
     },
     badgeText: {
       color: '#fff',
-      fontSize: ui.scaleFont(10, 0.25),
+      fontSize: scaleFont(10, 0.25),
       fontFamily: 'Montserrat-Bold',
     },
   })

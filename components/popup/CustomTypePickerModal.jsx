@@ -12,18 +12,19 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const PANEL_HEIGHT = Dimensions.get('window').height * 0.65
+const ICON_SIZE = moderateScale(24, 0.35)
 
 const CustomTypePickerModal = ({ visible, selectedValue, options, title, iconMap, onSelect, onClose }) => {
-  const ui = useResponsiveScale()
   const insets = useSafeAreaInsets()
-  const styles = React.useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
   const anim = useRef(new Animated.Value(0)).current
   const isMounted = useRef(true)
-  const iconSize = ui.moderateScale(24, 0.35)
 
   useEffect(() => {
     return () => {
@@ -61,9 +62,9 @@ const CustomTypePickerModal = ({ visible, selectedValue, options, title, iconMap
     if (!iconMap) return null
     const el = iconMap[value]
     if (!el) {
-      return <Ionicons name='apps-outline' size={iconSize} color={COLORS.gray} />
+      return <Ionicons name='apps-outline' size={ICON_SIZE} color={colors.InactiveIcon} />
     }
-    return React.cloneElement(el, { size: iconSize })
+    return React.cloneElement(el, { size: ICON_SIZE })
   }
 
   return (
@@ -90,15 +91,15 @@ const CustomTypePickerModal = ({ visible, selectedValue, options, title, iconMap
         >
           <Pressable style={{ flex: 1 }} onPress={() => {}}>
             <LinearGradient
-              colors={[COLORS.third, COLORS.background]}
+              colors={[colors.thirdText, colors.background]}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={styles.panelInner}
             >
               <View style={styles.titleRow}>
                 <Text style={styles.title}>{title}</Text>
-                <Pressable style={styles.closeBtn} onPress={close} android_ripple={{ color: COLORS.background }}>
-                  <Ionicons name='close' size={ui.moderateScale(22, 0.35)} color={COLORS.primary} />
+                <Pressable style={styles.closeBtn} onPress={close} android_ripple={{ color: colors.background }}>
+                  <Ionicons name='close' size={moderateScale(22, 0.35)} color={colors.primaryText} />
                 </Pressable>
               </View>
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom }}>
@@ -110,7 +111,7 @@ const CustomTypePickerModal = ({ visible, selectedValue, options, title, iconMap
                         selectedValue === type.value && styles.itemSelected,
                       ]}
                       onPress={() => handleSelect(type.value)}
-                      android_ripple={{ color: COLORS.background }}
+                      android_ripple={{ color: colors.background }}
                     >
                       {iconMap && (
                         <View style={styles.itemIcon}>
@@ -128,8 +129,8 @@ const CustomTypePickerModal = ({ visible, selectedValue, options, title, iconMap
                       {selectedValue === type.value && (
                         <Ionicons
                           name='checkmark'
-                          size={ui.moderateScale(20, 0.35)}
-                          color={COLORS.secondary}
+                          size={moderateScale(20, 0.35)}
+                          color={colors.PrimaryGreen}
                         />
                       )}
                     </Pressable>
@@ -149,7 +150,7 @@ const CustomTypePickerModal = ({ visible, selectedValue, options, title, iconMap
 
 export default CustomTypePickerModal
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.55)',
@@ -157,26 +158,26 @@ const createStyles = (ui) => StyleSheet.create({
   },
   panel: {
     height: PANEL_HEIGHT,
-    borderTopLeftRadius: ui.moderateScale(20, 0.35),
-    borderTopRightRadius: ui.moderateScale(20, 0.35),
+    borderTopLeftRadius: BORDER_RADIUS.xl,
+    borderTopRightRadius: BORDER_RADIUS.xl,
     overflow: 'hidden',
   },
   panelInner: {
     flex: 1,
-    paddingTop: ui.verticalScale(12),
+    paddingTop: SPACING.md,
   },
   titleRow: {
-    marginBottom: ui.verticalScale(12),
-    paddingBottom: ui.verticalScale(12),
+    marginBottom: SPACING.md,
+    paddingBottom: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: ui.spacing(16, 0.35),
+    paddingHorizontal: SPACING.md,
     alignItems: 'center',
   },
   title: {
-    fontSize: ui.scaleFont(18, 0.4),
+    fontSize: scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
+    color: colors.primaryText,
     textAlign: 'center',
   },
   closeBtn: {
@@ -190,31 +191,31 @@ const createStyles = (ui) => StyleSheet.create({
   item: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: ui.verticalScale(14),
-    paddingHorizontal: ui.spacing(20, 0.45),
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
   },
   itemSelected: {
     backgroundColor: 'rgba(255, 255, 255, 0.07)',
   },
   itemIcon: {
-    width: ui.moderateScale(32, 0.35),
+    width: moderateScale(32, 0.35),
     alignItems: 'center',
-    marginRight: ui.spacing(14, 0.35),
+    marginRight: SPACING.md,
   },
   itemText: {
     flex: 1,
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   itemTextSelected: {
-    color: COLORS.secondary,
+    color: colors.PrimaryGreen,
     fontFamily: 'Montserrat-Bold',
   },
   separator: {
-    height: ui.verticalScale(1),
-    backgroundColor: COLORS.primary,
+    height: 1,
+    backgroundColor: colors.primaryText,
     opacity: 0.1,
-    marginHorizontal: ui.spacing(16, 0.35),
+    marginHorizontal: SPACING.md,
   },
 })

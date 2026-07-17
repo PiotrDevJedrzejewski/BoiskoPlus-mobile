@@ -10,6 +10,7 @@ import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 import { useThemedStyles } from '../../context/themeStore'
 import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
 import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
+import BottomSpacer from '../../components/BottomSpacer'
 
 import DashboardProfileBG from '../../assets/images/V2/DBProfileBG.png'
 import RecommendCardBG from '../../assets/images/V2/IMG_2313.png'
@@ -151,8 +152,8 @@ const DashboardHome = () => {
         <PlaceCard type="Orlik" name="Orlik Centrum" rating={2.3} address="Mszczonowska 2137" geoDistance={1.2} />
         <PlaceCard type="Orlik" name="Orlik Centrum" rating={3.7} address="Mszczonowska 2137" geoDistance={1.2} />
         <PlaceCard type="Orlik" name="Orlik Centrum" rating={4.5} address="Mszczonowska 2137" geoDistance={1.2} />
+        <BottomSpacer />
       </View>
-      <View style={{ height: 120 }} />
     </ScrollView >
   )
 }

@@ -5,24 +5,28 @@ import {
   View,
   ScrollView,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../../constants/colors'
 import ChatRoomListItem from '../../components/ChatRoomListItem'
 import customFetch from '../../assets/utils/customFetch'
 import { useSocketStore } from '../../context/socketStore'
 import { useAuth } from '../../context/AuthContext'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
+
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
+import BottomSpacer from '../../components/BottomSpacer'
 
 const Chat = () => {
   dbg('ChatRoomsList')
   useDebugMount('ChatRoomsList')
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+
+  const { styles, colors } = useThemedStyles(createStyles)
+
   const router = useRouter()
   const { user } = useAuth()
   const { openChatWith } = useLocalSearchParams()
@@ -36,6 +40,7 @@ const Chat = () => {
   const [loadingRooms, setLoadingRooms] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const openChatWithHandledRef = useRef(null)
+
 
   // Bootstrap rooms if socket hasn't loaded yet
   useEffect(() => {
@@ -93,67 +98,54 @@ const Chat = () => {
     router.push({ pathname: '/(auth)/chat-room', params: { roomId: room.roomId } })
   }
 
-  const headerIconSize = ui.moderateScale(26, 0.35)
-  const filterIconSize = ui.moderateScale(14, 0.3)
-  const stateIconSize = ui.moderateScale(50, 0.3)
-  const searchIconSize = ui.moderateScale(20, 0.35)
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name='chatbubbles' size={headerIconSize} color={COLORS.secondary} />
-        <Text style={styles.headerText}>Czat</Text>
+        <View style={styles.headerTextWrapper}>
+          <Text style={styles.headerText}>Czat</Text>
+        </View>
+        {/* Search */}
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder='Szukaj...'
+            placeholderTextColor={colors.thirdText}
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+            hitSlop={{ top: 12, bottom: 12, left: 16, right: 16 }}
+          />
+          <Ionicons name='search' size={16} color={colors.PrimaryGreen} style={styles.searchIcon} pointerEvents="box-none"/>
+        </View>
       </View>
 
       {/* Filters */}
       <View style={styles.filters}>
-        <TouchableOpacity
+        <Pressable
           style={[styles.filterButton, filterType === 'all' && styles.filterButtonActive]}
           onPress={() => setFilterType('all')}
         >
           <Text style={[styles.filterText, filterType === 'all' && styles.filterTextActive]}>
             Wszystkie
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[styles.filterButton, filterType === 'private' && styles.filterButtonActive]}
           onPress={() => setFilterType('private')}
         >
-          <Ionicons
-            name='chatbubble'
-            size={filterIconSize}
-            color={filterType === 'private' ? COLORS.background : COLORS.primary}
-          />
           <Text style={[styles.filterText, filterType === 'private' && styles.filterTextActive]}>
             Prywatne
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[styles.filterButton, filterType === 'group' && styles.filterButtonActive]}
           onPress={() => setFilterType('group')}
         >
-          <Ionicons
-            name='people'
-            size={filterIconSize}
-            color={filterType === 'group' ? COLORS.background : COLORS.primary}
-          />
           <Text style={[styles.filterText, filterType === 'group' && styles.filterTextActive]}>
             Grupowe
           </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Search */}
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder='Szukaj...'
-          placeholderTextColor={COLORS.gray}
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-        />
-        <Ionicons name='search' size={searchIconSize} color={COLORS.gray} style={styles.searchIcon} />
+        </Pressable>
       </View>
 
       {/* Room list */}
@@ -172,12 +164,13 @@ const Chat = () => {
           ))
         ) : (
           <View style={styles.emptyState}>
-            <Ionicons name='chatbubbles-outline' size={stateIconSize} color={COLORS.gray} />
+            <Ionicons name='chatbubbles-outline' size={20} color={colors.thirdText} />
             <Text style={styles.emptyText}>
               Pusto? Znajdź swoich znajomych lub dołącz do wydarzenia!
             </Text>
           </View>
         )}
+        <BottomSpacer />
       </ScrollView>
     </View>
   )
@@ -185,76 +178,78 @@ const Chat = () => {
 
 export default Chat
 
-const createStyles = (ui) =>
+const createStyles = (colors) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      // backgroundColor: COLORS.background,
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: ui.verticalScale(20),
+      paddingVertical: SPACING.md,
       backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      paddingHorizontal: SPACING.md,
     },
+    headerTextWrapper: {},
     headerText: {
-      fontSize: ui.scaleFont(24, 0.45),
+      fontSize: scaleFont(24, 0.45),
       fontFamily: 'Montserrat-Bold',
-      color: COLORS.primary,
-      marginLeft: ui.spacing(12, 0.35),
+      color: colors.primaryText,
+      marginLeft: SPACING.md,
     },
     filters: {
       flexDirection: 'row',
       justifyContent: 'center',
-      paddingHorizontal: ui.spacing(16),
-      paddingVertical: ui.verticalScale(12),
+      paddingHorizontal: SPACING.md,
+      paddingVertical: verticalScale(12),
       backgroundColor: 'rgba(0, 0, 0, 0.3)',
-      gap: ui.spacing(8, 0.35),
+      gap: SPACING.md,
     },
     filterButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: ui.spacing(12, 0.35),
-      paddingVertical: ui.verticalScale(8),
-      borderRadius: ui.moderateScale(16, 0.35),
+      paddingHorizontal:SPACING.md,
+      paddingVertical: verticalScale(8),
+      borderRadius: moderateScale(16, 0.35),
       backgroundColor: '#494949',
-      gap: ui.spacing(6, 0.35),
+      gap: SPACING.md,
     },
     filterButtonActive: {
-      backgroundColor: COLORS.secondary,
+      backgroundColor: colors.PrimaryGreen,
     },
     filterText: {
-      fontSize: ui.scaleFont(13, 0.35),
+      fontSize: scaleFont(13, 0.35),
       fontFamily: 'Lato-Regular',
-      color: COLORS.primary,
+      // color: COLORS.primary,
     },
     filterTextActive: {
-      color: COLORS.background,
+      color: colors.background,
       fontFamily: 'Montserrat-Bold',
     },
     searchContainer: {
-      paddingHorizontal: ui.spacing(16),
-      paddingVertical: ui.verticalScale(12),
-      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      paddingHorizontal: SPACING.md,
+      paddingVertical: 2,
+      borderRadius: BORDER_RADIUS.md,
+      backgroundColor: colors.backgroundSecondary,
+      flex: 1,
+      marginLeft: SPACING.lg,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      position: 'relative',
     },
     searchInput: {
-      backgroundColor: COLORS.backgroundSecondary,
-      borderRadius: ui.controlRadius,
-      minHeight: ui.controlMinHeight,
-      paddingHorizontal: ui.controlPaddingHorizontal,
-      paddingVertical: ui.controlPaddingVertical,
-      paddingRight: ui.spacing(40, 0.35),
-      fontSize: ui.scaleFont(16, 0.35),
+      // backgroundColor: COLORS.backgroundSecondary,
+      paddingRight: SPACING.md,
+      flex: 1,
+      fontSize:scaleFont(16, 0.35),
       fontFamily: 'Lato-Regular',
-      color: COLORS.primary,
-      borderWidth: 1,
-      borderColor: COLORS.secondary,
+      color: colors.primaryText,
     },
     searchIcon: {
       position: 'absolute',
-      right: ui.spacing(28, 0.35),
-      top: ui.verticalScale(24),
+      right: SPACING.md,
     },
     roomList: {
       flex: 1,
@@ -263,12 +258,12 @@ const createStyles = (ui) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      paddingVertical: ui.verticalScale(50),
+      padding: SPACING.lg,
     },
     emptyText: {
-      marginTop: ui.verticalScale(16),
-      fontSize: ui.scaleFont(16, 0.35),
+      marginTop: SPACING.sm,
+      fontSize: scaleFont(16, 0.35),
       fontFamily: 'Lato-Regular',
-      color: COLORS.gray,
+      color: colors.thirdText,
     },
   })
