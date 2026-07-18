@@ -1,20 +1,20 @@
-import { useState, useMemo} from 'react'
+import { useState } from 'react'
 import { View, Text, Image, TouchableOpacity, Alert, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImageManipulator from 'expo-image-manipulator'
 import * as ImagePicker from 'expo-image-picker'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import { COLORS } from '../../constants/colors'
 import { storage } from '../../assets/utils/firebase'
 import { getStorageRefFromUrlOrPath } from '../../assets/utils/firebaseStorage'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const defaultAvatar = require('../../assets/images/defaultAvatar.png')
 
 const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
   const [avatarUploading, setAvatarUploading] = useState(false)
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
 
   const avatar = user?.avatarUrl ? { uri: user.avatarUrl } : defaultAvatar
   // Keep user id field robust across legacy payload variants.
@@ -133,7 +133,7 @@ const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
         disabled={avatarUploading}
         activeOpacity={0.8}
       >
-        <Ionicons name='camera' size={ui.moderateScale(18, 0.35)} color={COLORS.background} />
+        <Ionicons name='camera' size={moderateScale(18, 0.35)} color={colors.background} />
         <Text style={styles.changeAvatarText}>
           {avatarUploading ? 'Zapisywanie...' : 'Zmień Avatar'}
         </Text>
@@ -144,37 +144,37 @@ const ProfileAvatarSection = ({ user, updateProfile, refetchUser }) => {
 
 export default ProfileAvatarSection
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   avatarSection: {
     alignItems: 'center',
-    marginBottom: ui.verticalScale(20),
+    marginBottom: verticalScale(20),
   },
   avatar: {
-    width: ui.scale(150),
-    height: ui.scale(150),
-    borderRadius: ui.moderateScale(16, 0.35),
+    width: scale(150),
+    height: scale(150),
+    borderRadius: BORDER_RADIUS.lg,
     borderWidth: 2,
-    borderColor: COLORS.primary,
+    borderColor: colors.primaryText,
   },
   avatarHint: {
-    fontSize: ui.scaleFont(10, 0.25),
+    fontSize: scaleFont(10, 0.25),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    marginTop: ui.verticalScale(4),
+    color: colors.thirdText,
+    marginTop: verticalScale(4),
   },
   changeAvatarButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.secondary,
-    paddingVertical: ui.verticalScale(10),
-    paddingHorizontal: ui.spacing(20, 0.45),
-    borderRadius: ui.moderateScale(12, 0.35),
-    marginTop: ui.verticalScale(12),
+    backgroundColor: colors.PrimaryGreen,
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: SPACING.lg,
+    borderRadius: BORDER_RADIUS.md,
+    marginTop: verticalScale(12),
   },
   changeAvatarText: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
-    marginLeft: ui.spacing(8, 0.35),
+    color: colors.background,
+    marginLeft: SPACING.sm,
   },
 })

@@ -1,21 +1,22 @@
-import { useMemo } from 'react'
 import { StyleSheet, Text, View, ScrollView } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
+import BottomSpacer from '../../components/BottomSpacer'
+
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const Premium = () => {
   dbg('PremiumScreen')
   useDebugMount('PremiumScreen')
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
 
   return (
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name='diamond' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
+        <Ionicons name='diamond' size={moderateScale(26, 0.35)} color={colors.PrimaryGreen} />
         <Text style={styles.headerText}>Premium</Text>
       </View>
 
@@ -29,8 +30,8 @@ const Premium = () => {
 
           <MaterialCommunityIcons
             name='tools'
-            size={ui.moderateScale(120, 0.35)}
-            color={COLORS.gray}
+            size={moderateScale(120, 0.35)}
+            color={colors.thirdText}
             style={styles.toolsIcon}
           />
 
@@ -45,12 +46,12 @@ const Premium = () => {
             <Text style={styles.featuresTitle}>Planowane funkcje:</Text>
 
             <View style={styles.featureItem}>
-              <Ionicons name='star' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
+              <Ionicons name='star' size={moderateScale(20, 0.35)} color={colors.PrimaryGreen} />
               <Text style={styles.featureText}>Brak reklam</Text>
             </View>
 
             {/* <View style={styles.featureItem}>
-              <Ionicons name='infinite' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
+              <Ionicons name='infinite' size={moderateScale(20, 0.35)} color={colors.PrimaryGreen} />
               <Text style={styles.featureText}>
                 ,
               </Text>
@@ -59,23 +60,24 @@ const Premium = () => {
             <View style={styles.featureItem}>
               <Ionicons
                 name='checkmark-circle'
-                size={ui.moderateScale(20, 0.35)}
-                color={COLORS.secondary}
+                size={moderateScale(20, 0.35)}
+                color={colors.PrimaryGreen}
               />
               <Text style={styles.featureText}>Odznaka Wspierającego</Text>
             </View>
 
             <View style={styles.featureItem}>
-              <Ionicons name='arrow-up' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
+              <Ionicons name='arrow-up' size={moderateScale(20, 0.35)} color={colors.PrimaryGreen} />
               <Text style={styles.featureText}>Pierwszeństwo w pozycjonowaniu</Text>
             </View>
 {/* 
             <View style={styles.featureItem}>
-              <Ionicons name='analytics' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
+              <Ionicons name='analytics' size={moderateScale(20, 0.35)} color={colors.PrimaryGreen} />
               <Text style={styles.featureText}>,</Text>
             </View> */}
           </View>
         </View>
+        <BottomSpacer />
       </ScrollView>
     </View>
   )
@@ -83,77 +85,77 @@ const Premium = () => {
 
 export default Premium
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: ui.verticalScale(20),
+    paddingVertical: verticalScale(20),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   headerText: {
-    fontSize: ui.scaleFont(24, 0.45),
+    fontSize: scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(12, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.md,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: ui.spacing(20, 0.45),
-    paddingBottom: ui.verticalScale(40),
+    padding: SPACING.lg,
+    paddingBottom: verticalScale(40),
   },
   comingSoonContainer: {
     alignItems: 'center',
   },
   comingSoonTitle: {
-    fontSize: ui.scaleFont(24, 0.45),
+    fontSize: scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginBottom: ui.verticalScale(24),
+    color: colors.primaryText,
+    marginBottom: verticalScale(24),
     textAlign: 'center',
   },
   toolsIcon: {
-    marginBottom: ui.verticalScale(24),
+    marginBottom: verticalScale(24),
   },
   comingSoonText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
     textAlign: 'center',
-    lineHeight: ui.verticalScale(24),
-    marginBottom: ui.verticalScale(32),
-    paddingHorizontal: ui.spacing(10, 0.35),
+    lineHeight: verticalScale(24),
+    marginBottom: verticalScale(32),
+    paddingHorizontal: SPACING.sm,
   },
   featuresPreview: {
     width: '100%',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(20, 0.45),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
   },
   featuresTitle: {
-    fontSize: ui.scaleFont(18, 0.4),
+    fontSize: scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
-    marginBottom: ui.verticalScale(16),
+    color: colors.PrimaryGreen,
+    marginBottom: verticalScale(16),
     textAlign: 'center',
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: ui.verticalScale(12),
+    paddingVertical: verticalScale(12),
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: colors.divider,
   },
   featureText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(12, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.md,
   },
 })

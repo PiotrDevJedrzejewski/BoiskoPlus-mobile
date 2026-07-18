@@ -1,11 +1,10 @@
-import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING } from '../../Theme/StyleConstants'
+import { verticalScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const SettingSection = ({ title, children }) => {
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles } = useThemedStyles(createStyles)
 
   return (
     <View style={styles.section}>
@@ -17,16 +16,16 @@ const SettingSection = ({ title, children }) => {
 
 export default SettingSection
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   section: {
-    marginBottom: ui.verticalScale(24),
+    marginBottom: verticalScale(24),
   },
   sectionTitle: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
+    color: colors.PrimaryGreen,
     textTransform: 'uppercase',
-    marginBottom: ui.verticalScale(12),
-    marginLeft: ui.spacing(4, 0.25),
+    marginBottom: verticalScale(12),
+    marginLeft: SPACING.xs,
   },
 })

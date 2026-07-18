@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo} from 'react'
+import { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -13,16 +13,18 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
+import BottomSpacer from '../../components/BottomSpacer'
+
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const Report = () => {
   dbg('ReportScreen')
   useDebugMount('ReportScreen')
   const router = useRouter()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
   const { type, userId, eventId, reportedNickName } = useLocalSearchParams()
 
   const [message, setMessage] = useState('')
@@ -128,13 +130,13 @@ const Report = () => {
           style={styles.backIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name='arrow-back' size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
+          <Ionicons name='arrow-back' size={moderateScale(24, 0.35)} color={colors.PrimaryGreen} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Ionicons name='flag' size={ui.moderateScale(22, 0.35)} color={COLORS.secondary} />
+          <Ionicons name='flag' size={moderateScale(22, 0.35)} color={colors.PrimaryGreen} />
           <Text style={styles.headerText}>Zgłaszanie</Text>
         </View>
-        <View style={{ width: ui.moderateScale(40, 0.35) }} />
+        <View style={{ width: moderateScale(40, 0.35) }} />
       </View>
 
       <ScrollView
@@ -147,8 +149,8 @@ const Report = () => {
         <View style={styles.infoBanner}>
           <Ionicons
             name='information-circle'
-            size={ui.moderateScale(20, 0.35)}
-            color={COLORS.secondary}
+            size={moderateScale(20, 0.35)}
+            color={colors.PrimaryGreen}
           />
           <Text style={styles.infoBannerText}>
             Wypełniasz formularz zgłoszenia na podstawie wybranego elementu
@@ -158,7 +160,7 @@ const Report = () => {
         {/* Type display */}
         <View style={styles.typeContainer}>
           <View style={styles.typeIconWrapper}>
-            <Ionicons name={getTypeIcon()} size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
+            <Ionicons name={getTypeIcon()} size={moderateScale(24, 0.35)} color={colors.PrimaryGreen} />
           </View>
           <Text style={styles.typeText}>{getTypeDisplayName()}</Text>
         </View>
@@ -194,7 +196,7 @@ const Report = () => {
             value={message}
             onChangeText={handleMessageChange}
             placeholder='Opisz szczegółowo problem, który chcesz zgłosić...'
-            placeholderTextColor={COLORS.gray}
+            placeholderTextColor={colors.thirdText}
             multiline
             numberOfLines={8}
             textAlignVertical='top'
@@ -222,11 +224,11 @@ const Report = () => {
             activeOpacity={0.8}
           >
             {loading ? (
-              <ActivityIndicator size='small' color={COLORS.background} />
+              <ActivityIndicator size='small' color={colors.background} />
             ) : (
               <>
                 <Text style={styles.submitButtonText}>Wyślij raport</Text>
-                <Ionicons name='send' size={ui.moderateScale(18, 0.35)} color={COLORS.background} />
+                <Ionicons name='send' size={moderateScale(18, 0.35)} color={colors.background} />
               </>
             )}
           </TouchableOpacity>
@@ -240,6 +242,7 @@ const Report = () => {
             <Text style={styles.cancelButtonText}>Anuluj</Text>
           </TouchableOpacity>
         </View>
+        <BottomSpacer />
       </ScrollView>
     </KeyboardAvoidingView>
   )
@@ -247,22 +250,22 @@ const Report = () => {
 
 export default Report
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: ui.verticalScale(16),
-    paddingHorizontal: ui.spacing(16),
+    paddingVertical: verticalScale(16),
+    paddingHorizontal: SPACING.md,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   backIconButton: {
-    width: ui.moderateScale(40, 0.35),
-    height: ui.moderateScale(40, 0.35),
+    width: moderateScale(40, 0.35),
+    height: moderateScale(40, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -271,156 +274,156 @@ const createStyles = (ui) => StyleSheet.create({
     alignItems: 'center',
   },
   headerText: {
-    fontSize: ui.scaleFont(20, 0.4),
+    fontSize: scaleFont(20, 0.4),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(10, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.sm,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: ui.spacing(20, 0.45),
-    paddingBottom: ui.verticalScale(40),
+    padding: SPACING.lg,
+    paddingBottom: verticalScale(40),
   },
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 207, 0, 0.1)',
-    borderRadius: ui.moderateScale(12, 0.35),
-    padding: ui.spacing(14, 0.35),
-    marginBottom: ui.verticalScale(20),
+    backgroundColor: colors.GlowGreen,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
+    marginBottom: verticalScale(20),
     borderWidth: 1,
-    borderColor: 'rgba(255, 207, 0, 0.3)',
+    borderColor: colors.PrimaryGreen,
   },
   infoBannerText: {
     flex: 1,
-    fontSize: ui.scaleFont(13, 0.35),
+    fontSize: scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(10, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.sm,
   },
   typeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    padding: ui.spacing(16),
-    marginBottom: ui.verticalScale(16),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
+    marginBottom: verticalScale(16),
   },
   typeIconWrapper: {
-    width: ui.moderateScale(44, 0.35),
-    height: ui.moderateScale(44, 0.35),
-    borderRadius: ui.moderateScale(22, 0.35),
-    backgroundColor: COLORS.background,
+    width: moderateScale(44, 0.35),
+    height: moderateScale(44, 0.35),
+    borderRadius: moderateScale(22, 0.35),
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: ui.spacing(14, 0.35),
+    marginRight: SPACING.sm,
   },
   typeText: {
-    fontSize: ui.scaleFont(18, 0.4),
+    fontSize: scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   idContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: ui.verticalScale(20),
-    paddingHorizontal: ui.spacing(4, 0.25),
+    marginBottom: verticalScale(20),
+    paddingHorizontal: SPACING.xs,
   },
   idLabel: {
-    fontSize: ui.scaleFont(13, 0.35),
+    fontSize: scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
+    color: colors.thirdText,
   },
   idValue: {
     flex: 1,
-    fontSize: ui.scaleFont(13, 0.35),
+    fontSize: scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(8, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.sm,
   },
   inputContainer: {
-    marginBottom: ui.verticalScale(24),
+    marginBottom: verticalScale(24),
   },
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: ui.verticalScale(10),
+    marginBottom: verticalScale(10),
   },
   label: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
+    color: colors.PrimaryGreen,
   },
   charCount: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
+    color: colors.thirdText,
   },
   charCountWarning: {
-    color: COLORS.error,
+    color: colors.Danger,
   },
   textArea: {
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: ui.controlRadius,
-    paddingHorizontal: ui.controlPaddingHorizontal,
-    paddingVertical: ui.controlPaddingVertical,
-    fontSize: ui.scaleFont(15, 0.35),
+    borderColor: colors.border,
+    borderRadius: BORDER_RADIUS.md,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    fontSize: scaleFont(15, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    minHeight: ui.verticalScale(160),
+    color: colors.primaryText,
+    minHeight: verticalScale(160),
   },
   textAreaError: {
-    borderColor: COLORS.error,
+    borderColor: colors.Danger,
   },
   errorText: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.error,
-    marginTop: ui.verticalScale(6),
+    color: colors.Danger,
+    marginTop: verticalScale(6),
   },
   warningText: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.secondary,
-    marginTop: ui.verticalScale(6),
+    color: colors.PrimaryGreen,
+    marginTop: verticalScale(6),
   },
   buttonsContainer: {
-    gap: ui.verticalScale(12),
+    gap: verticalScale(12),
   },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(16),
-    gap: ui.spacing(10, 0.35),
+    backgroundColor: colors.PrimaryGreen,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(16),
+    gap: SPACING.sm,
   },
   submitButtonDisabled: {
     opacity: 0.7,
   },
   submitButtonText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
+    color: colors.background,
   },
   cancelButton: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
+    borderColor: colors.primaryText,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
   },
   cancelButtonText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
 })

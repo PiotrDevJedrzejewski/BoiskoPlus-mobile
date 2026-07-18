@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import {
   StyleSheet,
   Text,
@@ -9,8 +8,9 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 // <ConfirmModal
 //   visible={showDelete}
@@ -32,19 +32,18 @@ const ConfirmModal = ({
   cancelButtonText = 'NIE',
   loading = false,
 }) => {
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
 
   const getActionColor = () => {
     switch (actionType) {
       case 'danger':
-        return COLORS.error
+        return colors.Danger
       case 'warning':
-        return COLORS.secondary
+        return colors.PrimaryGreen
       case 'success':
-        return COLORS.third
+        return colors.border
       default:
-        return COLORS.secondary
+        return colors.PrimaryGreen
     }
   }
 
@@ -75,7 +74,7 @@ const ConfirmModal = ({
               {/* Icon */}
               <Ionicons
                 name={getActionIcon()}
-                size={ui.moderateScale(48, 0.35)}
+                size={moderateScale(48, 0.35)}
                 color={getActionColor()}
                 style={styles.icon}
               />
@@ -101,7 +100,7 @@ const ConfirmModal = ({
                   activeOpacity={0.8}
                 >
                   {loading ? (
-                    <ActivityIndicator size='small' color={COLORS.background} />
+                    <ActivityIndicator size='small' color={colors.background} />
                   ) : (
                     <Text style={styles.confirmButtonText}>
                       {confirmButtonText}
@@ -130,23 +129,23 @@ const ConfirmModal = ({
 
 export default ConfirmModal
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: ui.spacing(20, 0.45),
+    padding: SPACING.lg,
   },
   container: {
     width: '100%',
     maxWidth: 350,
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(24, 0.45),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.xl,
     alignItems: 'center',
     borderBottomWidth: 2,
-    borderBottomColor: COLORS.secondary,
+    borderBottomColor: colors.PrimaryGreen,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -154,30 +153,30 @@ const createStyles = (ui) => StyleSheet.create({
     elevation: 8,
   },
   icon: {
-    marginBottom: ui.verticalScale(16),
+    marginBottom: verticalScale(16),
   },
   title: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
     textAlign: 'center',
-    marginBottom: ui.verticalScale(12),
+    marginBottom: verticalScale(12),
   },
   actionText: {
-    fontSize: ui.scaleFont(24, 0.45),
+    fontSize: scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
-    marginBottom: ui.verticalScale(24),
+    marginBottom: verticalScale(24),
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: ui.spacing(16),
+    gap: SPACING.md,
     width: '100%',
   },
   button: {
     flex: 1,
-    paddingVertical: ui.verticalScale(14),
-    borderRadius: ui.moderateScale(10, 0.35),
+    paddingVertical: verticalScale(14),
+    borderRadius: BORDER_RADIUS.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -185,18 +184,18 @@ const createStyles = (ui) => StyleSheet.create({
     // backgroundColor set dynamically
   },
   confirmButtonText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
+    color: colors.background,
   },
   cancelButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: colors.primaryText,
   },
   cancelButtonText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
 })

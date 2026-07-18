@@ -1,15 +1,14 @@
-import { useMemo } from 'react'
 import {
   StyleSheet,
   Text,
   View,
 } from 'react-native'
-import { COLORS } from '../constants/colors'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { useThemedStyles } from '../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../Theme/StyleConstants'
+import { verticalScale, moderateScale, scaleFont } from '../Theme/ScalableStyles'
 
 const ChatMessageBox = ({ message, isOwn, senderName, time }) => {
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
 
   return (
     <View style={[styles.messageBox, isOwn && styles.messageBoxOwn]}>
@@ -22,34 +21,34 @@ const ChatMessageBox = ({ message, isOwn, senderName, time }) => {
 
 export default ChatMessageBox
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   messageBox: {
     maxWidth: '75%',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(12, 0.35),
-    marginBottom: ui.verticalScale(10),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: verticalScale(10),
     alignSelf: 'flex-start',
   },
   messageBoxOwn: {
     alignSelf: 'flex-end',
-    backgroundColor: COLORS.third,
+    backgroundColor: colors.border,
   },
   senderName: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
-    marginBottom: ui.verticalScale(2),
+    color: colors.PrimaryGreen,
+    marginBottom: verticalScale(2),
   },
   time: {
-    fontSize: ui.scaleFont(10, 0.25),
+    fontSize: scaleFont(10, 0.25),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    marginBottom: ui.verticalScale(4),
+    color: colors.thirdText,
+    marginBottom: verticalScale(4),
   },
   messageText: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
 })

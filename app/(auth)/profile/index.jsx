@@ -1,4 +1,4 @@
-import { useState, useMemo} from 'react'
+import { useState } from 'react'
 import {
   StyleSheet,
   Text,
@@ -10,12 +10,15 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../constants/colors'
 import { useAuth } from '../../../context/AuthContext'
 import ConfirmModal from '../../../components/popup/ConfirmModal'
 import ProfileAvatarSection from '../../../components/profile/ProfileAvatarSection'
-import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
+import BottomSpacer from '../../../components/BottomSpacer'
+
+import { useThemedStyles } from '../../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../../Theme/ScalableStyles'
 
 const StatItem = ({ label, value, styles }) => (
   <View style={styles.statItem}>
@@ -28,8 +31,7 @@ const Profile = () => {
   dbg('ProfileScreen')
   useDebugMount('ProfileScreen')
   const router = useRouter()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const {
@@ -81,7 +83,7 @@ const Profile = () => {
   if (authLoading || !user) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size='large' color={COLORS.secondary} />
+        <ActivityIndicator size='large' color={colors.PrimaryGreen} />
         <Text style={styles.loadingText}>Ładowanie profilu...</Text>
       </View>
     )
@@ -91,7 +93,7 @@ const Profile = () => {
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name='person-circle' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
+        <Ionicons name='person-circle' size={moderateScale(26, 0.35)} color={colors.PrimaryGreen} />
         <Text style={styles.headerText}>Profil Gracza</Text>
       </View>
 
@@ -144,7 +146,7 @@ const Profile = () => {
             onPress={handleEditProfile}
             activeOpacity={0.8}
           >
-            <Ionicons name='create-outline' size={ui.moderateScale(20, 0.35)} color={COLORS.primary} />
+            <Ionicons name='create-outline' size={moderateScale(20, 0.35)} color={colors.primaryText} />
             <Text style={styles.buttonText}>Edytuj profil</Text>
           </TouchableOpacity>
 
@@ -153,7 +155,7 @@ const Profile = () => {
             onPress={handleChangePassword}
             activeOpacity={0.8}
           >
-            <Ionicons name='key-outline' size={ui.moderateScale(20, 0.35)} color={COLORS.primary} />
+            <Ionicons name='key-outline' size={moderateScale(20, 0.35)} color={colors.primaryText} />
             <Text style={styles.buttonText}>Zmień hasło</Text>
           </TouchableOpacity>
 
@@ -162,12 +164,13 @@ const Profile = () => {
             onPress={handleDeleteAccount}
             activeOpacity={0.8}
           >
-            <Ionicons name='trash-outline' size={ui.moderateScale(20, 0.35)} color={COLORS.error} />
+            <Ionicons name='trash-outline' size={moderateScale(20, 0.35)} color={colors.Danger} />
             <Text style={[styles.buttonText, styles.dangerButtonText]}>
               Usuń konto
             </Text>
           </TouchableOpacity>
         </View>
+        <BottomSpacer />
       </ScrollView>
 
       <ConfirmModal
@@ -191,85 +194,85 @@ const Profile = () => {
 
 export default Profile
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: ui.verticalScale(12),
-    fontSize: ui.scaleFont(16, 0.35),
+    marginTop: verticalScale(12),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: ui.verticalScale(20),
+    paddingVertical: verticalScale(20),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   headerText: {
-    fontSize: ui.scaleFont(24, 0.45),
+    fontSize: scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(12, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.md,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: ui.spacing(20, 0.45),
-    paddingBottom: ui.verticalScale(40),
+    padding: SPACING.lg,
+    paddingBottom: verticalScale(40),
     alignItems: 'center',
   },
   username: {
-    fontSize: ui.scaleFont(28, 0.45),
+    fontSize: scaleFont(28, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginBottom: ui.verticalScale(24),
+    color: colors.primaryText,
+    marginBottom: verticalScale(24),
   },
   infoSection: {
     width: '100%',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(16),
-    marginBottom: ui.verticalScale(24),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: verticalScale(24),
   },
   infoRow: {
     flexDirection: 'row',
-    paddingVertical: ui.verticalScale(8),
+    paddingVertical: verticalScale(8),
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: colors.divider,
   },
   infoLabel: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    width: ui.scale(100),
+    color: colors.thirdText,
+    width: scale(100),
   },
   infoValue: {
     flex: 1,
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   statsSection: {
     width: '100%',
-    marginBottom: ui.verticalScale(24),
+    marginBottom: verticalScale(24),
   },
   sectionTitle: {
-    fontSize: ui.scaleFont(18, 0.4),
+    fontSize: scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
+    color: colors.PrimaryGreen,
     textAlign: 'center',
-    marginBottom: ui.verticalScale(16),
+    marginBottom: verticalScale(16),
   },
   statsGrid: {
     flexDirection: 'row',
@@ -278,49 +281,49 @@ const createStyles = (ui) => StyleSheet.create({
   },
   statItem: {
     width: '48%',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    padding: ui.spacing(16),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
     alignItems: 'center',
-    marginBottom: ui.verticalScale(12),
+    marginBottom: verticalScale(12),
   },
   statValue: {
-    fontSize: ui.scaleFont(24, 0.45),
+    fontSize: scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
+    color: colors.PrimaryGreen,
   },
   statLabel: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginTop: ui.verticalScale(4),
+    color: colors.primaryText,
+    marginTop: verticalScale(4),
     textAlign: 'center',
   },
   buttonsSection: {
     width: '100%',
-    gap: ui.verticalScale(12),
+    gap: verticalScale(12),
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
-    paddingHorizontal: ui.spacing(20, 0.45),
+    borderColor: colors.PrimaryGreen,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: SPACING.lg,
   },
   buttonText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(10, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.sm,
   },
   dangerButton: {
-    borderColor: COLORS.error,
+    borderColor: colors.Danger,
   },
   dangerButtonText: {
-    color: COLORS.error,
+    color: colors.Danger,
   },
 })

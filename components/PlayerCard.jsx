@@ -1,15 +1,14 @@
-import { useMemo } from 'react'
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../constants/colors'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { useThemedStyles } from '../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../Theme/ScalableStyles'
 
 const defaultAvatar = require('../assets/images/defaultAvatar.png')
 
 const PlayerCard = ({ playerInfo, onPress }) => {
   const router = useRouter()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles } = useThemedStyles(createStyles)
 
   const handlePress = () => {
     if (onPress) {
@@ -67,17 +66,17 @@ const PlayerCard = ({ playerInfo, onPress }) => {
 
 export default PlayerCard
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(16),
-    marginVertical: ui.verticalScale(8),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    marginVertical: verticalScale(8),
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondary,
+    borderBottomColor: colors.GlowGreen,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -85,14 +84,14 @@ const createStyles = (ui) => StyleSheet.create({
     elevation: 4,
   },
   avatarContainer: {
-    marginRight: ui.spacing(12, 0.35),
+    marginRight: SPACING.md,
   },
   avatar: {
-    width: ui.scale(70),
-    height: ui.scale(70),
-    borderRadius: ui.moderateScale(12, 0.35),
+    width: scale(70),
+    height: scale(70),
+    borderRadius: BORDER_RADIUS.md,
     borderWidth: 2,
-    borderColor: COLORS.primary,
+    borderColor: colors.primaryText,
   },
   infoContainer: {
     flex: 1,
@@ -100,9 +99,9 @@ const createStyles = (ui) => StyleSheet.create({
     gap: 4,
   },
   infoText: {
-    fontSize: ui.scaleFont(13, 0.35),
+    fontSize: scaleFont(13, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   statsContainer: {
     justifyContent: 'center',
@@ -110,8 +109,8 @@ const createStyles = (ui) => StyleSheet.create({
     gap: 4,
   },
   statsText: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
+    color: colors.thirdText,
   },
 })

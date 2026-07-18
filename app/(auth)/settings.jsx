@@ -1,15 +1,18 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { StyleSheet, Text, View, ScrollView, Alert } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { COLORS } from '../../constants/colors'
 import { useAuth } from '../../context/AuthContext'
 import { checkSystemLocationPermissions } from '../../assets/utils/getUserLocation'
 import SettingSection from '../../components/settingsComponents/SettingSection'
 import SettingRow from '../../components/settingsComponents/SettingRow'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
+import BottomSpacer from '../../components/BottomSpacer'
+
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const LOCATION_STORAGE_KEY = 'bp_user_location_v1'
 const LOCATION_THROTTLE_KEY = 'last_location_request_time'
@@ -18,8 +21,7 @@ const Settings = () => {
   dbg('SettingsScreen')
   useDebugMount('SettingsScreen')
   const router = useRouter()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
   const [userLocation, setUserLocation] = useState(null)
   const {
     consents,
@@ -153,7 +155,7 @@ const Settings = () => {
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name='settings' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
+        <Ionicons name='settings' size={moderateScale(26, 0.35)} color={colors.PrimaryGreen} />
         <Text style={styles.headerText}>Ustawienia</Text>
       </View>
 
@@ -240,6 +242,7 @@ const Settings = () => {
         <View style={styles.versionContainer}>
           <Text style={styles.versionText}>BoiskoPlus Mobile v1.0.0</Text>
         </View>
+        <BottomSpacer />
       </ScrollView>
     </View>
   )
@@ -247,7 +250,7 @@ const Settings = () => {
 
 export default Settings
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -255,47 +258,47 @@ const createStyles = (ui) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: ui.verticalScale(20),
+    paddingVertical: verticalScale(20),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   headerText: {
-    fontSize: ui.scaleFont(24, 0.45),
+    fontSize: scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(12, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.md,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: ui.spacing(20, 0.45),
-    paddingBottom: ui.verticalScale(40),
+    padding: SPACING.lg,
+    paddingBottom: verticalScale(40),
   },
   versionContainer: {
     alignItems: 'center',
-    marginTop: ui.verticalScale(20),
+    marginTop: verticalScale(20),
   },
   versionText: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
+    color: colors.thirdText,
   },
   locationInfo: {
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(10),
-    paddingHorizontal: ui.spacing(16),
-    marginBottom: ui.verticalScale(8),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: SPACING.md,
+    marginBottom: verticalScale(8),
     borderWidth: 1,
-    borderColor: COLORS.secondary,
+    borderColor: colors.PrimaryGreen,
   },
   locationInfoText: {
     textAlign: 'center',
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
     fontStyle: 'italic',
     textTransform: 'capitalize',
     fontWeight: 'bold',
-    color: COLORS.gray,
+    color: colors.thirdText,
   },
 })

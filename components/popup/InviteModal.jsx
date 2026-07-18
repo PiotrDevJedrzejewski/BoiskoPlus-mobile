@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import {
   StyleSheet,
   Text,
@@ -10,8 +10,9 @@ import {
   Alert,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 import { useFriendship } from '../../context/FriendshipContext'
 import PlayerCardWithActions from '../PlayerCardWithActions'
 import customFetch from '../../assets/utils/customFetch'
@@ -24,8 +25,7 @@ import customFetch from '../../assets/utils/customFetch'
 // />
 
 const InviteModal = ({ visible, onClose, eventId, invitedUserIds = [] }) => {
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
   const { friends, friendsLoading } = useFriendship()
   const [pendingIds, setPendingIds] = useState(new Set())
   const [localInvitedIds, setLocalInvitedIds] = useState(new Set(invitedUserIds))
@@ -102,21 +102,21 @@ const InviteModal = ({ visible, onClose, eventId, invitedUserIds = [] }) => {
               onPress={onClose}
               activeOpacity={0.7}
             >
-              <Ionicons name='close' size={ui.moderateScale(22, 0.35)} color={COLORS.secondary} />
+              <Ionicons name='close' size={moderateScale(22, 0.35)} color={colors.PrimaryGreen} />
             </TouchableOpacity>
             <Text style={styles.headerText}>Zaproś znajomego</Text>
-            <View style={{ width: ui.moderateScale(36, 0.35) }} />
+            <View style={{ width: moderateScale(36, 0.35) }} />
           </View>
 
           {/* Content */}
           {friendsLoading ? (
             <View style={styles.centerState}>
-              <ActivityIndicator size='large' color={COLORS.secondary} />
+              <ActivityIndicator size='large' color={colors.PrimaryGreen} />
               <Text style={styles.stateText}>Ładowanie znajomych...</Text>
             </View>
           ) : friends.length === 0 ? (
             <View style={styles.centerState}>
-              <Ionicons name='people-outline' size={ui.moderateScale(48, 0.35)} color={COLORS.gray} />
+              <Ionicons name='people-outline' size={moderateScale(48, 0.35)} color={colors.thirdText} />
               <Text style={styles.stateText}>Brak znajomych do zaproszenia</Text>
             </View>
           ) : (
@@ -136,53 +136,53 @@ const InviteModal = ({ visible, onClose, eventId, invitedUserIds = [] }) => {
 
 export default InviteModal
 
-const createStyles = (ui) =>
+const createStyles = (colors) =>
   StyleSheet.create({
     overlay: {
       flex: 1,
       backgroundColor: 'rgba(0, 0, 0, 0.6)',
       justifyContent: 'flex-end',
-      paddingHorizontal: ui.spacing(16),
-      paddingBottom: ui.verticalScale(24),
+      paddingHorizontal: SPACING.md,
+      paddingBottom: verticalScale(24),
     },
     modalContainer: {
       height: '70%',
-      backgroundColor: COLORS.background,
-      borderRadius: ui.moderateScale(16, 0.35),
+      backgroundColor: colors.background,
+      borderRadius: BORDER_RADIUS.lg,
       overflow: 'hidden',
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: ui.verticalScale(14),
-      paddingHorizontal: ui.spacing(16),
+      paddingVertical: verticalScale(14),
+      paddingHorizontal: SPACING.md,
       backgroundColor: 'rgba(0, 0, 0, 0.3)',
     },
     closeButton: {
-      width: ui.moderateScale(36, 0.35),
-      height: ui.moderateScale(36, 0.35),
+      width: moderateScale(36, 0.35),
+      height: moderateScale(36, 0.35),
       justifyContent: 'center',
       alignItems: 'center',
     },
     headerText: {
-      fontSize: ui.scaleFont(16, 0.45),
+      fontSize: scaleFont(16, 0.45),
       fontFamily: 'Montserrat-Bold',
-      color: COLORS.primary,
+      color: colors.primaryText,
     },
     listContent: {
-      padding: ui.spacing(12),
-      paddingBottom: ui.verticalScale(24),
+      padding: SPACING.sm,
+      paddingBottom: verticalScale(24),
     },
     centerState: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      gap: ui.verticalScale(12),
+      gap: verticalScale(12),
     },
     stateText: {
-      fontSize: ui.scaleFont(14, 0.35),
+      fontSize: scaleFont(14, 0.35),
       fontFamily: 'Lato-Regular',
-      color: COLORS.gray,
+      color: colors.thirdText,
     },
   })

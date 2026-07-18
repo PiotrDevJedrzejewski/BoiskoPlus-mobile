@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useMemo} from 'react'
+import { useState, useCallback, useRef } from 'react'
 import {
   ActivityIndicator,
   Dimensions,
@@ -10,11 +10,14 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
 import { useFriendship } from '../../context/FriendshipContext'
 import PlayerCardWithActions from '../../components/PlayerCardWithActions'
+import BottomSpacer from '../../components/BottomSpacer'
+
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const SEARCH_DEBOUNCE_MS = 300
 const SCREEN_HEIGHT = Dimensions.get('window').height
@@ -22,8 +25,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height
 const FriendsScreen = () => {
   dbg('FriendsScreen')
   useDebugMount('FriendsScreen')
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
 
   const {
     friends,
@@ -100,7 +102,7 @@ const FriendsScreen = () => {
     <View style={styles.container}>
       {/* ─── Nagłówek ─── */}
       <View style={styles.header}>
-        <Ionicons name='people' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
+        <Ionicons name='people' size={moderateScale(26, 0.35)} color={colors.PrimaryGreen} />
         <Text style={styles.headerText}>Znajomi</Text>
       </View>
 
@@ -115,8 +117,8 @@ const FriendsScreen = () => {
           <View style={styles.searchBox}>
             <Ionicons
               name='people-outline'
-              size={ui.moderateScale(24, 0.35)}
-              color={COLORS.secondary}
+              size={moderateScale(24, 0.35)}
+              color={colors.PrimaryGreen}
               style={styles.searchIcon}
             />
             <TextInput
@@ -124,13 +126,13 @@ const FriendsScreen = () => {
               value={searchInput}
               onChangeText={handleSearchChange}
               placeholder='Szukaj użytkownika...'
-              placeholderTextColor='#999'
+              placeholderTextColor={colors.thirdText}
               autoCorrect={false}
               autoCapitalize='none'
             />
             {searchInput.length > 0 && (
               <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
-                <Ionicons name='close-circle' size={ui.moderateScale(20, 0.35)} color={COLORS.gray} />
+                <Ionicons name='close-circle' size={moderateScale(20, 0.35)} color={colors.thirdText} />
               </TouchableOpacity>
             )}
           </View>
@@ -142,7 +144,7 @@ const FriendsScreen = () => {
             {searchTooShort ? (
               <Text style={styles.hintText}>Wpisz co najmniej 3 znaki</Text>
             ) : searchLoading ? (
-              <ActivityIndicator color={COLORS.secondary} style={styles.loader} />
+              <ActivityIndicator color={colors.PrimaryGreen} style={styles.loader} />
             ) : searchResults.length === 0 && searchQuery.length > 0 ? (
               <Text style={styles.emptyText}>Brak użytkowników pasujących do &quot;{searchQuery}&quot;</Text>
             ) : (
@@ -190,7 +192,7 @@ const FriendsScreen = () => {
                 showsVerticalScrollIndicator={false}
               >
                 {pendingLoading ? (
-                  <ActivityIndicator color={COLORS.secondary} style={styles.loader} />
+                  <ActivityIndicator color={colors.PrimaryGreen} style={styles.loader} />
                 ) : pendingFilter === 'incoming' ? (
                   incoming.length === 0 ? (
                     <Text style={styles.emptyText}>Brak przychodzących zaproszeń</Text>
@@ -232,7 +234,7 @@ const FriendsScreen = () => {
                 </Text>
               </View>
               {friendsLoading ? (
-                <ActivityIndicator color={COLORS.secondary} style={styles.loader} />
+                <ActivityIndicator color={colors.PrimaryGreen} style={styles.loader} />
               ) : friends.length === 0 ? (
                 <Text style={styles.emptyText}>Twoja lista znajomych jest pusta</Text>
               ) : (
@@ -249,6 +251,7 @@ const FriendsScreen = () => {
             </View>
           </>
         )}
+        <BottomSpacer />
       </ScrollView>
     </View>
   )
@@ -256,44 +259,44 @@ const FriendsScreen = () => {
 
 export default FriendsScreen
 
-const createStyles = (ui) =>
+const createStyles = (colors) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: colors.background,
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: ui.verticalScale(20),
+      paddingVertical: verticalScale(20),
       backgroundColor: 'rgba(0, 0, 0, 0.3)',
     },
     headerText: {
-      fontSize: ui.scaleFont(24, 0.45),
+      fontSize: scaleFont(24, 0.45),
       fontFamily: 'Montserrat-Bold',
-      color: COLORS.primary,
-      marginLeft: ui.spacing(12, 0.35),
+      color: colors.primaryText,
+      marginLeft: SPACING.md,
     },
     scrollView: {
       flex: 1,
     },
     scrollContent: {
-      padding: ui.spacing(16, 0.45),
-      paddingBottom: ui.verticalScale(40),
+      padding: SPACING.md,
+      paddingBottom: verticalScale(40),
     },
 
     // ─── Search ───────────────────────────────────────────────────────────────
     searchContainer: {
-      marginBottom: ui.verticalScale(16),
+      marginBottom: verticalScale(16),
     },
     searchBox: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: COLORS.backgroundSecondary,
-      borderRadius: ui.moderateScale(12, 0.35),
-      paddingHorizontal: ui.spacing(14, 0.35),
-      paddingVertical: ui.verticalScale(10),
+      backgroundColor: colors.backgroundSecondary,
+      borderRadius: BORDER_RADIUS.md,
+      paddingHorizontal: SPACING.md,
+      paddingVertical: verticalScale(10),
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
@@ -301,29 +304,29 @@ const createStyles = (ui) =>
       elevation: 4,
     },
     searchIcon: {
-      marginRight: ui.spacing(8, 0.35),
+      marginRight: SPACING.sm,
     },
     searchInput: {
       flex: 1,
-      fontSize: ui.scaleFont(16, 0.35),
-      color: COLORS.primary,
+      fontSize: scaleFont(16, 0.35),
+      color: colors.primaryText,
       fontFamily: 'Lato-Regular',
-      minHeight: ui.verticalScale(32),
+      minHeight: verticalScale(32),
     },
     clearButton: {
-      paddingLeft: ui.spacing(8, 0.35),
+      paddingLeft: SPACING.sm,
     },
 
     // ─── Sekcja zaproszeń ────────────────────────────────────────────────────
     pendingSection: {
       maxHeight: SCREEN_HEIGHT * 0.35,
-      marginBottom: ui.verticalScale(20),
+      marginBottom: verticalScale(20),
       backgroundColor: 'rgba(0, 0, 0, 0.15)',
-      borderRadius: ui.moderateScale(12, 0.35),
+      borderRadius: BORDER_RADIUS.md,
       overflow: 'hidden',
-      paddingHorizontal: ui.spacing(12, 0.35),
-      paddingTop: ui.verticalScale(10),
-      paddingBottom: ui.verticalScale(8),
+      paddingHorizontal: SPACING.sm,
+      paddingTop: verticalScale(10),
+      paddingBottom: verticalScale(8),
     },
     pendingList: {
       flexGrow: 0,
@@ -331,63 +334,62 @@ const createStyles = (ui) =>
 
     // ─── Nagłówki sekcji ─────────────────────────────────────────────────────
     sectionHeader: {
-      marginBottom: ui.verticalScale(8),
+      marginBottom: verticalScale(8),
     },
     sectionTitle: {
-      fontSize: ui.scaleFont(14, 0.35),
+      fontSize: scaleFont(14, 0.35),
       fontFamily: 'Montserrat-Bold',
-      color: COLORS.secondary,
+      color: colors.PrimaryGreen,
       textTransform: 'uppercase',
-      marginBottom: ui.verticalScale(8),
-      marginLeft: ui.spacing(4, 0.25),
+      marginBottom: verticalScale(8),
+      marginLeft: SPACING.xs,
     },
 
     // ─── Filter tabs ─────────────────────────────────────────────────────────
     filterTabs: {
       flexDirection: 'row',
-      gap: ui.spacing(8, 0.35),
+      gap: SPACING.sm,
     },
     filterTab: {
       flex: 1,
-      paddingVertical: ui.verticalScale(8),
-      paddingHorizontal: ui.spacing(10, 0.35),
-      borderRadius: ui.moderateScale(999, 0.35),
+      paddingVertical: verticalScale(8),
+      paddingHorizontal: SPACING.sm,
+      borderRadius: BORDER_RADIUS.xxl,
       borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.15)',
+      borderColor: colors.border,
       alignItems: 'center',
     },
     filterTabActive: {
-      backgroundColor: COLORS.secondary,
-      borderColor: COLORS.secondary,
+      backgroundColor: colors.PrimaryGreen,
+      borderColor: colors.PrimaryGreen,
     },
     filterTabText: {
-      fontSize: ui.scaleFont(12, 0.3),
-      fontFamily: 'ObjectFont',
-      color: COLORS.gray,
+      fontSize: scaleFont(12, 0.3),
+      fontFamily: 'Lato-Regular',
+      color: colors.thirdText,
     },
     filterTabTextActive: {
-      color: COLORS.background,
+      color: colors.background,
     },
 
     // ─── Stany puste / pomocnicze ─────────────────────────────────────────────
     emptyText: {
       textAlign: 'center',
-      fontSize: ui.scaleFont(13, 0.3),
+      fontSize: scaleFont(13, 0.3),
       fontFamily: 'Lato-Regular',
-      color: COLORS.gray,
-      paddingVertical: ui.verticalScale(12),
+      color: colors.thirdText,
+      paddingVertical: verticalScale(12),
       fontStyle: 'italic',
     },
     hintText: {
       textAlign: 'center',
-      fontSize: ui.scaleFont(12, 0.3),
+      fontSize: scaleFont(12, 0.3),
       fontFamily: 'Lato-Regular',
-      color: COLORS.gray,
-      paddingTop: ui.verticalScale(8),
+      color: colors.thirdText,
+      paddingTop: verticalScale(8),
       fontStyle: 'italic',
     },
     loader: {
-      paddingVertical: ui.verticalScale(16),
+      paddingVertical: verticalScale(16),
     },
   })
-

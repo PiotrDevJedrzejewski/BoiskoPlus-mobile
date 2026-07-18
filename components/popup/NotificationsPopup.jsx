@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import {
   StyleSheet,
   Text,
@@ -9,8 +8,9 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const NotificationsModal = ({
   visible,
@@ -19,8 +19,7 @@ const NotificationsModal = ({
   unreadEvents = 0,
 }) => {
   const router = useRouter()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
   const totalUnread = unreadMessages + unreadEvents
 
   const handleNavigateToChat = () => {
@@ -48,8 +47,8 @@ const NotificationsModal = ({
               <View style={styles.header}>
                 <Ionicons
                   name='notifications'
-                  size={ui.moderateScale(24, 0.35)}
-                  color={COLORS.secondary}
+                  size={moderateScale(24, 0.35)}
+                  color={colors.PrimaryGreen}
                 />
                 <Text style={styles.headerText}>Powiadomienia</Text>
                 {totalUnread > 0 && (
@@ -72,8 +71,8 @@ const NotificationsModal = ({
                   <View style={styles.notificationLeft}>
                     <Ionicons
                       name='chatbubbles'
-                      size={ui.moderateScale(24, 0.35)}
-                      color={COLORS.primary}
+                      size={moderateScale(24, 0.35)}
+                      color={colors.primaryText}
                     />
                     <Text style={styles.notificationText}>Nowe wiadomości</Text>
                   </View>
@@ -103,8 +102,8 @@ const NotificationsModal = ({
                   <View style={styles.notificationLeft}>
                     <Ionicons
                       name='calendar'
-                      size={ui.moderateScale(24, 0.35)}
-                      color={COLORS.primary}
+                      size={moderateScale(24, 0.35)}
+                      color={colors.primaryText}
                     />
                     <Text style={styles.notificationText}>
                       Powiadomienia wydarzeń
@@ -146,63 +145,63 @@ const NotificationsModal = ({
 
 export default NotificationsModal
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: ui.spacing(20, 0.45),
+    padding: SPACING.lg,
   },
   container: {
     width: '100%',
     maxWidth: 350,
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(20, 0.45),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
     borderBottomWidth: 2,
-    borderBottomColor: COLORS.secondary,
+    borderBottomColor: colors.PrimaryGreen,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: ui.verticalScale(20),
-    paddingBottom: ui.verticalScale(16),
+    marginBottom: verticalScale(20),
+    paddingBottom: verticalScale(16),
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: colors.divider,
   },
   headerText: {
-    fontSize: ui.scaleFont(20, 0.4),
+    fontSize: scaleFont(20, 0.4),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(10, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.sm,
     flex: 1,
   },
   totalBadge: {
-    backgroundColor: COLORS.error,
-    borderRadius: ui.moderateScale(12, 0.35),
-    minWidth: ui.scale(24),
-    height: ui.scale(24),
+    backgroundColor: colors.Danger,
+    borderRadius: BORDER_RADIUS.md,
+    minWidth: scale(24),
+    height: scale(24),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: ui.spacing(8, 0.35),
+    paddingHorizontal: SPACING.sm,
   },
   totalBadgeText: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Montserrat-Bold',
     color: '#fff',
   },
   listContainer: {
-    gap: ui.spacing(12, 0.35),
-    marginBottom: ui.verticalScale(20),
+    gap: SPACING.md,
+    marginBottom: verticalScale(20),
   },
   notificationItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.background,
-    borderRadius: ui.moderateScale(12, 0.35),
-    padding: ui.spacing(16),
+    backgroundColor: colors.background,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
   },
   notificationLeft: {
     flexDirection: 'row',
@@ -210,42 +209,42 @@ const createStyles = (ui) => StyleSheet.create({
     flex: 1,
   },
   notificationText: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(12, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.md,
   },
   badge: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    minWidth: ui.scale(28),
-    height: ui.scale(28),
+    backgroundColor: colors.PrimaryGreen,
+    borderRadius: BORDER_RADIUS.md,
+    minWidth: scale(28),
+    height: scale(28),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: ui.spacing(8, 0.35),
+    paddingHorizontal: SPACING.sm,
   },
   badgeEmpty: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: colors.divider,
   },
   badgeText: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
+    color: colors.background,
   },
   badgeTextEmpty: {
-    color: COLORS.gray,
+    color: colors.thirdText,
   },
   closeButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: ui.moderateScale(10, 0.35),
-    paddingVertical: ui.verticalScale(12),
+    borderColor: colors.primaryText,
+    borderRadius: BORDER_RADIUS.sm,
+    paddingVertical: verticalScale(12),
     alignItems: 'center',
   },
   closeButtonText: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
 })

@@ -1,8 +1,8 @@
-import { useMemo } from 'react'
 import { StyleSheet, Text, View, TouchableOpacity, Switch } from 'react-native'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const SettingRow = ({
   icon,
@@ -16,8 +16,7 @@ const SettingRow = ({
   disabled = false,
   danger = false,
 }) => {
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
   const IconComponent =
     iconFamily === 'material' ? MaterialCommunityIcons : Ionicons
 
@@ -34,8 +33,8 @@ const SettingRow = ({
       <View style={styles.settingRowLeft}>
         <IconComponent
           name={icon}
-          size={ui.moderateScale(22, 0.35)}
-          color={danger ? COLORS.error : COLORS.secondary}
+          size={moderateScale(22, 0.35)}
+          color={danger ? colors.Danger : colors.PrimaryGreen}
         />
         <Text style={[styles.settingRowLabel, danger && styles.dangerText]}>
           {label}
@@ -45,14 +44,14 @@ const SettingRow = ({
         <Switch
           value={switchValue}
           onValueChange={onSwitchChange}
-          trackColor={{ false: '#555', true: COLORS.third }}
-          thumbColor={switchValue ? COLORS.secondary : '#f4f3f4'}
+          trackColor={{ false: '#555', true: colors.border }}
+          thumbColor={switchValue ? colors.PrimaryGreen : '#f4f3f4'}
           disabled={disabled}
         />
       ) : (
         <View style={styles.settingRowRight}>
           {value && <Text style={styles.settingRowValue}>{value}</Text>}
-          <Ionicons name='chevron-forward' size={ui.moderateScale(20, 0.35)} color={COLORS.gray} />
+          <Ionicons name='chevron-forward' size={moderateScale(20, 0.35)} color={colors.thirdText} />
         </View>
       )}
     </RowContainer>
@@ -61,16 +60,16 @@ const SettingRow = ({
 
 export default SettingRow
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
-    paddingHorizontal: ui.spacing(16),
-    marginBottom: ui.verticalScale(8),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: SPACING.md,
+    marginBottom: verticalScale(8),
   },
   settingRowDisabled: {
     opacity: 0.5,
@@ -81,22 +80,22 @@ const createStyles = (ui) => StyleSheet.create({
     flex: 1,
   },
   settingRowLabel: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(12, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.md,
   },
   dangerText: {
-    color: COLORS.error,
+    color: colors.Danger,
   },
   settingRowRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   settingRowValue: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    marginRight: ui.spacing(8, 0.35),
+    color: colors.thirdText,
+    marginRight: SPACING.sm,
   },
 })

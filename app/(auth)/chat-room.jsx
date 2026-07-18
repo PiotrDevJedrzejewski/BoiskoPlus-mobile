@@ -13,7 +13,6 @@ import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanima
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useGradualAnimation } from '../../assets/hooks/useGradualAnimation'
 import { Ionicons } from '@expo/vector-icons'
-import { COLORS } from '../../constants/colors'
 import ChatMessageBox from '../../components/ChatMessageBox'
 import customFetch from '../../assets/utils/customFetch'
 import { useSocketStore, selectIsConnected } from '../../context/socketStore'
@@ -21,8 +20,11 @@ import { useAuth } from '../../context/AuthContext'
 import { useNotification } from '../../context/NotificationContext'
 import LottieView from 'lottie-react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
+
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const typingAnimation = require('../../assets/utils/typing.json')
 const spinnerAnimation = require('../../assets/utils/spinner.json')
@@ -30,9 +32,8 @@ const spinnerAnimation = require('../../assets/utils/spinner.json')
 const ChatRoom = () => {
   dbg('ChatRoom')
   useDebugMount('ChatRoom')
-  const ui = useResponsiveScale()
   const insets = useSafeAreaInsets()
-  const styles = useMemo(() => createStyles(ui, insets.bottom), [ui, insets.bottom])
+  const { styles, colors } = useThemedStyles((c) => createStyles(c, insets.bottom))
   const router = useRouter()
   const { user } = useAuth()
   const { roomId: paramRoomId, otherUserId } = useLocalSearchParams()
@@ -384,18 +385,18 @@ const ChatRoom = () => {
   }), [])
 
   // Sizes
-  const backIconSize = ui.moderateScale(24, 0.35)
-  const settingsIconSize = ui.moderateScale(22, 0.35)
-  const stateIconSize = ui.moderateScale(50, 0.3)
-  const sendIconSize = ui.moderateScale(20, 0.35)
-  const typingAnimationSize = ui.scale(80)
+  const backIconSize = moderateScale(24, 0.35)
+  const settingsIconSize = moderateScale(22, 0.35)
+  const stateIconSize = moderateScale(50, 0.3)
+  const sendIconSize = moderateScale(20, 0.35)
+  const typingAnimationSize = scale(80)
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.messageHeader}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name='arrow-back' size={backIconSize} color={COLORS.primary} />
+          <Ionicons name='arrow-back' size={backIconSize} color={colors.primaryText} />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.headerUsername} numberOfLines={1}>
@@ -411,7 +412,7 @@ const ChatRoom = () => {
           style={styles.settingsButton}
           onPress={() => setShowSettings(!showSettings)}
         >
-          <Ionicons name='settings-outline' size={settingsIconSize} color={COLORS.primary} />
+          <Ionicons name='settings-outline' size={settingsIconSize} color={colors.primaryText} />
         </TouchableOpacity>
       </View>
 
@@ -478,15 +479,15 @@ const ChatRoom = () => {
           ListFooterComponent={
             loadingOlder ? (
               <View style={styles.loadingOlder}>
-                <ActivityIndicator size='small' color={COLORS.secondary} />
-              </View>
-            ) : !hasMore && messages.length > 0 ? (
+                <ActivityIndicator size='small' color={colors.PrimaryGreen} />
+                    </View>
+                  ) : !hasMore && messages.length > 0 ? (
               <Text style={styles.noMoreMessages}>To są wszystkie wiadomości</Text>
             ) : null
           }
           ListEmptyComponent={
             <View style={styles.emptyMessages}>
-              <Ionicons name='chatbubble-outline' size={stateIconSize} color={COLORS.gray} />
+              <Ionicons name='chatbubble-outline' size={stateIconSize} color={colors.thirdText} />
               <Text style={styles.emptyText}>Brak wiadomości</Text>
               <Text style={styles.emptySubtext}>Napisz pierwszą wiadomość!</Text>
             </View>
@@ -522,7 +523,7 @@ const ChatRoom = () => {
         <TextInput
           style={styles.messageInput}
           placeholder='Napisz wiadomość...'
-          placeholderTextColor={COLORS.gray}
+          placeholderTextColor={colors.thirdText}
           value={input}
           onChangeText={handleInputChange}
           onSubmitEditing={handleSend}
@@ -536,7 +537,7 @@ const ChatRoom = () => {
           <Ionicons
             name='send'
             size={sendIconSize}
-            color={input.trim() ? COLORS.background : COLORS.gray}
+            color={input.trim() ? colors.background : colors.thirdText}
           />
         </TouchableOpacity>
       </View>
@@ -547,68 +548,68 @@ const ChatRoom = () => {
 
 export default ChatRoom
 
-const createStyles = (ui, insetsBottom = 0) =>
+const createStyles = (colors, insetsBottom = 0) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: colors.background,
     },
     // Header
     messageHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: ui.spacing(16),
-      paddingVertical: ui.verticalScale(16),
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      paddingHorizontal: SPACING.md,
+      paddingVertical: verticalScale(16),
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
       borderBottomWidth: 1,
-      borderBottomColor: COLORS.third,
+      borderBottomColor: colors.border,
     },
     backButton: {
-      padding: ui.spacing(4, 0.35),
-      marginRight: ui.spacing(12, 0.35),
+      padding: SPACING.xs,
+      marginRight: SPACING.sm,
     },
     headerInfo: {
       flex: 1,
     },
     headerUsername: {
-      fontSize: ui.scaleFont(16, 0.35),
+      fontSize: scaleFont(16, 0.35),
       fontFamily: 'Montserrat-Bold',
-      color: COLORS.primary,
+      color: colors.primaryText,
     },
     headerSubtitle: {
-      fontSize: ui.scaleFont(12, 0.3),
+      fontSize: scaleFont(12, 0.3),
       fontFamily: 'Lato-Regular',
-      color: COLORS.gray,
-      marginTop: ui.verticalScale(2),
+      color: colors.thirdText,
+      marginTop: verticalScale(2),
     },
     settingsButton: {
-      padding: ui.spacing(4, 0.35),
+      padding: SPACING.xs,
     },
     // Settings
     settingsDropdown: {
       position: 'absolute',
       zIndex: 20,
-      top: ui.verticalScale(60),
+      top: verticalScale(60),
       right: 0,
       width: '100%',
-      borderRadius: ui.moderateScale(8, 0.35),
-      backgroundColor: COLORS.backgroundSecondary,
+      borderRadius: BORDER_RADIUS.sm,
+      backgroundColor: colors.backgroundSecondary,
       borderBottomWidth: 1,
-      borderBottomColor: COLORS.third,
+      borderBottomColor: colors.border,
     },
     settingsOption: {
-      paddingVertical: ui.verticalScale(12),
-      paddingHorizontal: ui.spacing(16),
+      paddingVertical: verticalScale(12),
+      paddingHorizontal: SPACING.md,
       borderBottomWidth: 1,
-      borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+      borderBottomColor: colors.divider,
     },
     settingsOptionLast: {
       borderBottomWidth: 0,
     },
     settingsOptionText: {
-      fontSize: ui.scaleFont(14, 0.35),
+      fontSize: scaleFont(14, 0.35),
       fontFamily: 'Lato-Regular',
-      color: COLORS.primary,
+      color: colors.primaryText,
     },
     // Loading
     loadingContainer: {
@@ -617,51 +618,51 @@ const createStyles = (ui, insetsBottom = 0) =>
       alignItems: 'center',
     },
     spinner: {
-      width: ui.scale(120),
-      height: ui.scale(120),
+      width: scale(120),
+      height: scale(120),
     },
     // Messages
     messagesContainer: {
       flex: 1,
     },
     messagesContent: {
-      padding: ui.spacing(16),
+      padding: SPACING.md,
       flexGrow: 1,
     },
     emptyMessages: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      paddingVertical: ui.verticalScale(50),
+      paddingVertical: verticalScale(50),
     },
     emptyText: {
-      marginTop: ui.verticalScale(16),
-      fontSize: ui.scaleFont(16, 0.35),
+      marginTop: SPACING.md,
+      fontSize: scaleFont(16, 0.35),
       fontFamily: 'Lato-Regular',
-      color: COLORS.gray,
+      color: colors.thirdText,
     },
     emptySubtext: {
-      marginTop: ui.verticalScale(8),
-      fontSize: ui.scaleFont(14, 0.35),
+      marginTop: SPACING.sm,
+      fontSize: scaleFont(14, 0.35),
       fontFamily: 'Lato-Regular',
-      color: COLORS.gray,
+      color: colors.thirdText,
       opacity: 0.7,
     },
     // Typing
     typingIndicator: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: ui.spacing(16),
-      paddingVertical: ui.verticalScale(2),
+      paddingHorizontal: SPACING.md,
+      paddingVertical: verticalScale(2),
     },
     typingIndicatorText: {
-      fontSize: ui.scaleFont(12, 0.3),
-      fontFamily: 'ObjectFont',
-      color: COLORS.primary,
+      fontSize: scaleFont(12, 0.3),
+      fontFamily: 'Lato-Regular',
+      color: colors.primaryText,
     },
     typingAnimationWrapper: {
-      width: ui.scale(50),
-      height: ui.verticalScale(20),
+      width: scale(50),
+      height: verticalScale(20),
       overflow: 'hidden',
       position: 'relative',
     },
@@ -669,55 +670,55 @@ const createStyles = (ui, insetsBottom = 0) =>
     inputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: ui.spacing(16),
-      paddingTop: ui.verticalScale(12),
-      paddingBottom: ui.verticalScale(12) + insetsBottom,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      paddingHorizontal: SPACING.md,
+      paddingTop: verticalScale(12),
+      paddingBottom: verticalScale(12) + insetsBottom,
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
       borderTopWidth: 1,
-      borderTopColor: COLORS.third,
+      borderTopColor: colors.border,
     },
     messageInput: {
       flex: 1,
-      backgroundColor: COLORS.white,
-      borderRadius: ui.controlRadius,
-      minHeight: ui.controlMinHeight,
-      paddingHorizontal: ui.controlPaddingHorizontal,
-      paddingVertical: ui.controlPaddingVertical,
-      fontSize: ui.scaleFont(16, 0.35),
+      backgroundColor: colors.backgroundSecondary,
+      borderRadius: BORDER_RADIUS.md,
+      minHeight: verticalScale(40),
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      fontSize: scaleFont(16, 0.35),
       fontFamily: 'Lato-Regular',
-      color: COLORS.background,
-      marginRight: ui.spacing(12, 0.35),
+      color: colors.primaryText,
+      marginRight: SPACING.sm,
     },
     sendButton: {
-      width: ui.controlMinHeight,
-      height: ui.controlMinHeight,
-      borderRadius: ui.controlMinHeight / 2,
-      backgroundColor: COLORS.secondary,
+      width: verticalScale(40),
+      height: verticalScale(40),
+      borderRadius: verticalScale(20),
+      backgroundColor: colors.PrimaryGreen,
       justifyContent: 'center',
       alignItems: 'center',
     },
     sendButtonDisabled: {
-      backgroundColor: COLORS.backgroundSecondary,
+      backgroundColor: colors.NeutralButton,
     },
     // Infinite scroll
     loadingOlder: {
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
-      paddingVertical: ui.verticalScale(10),
+      paddingVertical: verticalScale(10),
     },
     loadingOlderText: {
-      marginLeft: ui.spacing(8, 0.35),
-      fontSize: ui.scaleFont(12, 0.3),
+      marginLeft: SPACING.sm,
+      fontSize: scaleFont(12, 0.3),
       fontFamily: 'Lato-Regular',
-      color: COLORS.gray,
+      color: colors.thirdText,
     },
     noMoreMessages: {
       textAlign: 'center',
-      paddingVertical: ui.verticalScale(10),
-      fontSize: ui.scaleFont(12, 0.3),
+      paddingVertical: verticalScale(10),
+      fontSize: scaleFont(12, 0.3),
       fontFamily: 'Lato-Regular',
-      color: COLORS.gray,
+      color: colors.thirdText,
       fontStyle: 'italic',
     },
   })

@@ -13,11 +13,14 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { COLORS } from '../../../constants/colors'
 import { useAuth } from '../../../context/AuthContext'
 import DatePicker from '../../../components/popup/DatePicker'
-import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
+import BottomSpacer from '../../../components/BottomSpacer'
+
+import { useThemedStyles } from '../../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../../Theme/StyleConstants'
+import { verticalScale, moderateScale, scaleFont } from '../../../Theme/ScalableStyles'
 
 const FORBIDDEN_WORDS = [
   'admin',
@@ -94,8 +97,7 @@ const ProfileEdit = () => {
   useDebugMount('ProfileEditScreen')
   const router = useRouter()
   const { user, loading: authLoading, updateProfile } = useAuth()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
 
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -229,7 +231,7 @@ const ProfileEdit = () => {
   if (isInitialLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size='large' color={COLORS.secondary} />
+        <ActivityIndicator size='large' color={colors.PrimaryGreen} />
         <Text style={styles.loadingText}>Ładowanie danych profilu...</Text>
       </View>
     )
@@ -248,13 +250,13 @@ const ProfileEdit = () => {
           style={styles.backIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name='arrow-back' size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
+          <Ionicons name='arrow-back' size={moderateScale(24, 0.35)} color={colors.PrimaryGreen} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Ionicons name='create' size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
+          <Ionicons name='create' size={moderateScale(24, 0.35)} color={colors.PrimaryGreen} />
           <Text style={styles.headerText}>Edytuj Profil</Text>
         </View>
-        <View style={{ width: ui.moderateScale(40, 0.35) }} />
+        <View style={{ width: moderateScale(40, 0.35) }} />
       </View>
 
       <ScrollView
@@ -273,7 +275,7 @@ const ProfileEdit = () => {
               value={formData.nickName}
               onChangeText={(value) => handleChange('nickName', value)}
               placeholder='Twój nickname'
-              placeholderTextColor={COLORS.gray}
+              placeholderTextColor={colors.thirdText}
               maxLength={20}
               autoCapitalize='none'
             />
@@ -293,7 +295,7 @@ const ProfileEdit = () => {
               value={formData.name}
               onChangeText={(value) => handleChange('name', value)}
               placeholder='Twoje imię'
-              placeholderTextColor={COLORS.gray}
+              placeholderTextColor={colors.thirdText}
               autoCapitalize='words'
             />
             {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
@@ -307,7 +309,7 @@ const ProfileEdit = () => {
               value={formData.surname}
               onChangeText={(value) => handleChange('surname', value)}
               placeholder='Twoje nazwisko'
-              placeholderTextColor={COLORS.gray}
+              placeholderTextColor={colors.thirdText}
               autoCapitalize='words'
             />
             {errors.surname && (
@@ -342,11 +344,11 @@ const ProfileEdit = () => {
             activeOpacity={0.8}
           >
             {loading ? (
-              <ActivityIndicator size='small' color={COLORS.background} />
+              <ActivityIndicator size='small' color={colors.background} />
             ) : (
               <>
-                <Ionicons name='save' size={20} color={COLORS.background} />
-                
+                <Ionicons name='save' size={20} color={colors.background} />
+
                 <Text style={styles.submitButtonText}>Zapisz zmiany</Text>
               </>
             )}
@@ -359,10 +361,11 @@ const ProfileEdit = () => {
             disabled={loading}
             activeOpacity={0.8}
           >
-            <Ionicons name='close' size={ui.moderateScale(20, 0.35)} color={COLORS.primary} />
+            <Ionicons name='close' size={moderateScale(20, 0.35)} color={colors.primaryText} />
             <Text style={styles.cancelButtonText}>Anuluj</Text>
           </TouchableOpacity>
         </View>
+        <BottomSpacer />
       </ScrollView>
     </KeyboardAvoidingView>
   )
@@ -370,34 +373,34 @@ const ProfileEdit = () => {
 
 export default ProfileEdit
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: ui.verticalScale(12),
-    fontSize: ui.scaleFont(16, 0.35),
+    marginTop: verticalScale(12),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: ui.verticalScale(16),
-    paddingHorizontal: ui.spacing(16),
+    paddingVertical: verticalScale(16),
+    paddingHorizontal: SPACING.md,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   backIconButton: {
-    width: ui.moderateScale(40, 0.35),
-    height: ui.moderateScale(40, 0.35),
+    width: moderateScale(40, 0.35),
+    height: moderateScale(40, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -406,86 +409,86 @@ const createStyles = (ui) => StyleSheet.create({
     alignItems: 'center',
   },
   headerText: {
-    fontSize: ui.scaleFont(22, 0.45),
+    fontSize: scaleFont(22, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(10, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.sm,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: ui.spacing(20, 0.45),
-    paddingBottom: ui.verticalScale(40),
+    padding: SPACING.lg,
+    paddingBottom: verticalScale(40),
   },
   formContainer: {
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(20, 0.45),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
   },
   inputGroup: {
-    marginBottom: ui.verticalScale(20),
+    marginBottom: verticalScale(20),
   },
   label: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
-    marginBottom: ui.verticalScale(8),
+    color: colors.PrimaryGreen,
+    marginBottom: verticalScale(8),
   },
   input: {
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: ui.controlRadius,
-    minHeight: ui.controlMinHeight,
-    paddingHorizontal: ui.controlPaddingHorizontal,
-    paddingVertical: ui.controlPaddingVertical,
-    fontSize: ui.scaleFont(16, 0.35),
+    borderColor: colors.border,
+    borderRadius: BORDER_RADIUS.md,
+    minHeight: verticalScale(40),
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   inputDateWrapper: {
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: ui.controlRadius,
-    minHeight: ui.controlMinHeight,
-    paddingHorizontal: ui.controlPaddingHorizontal,
-    paddingVertical: ui.controlPaddingVertical,
+    borderColor: colors.border,
+    borderRadius: BORDER_RADIUS.md,
+    minHeight: verticalScale(40),
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
   },
   inputError: {
-    borderColor: COLORS.error,
+    borderColor: colors.Danger,
   },
   errorText: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.error,
-    marginTop: ui.verticalScale(4),
+    color: colors.Danger,
+    marginTop: verticalScale(4),
   },
   helperText: {
-    fontSize: ui.scaleFont(11, 0.3),
+    fontSize: scaleFont(11, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    marginTop: ui.verticalScale(4),
+    color: colors.thirdText,
+    marginTop: verticalScale(4),
     textAlign: 'right',
   },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(16),
-    marginTop: ui.verticalScale(10),
+    backgroundColor: colors.PrimaryGreen,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(16),
+    marginTop: verticalScale(10),
   },
   submitButtonDisabled: {
     opacity: 0.7,
   },
   submitButtonText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
-    marginLeft: ui.spacing(10, 0.35),
+    color: colors.background,
+    marginLeft: SPACING.sm,
   },
   cancelButton: {
     flexDirection: 'row',
@@ -493,15 +496,15 @@ const createStyles = (ui) => StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
-    marginTop: ui.verticalScale(12),
+    borderColor: colors.primaryText,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
+    marginTop: verticalScale(12),
   },
   cancelButtonText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(10, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.sm,
   },
 })

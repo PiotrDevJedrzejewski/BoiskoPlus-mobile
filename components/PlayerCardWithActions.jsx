@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { COLORS } from '../constants/colors'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
+import { useThemedStyles } from '../context/themeStore'
+import { SPACING } from '../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../Theme/ScalableStyles'
 import PlayerCard from './PlayerCard'
 
 const getChipStyles = (type, styles) => {
@@ -16,8 +16,7 @@ const getChipStyles = (type, styles) => {
 }
 
 const ActionButtons = ({ actions = [] }) => {
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles } = useThemedStyles(createStyles)
   return (
     <View style={styles.buttonWrapper}>
       {actions.map((action) => {
@@ -38,8 +37,7 @@ const ActionButtons = ({ actions = [] }) => {
 }
 
 const PlayerCardWithActions = ({ player, actions = [] }) => {
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles } = useThemedStyles(createStyles)
   return (
     <View style={styles.playerCardWrapper}>
       <PlayerCard playerInfo={player} />
@@ -50,47 +48,46 @@ const PlayerCardWithActions = ({ player, actions = [] }) => {
 
 export default PlayerCardWithActions
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
 	playerCardWrapper: {
 		position: 'relative',
-		paddingBottom: ui.verticalScale(6),
+		paddingBottom: verticalScale(6),
 	},
 	buttonWrapper: {
 		position: 'absolute',
-		right: ui.spacing(6, 0.35),
-		bottom: ui.verticalScale(-3),
+		right: SPACING.xs,
+		bottom: verticalScale(-3),
 		flexDirection: 'row',
 		alignItems: 'center',
-        // backgroundColor: 'red'
 	},
 	actionChip: {
-		minWidth: ui.scale(88),
-		paddingVertical: ui.verticalScale(7),
-		paddingHorizontal: ui.spacing(14, 0.35),
-		borderRadius: ui.moderateScale(999, 0.35),
+		minWidth: scale(88),
+		paddingVertical: verticalScale(7),
+		paddingHorizontal: SPACING.md,
+		borderRadius: moderateScale(999, 0.35),
 		backgroundColor: 'rgba(0, 0, 0, 0.28)',
 		borderWidth: 1,
 		borderColor: 'rgba(255, 255, 255, 0.15)',
 		alignItems: 'center',
-        marginLeft: ui.spacing(15, 0.35),
+        marginLeft: SPACING.md,
 	},
 	actionChipPrimary: {
-		backgroundColor: COLORS.secondary,
-		borderColor: COLORS.secondary,
+		backgroundColor: colors.PrimaryGreen,
+		borderColor: colors.PrimaryGreen,
 	},
     actionChipSecondary: {
-        backgroundColor: COLORS.primary,
-        borderColor: COLORS.primary,
+        backgroundColor: colors.primaryText,
+        borderColor: colors.primaryText,
     },
 	actionChipText: {
-		fontSize: ui.scaleFont(12, 0.3),
-		fontFamily: 'ObjectFont',
-		color: COLORS.background,
+		fontSize: scaleFont(12, 0.3),
+		fontFamily: 'Lato-Regular',
+		color: colors.background,
 	},
 	actionChipTextPrimary: {
-		color: COLORS.background,
+		color: colors.background,
 	},
     actionChipTextSecondary: {
-        color: COLORS.black,
+        color: '#000000',
     },
 })

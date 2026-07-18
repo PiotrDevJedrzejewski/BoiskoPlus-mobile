@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo} from 'react'
+import { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -11,11 +11,14 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { COLORS } from '../../../constants/colors'
-import { useResponsiveScale } from '../../../assets/utils/scaleUI.UX'
 import { useAuth } from '../../../context/AuthContext'
 import customFetch from '../../../assets/utils/customFetch'
 import { dbg, useDebugMount } from '../../../assets/utils/debugLogger'
+import BottomSpacer from '../../../components/BottomSpacer'
+
+import { useThemedStyles } from '../../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../../Theme/ScalableStyles'
 
 const defaultAvatar = require('../../../assets/images/defaultAvatar.png')
 
@@ -31,8 +34,7 @@ const ProfileUser = () => {
   useDebugMount('OtherUserProfileScreen')
   const router = useRouter()
   const { id } = useLocalSearchParams()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
   const { user: currentUser } = useAuth()
 
   const [loading, setLoading] = useState(true)
@@ -181,7 +183,7 @@ const ProfileUser = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size='large' color={COLORS.secondary} />
+        <ActivityIndicator size='large' color={colors.PrimaryGreen} />
         <Text style={styles.loadingText}>Ładowanie profilu...</Text>
       </View>
     )
@@ -190,7 +192,7 @@ const ProfileUser = () => {
   if (!user) {
     return (
       <View style={styles.loadingContainer}>
-        <Ionicons name='person-outline' size={ui.moderateScale(64, 0.35)} color={COLORS.gray} />
+        <Ionicons name='person-outline' size={moderateScale(64, 0.35)} color={colors.thirdText} />
         <Text style={styles.loadingText}>Nie znaleziono użytkownika</Text>
         <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
           <Text style={styles.backButtonText}>Wróć</Text>
@@ -208,13 +210,13 @@ const ProfileUser = () => {
           style={styles.backIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name='arrow-back' size={ui.moderateScale(24, 0.35)} color={COLORS.secondary} />
+          <Ionicons name='arrow-back' size={moderateScale(24, 0.35)} color={colors.PrimaryGreen} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Ionicons name='person-circle' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
+          <Ionicons name='person-circle' size={moderateScale(26, 0.35)} color={colors.PrimaryGreen} />
           <Text style={styles.headerText}>Profil Gracza</Text>
         </View>
-        <View style={{ width: ui.moderateScale(40, 0.35) }} />
+        <View style={{ width: moderateScale(40, 0.35) }} />
       </View>
 
       <ScrollView
@@ -265,10 +267,10 @@ const ProfileUser = () => {
                 activeOpacity={0.8}
               >
                 {friendshipLoading ? (
-                  <ActivityIndicator size='small' color={COLORS.background} />
+                  <ActivityIndicator size='small' color={colors.background} />
                 ) : (
                   <>
-                    <Ionicons name='person-add' size={ui.moderateScale(20, 0.35)} color={COLORS.background} />
+                    <Ionicons name='person-add' size={moderateScale(20, 0.35)} color={colors.background} />
                     <Text style={styles.friendButtonText}>Dodaj do znajomych</Text>
                   </>
                 )}
@@ -283,10 +285,10 @@ const ProfileUser = () => {
                 activeOpacity={0.8}
               >
                 {friendshipLoading ? (
-                  <ActivityIndicator size='small' color={COLORS.secondary} />
+                  <ActivityIndicator size='small' color={colors.PrimaryGreen} />
                 ) : (
                   <>
-                    <Ionicons name='close-circle-outline' size={ui.moderateScale(20, 0.35)} color={COLORS.secondary} />
+                    <Ionicons name='close-circle-outline' size={moderateScale(20, 0.35)} color={colors.PrimaryGreen} />
                     <Text style={styles.friendButtonPendingText}>Anuluj zaproszenie</Text>
                   </>
                 )}
@@ -301,7 +303,7 @@ const ProfileUser = () => {
                   disabled={friendshipLoading}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name='checkmark' size={ui.moderateScale(18, 0.35)} color={COLORS.background} />
+                  <Ionicons name='checkmark' size={moderateScale(18, 0.35)} color={colors.background} />
                   <Text style={styles.acceptButtonText}>Akceptuj</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -310,7 +312,7 @@ const ProfileUser = () => {
                   disabled={friendshipLoading}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name='close' size={ui.moderateScale(18, 0.35)} color={COLORS.error} />
+                  <Ionicons name='close' size={moderateScale(18, 0.35)} color={colors.Danger} />
                   <Text style={styles.rejectButtonText}>Odrzuć</Text>
                 </TouchableOpacity>
               </View>
@@ -324,10 +326,10 @@ const ProfileUser = () => {
                 activeOpacity={0.8}
               >
                 {friendshipLoading ? (
-                  <ActivityIndicator size='small' color={COLORS.third} />
+                  <ActivityIndicator size='small' color={colors.border} />
                 ) : (
                   <>
-                    <Ionicons name='people' size={ui.moderateScale(20, 0.35)} color={COLORS.third} />
+                    <Ionicons name='people' size={moderateScale(20, 0.35)} color={colors.border} />
                     <Text style={styles.friendButtonAcceptedText}>Znajomy ✓</Text>
                   </>
                 )}
@@ -340,7 +342,7 @@ const ProfileUser = () => {
               onPress={handleChat}
               activeOpacity={0.8}
             >
-              <Ionicons name='chatbubble-outline' size={ui.moderateScale(20, 0.35)} color={COLORS.primary} />
+              <Ionicons name='chatbubble-outline' size={moderateScale(20, 0.35)} color={colors.primaryText} />
               <Text style={styles.chatButtonText}>Napisz</Text>
             </TouchableOpacity>
 
@@ -356,13 +358,13 @@ const ProfileUser = () => {
               activeOpacity={0.8}
             >
               {likeLoading ? (
-                <ActivityIndicator size='small' color={COLORS.primary} />
+                <ActivityIndicator size='small' color={colors.primaryText} />
               ) : (
                 <>
                   <Ionicons
                     name={isLiked ? 'heart' : 'heart-outline'}
-                    size={ui.moderateScale(22, 0.35)}
-                    color={isLiked ? '#FF69B4' : COLORS.primary}
+                    size={moderateScale(22, 0.35)}
+                    color={isLiked ? '#FF69B4' : colors.primaryText}
                   />
                   <Text
                     style={[
@@ -382,11 +384,12 @@ const ProfileUser = () => {
               onPress={handleReport}
               activeOpacity={0.8}
             >
-              <Ionicons name='flag-outline' size={ui.moderateScale(20, 0.35)} color={COLORS.error} />
+              <Ionicons name='flag-outline' size={moderateScale(20, 0.35)} color={colors.Danger} />
               <Text style={styles.reportButtonText}>Zgłoś użytkownika</Text>
             </TouchableOpacity>
           </View>
         )}
+        <BottomSpacer />
       </ScrollView>
     </View>
   )
@@ -394,46 +397,46 @@ const ProfileUser = () => {
 
 export default ProfileUser
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: ui.verticalScale(12),
-    fontSize: ui.scaleFont(16, 0.35),
+    marginTop: verticalScale(12),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   backButton: {
-    marginTop: ui.verticalScale(20),
-    backgroundColor: COLORS.secondary,
-    paddingVertical: ui.verticalScale(10),
-    paddingHorizontal: ui.spacing(24, 0.45),
-    borderRadius: ui.moderateScale(8, 0.35),
+    marginTop: verticalScale(20),
+    backgroundColor: colors.PrimaryGreen,
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: SPACING.xl,
+    borderRadius: BORDER_RADIUS.sm,
   },
   backButtonText: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
+    color: colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: ui.verticalScale(16),
-    paddingHorizontal: ui.spacing(16),
+    paddingVertical: verticalScale(16),
+    paddingHorizontal: SPACING.md,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   backIconButton: {
-    width: ui.moderateScale(40, 0.35),
-    height: ui.moderateScale(40, 0.35),
+    width: moderateScale(40, 0.35),
+    height: moderateScale(40, 0.35),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -442,71 +445,71 @@ const createStyles = (ui) => StyleSheet.create({
     alignItems: 'center',
   },
   headerText: {
-    fontSize: ui.scaleFont(22, 0.45),
+    fontSize: scaleFont(22, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(10, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.sm,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: ui.spacing(20, 0.45),
-    paddingBottom: ui.verticalScale(40),
+    padding: SPACING.lg,
+    paddingBottom: verticalScale(40),
     alignItems: 'center',
   },
   avatarSection: {
     alignItems: 'center',
-    marginBottom: ui.verticalScale(20),
+    marginBottom: verticalScale(20),
   },
   avatar: {
-    width: ui.scale(150),
-    height: ui.scale(150),
-    borderRadius: ui.moderateScale(16, 0.35),
+    width: scale(150),
+    height: scale(150),
+    borderRadius: BORDER_RADIUS.lg,
     borderWidth: 2,
-    borderColor: COLORS.primary,
+    borderColor: colors.primaryText,
   },
   username: {
-    fontSize: ui.scaleFont(28, 0.45),
+    fontSize: scaleFont(28, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginBottom: ui.verticalScale(24),
+    color: colors.primaryText,
+    marginBottom: verticalScale(24),
   },
   infoSection: {
     width: '100%',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(16),
-    marginBottom: ui.verticalScale(24),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: verticalScale(24),
   },
   infoRow: {
     flexDirection: 'row',
-    paddingVertical: ui.verticalScale(8),
+    paddingVertical: verticalScale(8),
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: colors.divider,
   },
   infoLabel: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    width: ui.scale(100),
+    color: colors.thirdText,
+    width: scale(100),
   },
   infoValue: {
     flex: 1,
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   statsSection: {
     width: '100%',
-    marginBottom: ui.verticalScale(24),
+    marginBottom: verticalScale(24),
   },
   sectionTitle: {
-    fontSize: ui.scaleFont(18, 0.4),
+    fontSize: scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
+    color: colors.PrimaryGreen,
     textAlign: 'center',
-    marginBottom: ui.verticalScale(16),
+    marginBottom: verticalScale(16),
   },
   statsGrid: {
     flexDirection: 'row',
@@ -515,38 +518,38 @@ const createStyles = (ui) => StyleSheet.create({
   },
   statItem: {
     width: '48%',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    padding: ui.spacing(16),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
     alignItems: 'center',
-    marginBottom: ui.verticalScale(12),
+    marginBottom: verticalScale(12),
   },
   statValue: {
-    fontSize: ui.scaleFont(24, 0.45),
+    fontSize: scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
+    color: colors.PrimaryGreen,
   },
   statLabel: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginTop: ui.verticalScale(4),
+    color: colors.primaryText,
+    marginTop: verticalScale(4),
     textAlign: 'center',
   },
   buttonsSection: {
     width: '100%',
-    gap: ui.verticalScale(12),
+    gap: verticalScale(12),
   },
   likeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 2,
-    borderColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
-    paddingHorizontal: ui.spacing(20, 0.45),
+    borderColor: colors.PrimaryGreen,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: SPACING.lg,
   },
   likedButton: {
     borderColor: '#FF69B4',
@@ -556,10 +559,10 @@ const createStyles = (ui) => StyleSheet.create({
     opacity: 0.7,
   },
   likeButtonText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(10, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.sm,
   },
   likedButtonText: {
     color: '#FF69B4',
@@ -570,31 +573,31 @@ const createStyles = (ui) => StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: COLORS.error,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(12),
-    paddingHorizontal: ui.spacing(20, 0.45),
+    borderColor: colors.Danger,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: SPACING.lg,
   },
   reportButtonText: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.error,
-    marginLeft: ui.spacing(8, 0.35),
+    color: colors.Danger,
+    marginLeft: SPACING.sm,
   },
   friendButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
-    paddingHorizontal: ui.spacing(20, 0.45),
-    gap: ui.spacing(8, 0.35),
+    backgroundColor: colors.PrimaryGreen,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.sm,
   },
   friendButtonText: {
-    fontSize: ui.scaleFont(15, 0.35),
+    fontSize: scaleFont(15, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
+    color: colors.background,
   },
   friendButtonPending: {
     flexDirection: 'row',
@@ -602,52 +605,52 @@ const createStyles = (ui) => StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
-    paddingHorizontal: ui.spacing(20, 0.45),
-    gap: ui.spacing(8, 0.35),
+    borderColor: colors.PrimaryGreen,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.sm,
   },
   friendButtonPendingText: {
-    fontSize: ui.scaleFont(15, 0.35),
+    fontSize: scaleFont(15, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
+    color: colors.PrimaryGreen,
   },
   friendButtonAccepted: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(18, 115, 64, 0.15)',
+    backgroundColor: colors.SuccessGreen,
     borderWidth: 1,
-    borderColor: COLORS.third,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
-    paddingHorizontal: ui.spacing(20, 0.45),
-    gap: ui.spacing(8, 0.35),
+    borderColor: colors.border,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.sm,
   },
   friendButtonAcceptedText: {
-    fontSize: ui.scaleFont(15, 0.35),
+    fontSize: scaleFont(15, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.third,
+    color: colors.border,
   },
   friendResponseRow: {
     flexDirection: 'row',
-    gap: ui.spacing(8, 0.35),
+    gap: SPACING.sm,
   },
   acceptButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.secondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
-    gap: ui.spacing(6, 0.25),
+    backgroundColor: colors.PrimaryGreen,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
+    gap: SPACING.xs,
   },
   acceptButtonText: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
+    color: colors.background,
   },
   rejectButton: {
     flex: 1,
@@ -656,29 +659,29 @@ const createStyles = (ui) => StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: COLORS.error,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
-    gap: ui.spacing(6, 0.25),
+    borderColor: colors.Danger,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
+    gap: SPACING.xs,
   },
   rejectButtonText: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.error,
+    color: colors.Danger,
   },
   chatButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.third,
-    borderRadius: ui.moderateScale(12, 0.35),
-    paddingVertical: ui.verticalScale(14),
-    paddingHorizontal: ui.spacing(20, 0.45),
-    gap: ui.spacing(8, 0.35),
+    backgroundColor: colors.border,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.sm,
   },
   chatButtonText: {
-    fontSize: ui.scaleFont(15, 0.35),
+    fontSize: scaleFont(15, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
 })

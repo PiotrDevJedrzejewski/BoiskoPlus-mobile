@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import React from 'react'
 import {
   View,
@@ -11,13 +10,13 @@ import {
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { COLORS } from '../../constants/colors'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const EventMarkerEventCreate = ({ orlikData, onClose }) => {
   const router = useRouter()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
 
   // Obsługa pojedynczego miejsca lub listy miejsc (z klastra)
   const places = Array.isArray(orlikData) ? orlikData : [orlikData]
@@ -51,7 +50,7 @@ const EventMarkerEventCreate = ({ orlikData, onClose }) => {
               {isList ? `Boiska (${places.length})` : 'Boisko'}
             </Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Ionicons name='close' size={24} color={COLORS.primary} />
+              <Ionicons name='close' size={24} color={colors.primaryText} />
             </TouchableOpacity>
           </View>
 
@@ -69,7 +68,7 @@ const EventMarkerEventCreate = ({ orlikData, onClose }) => {
                 <View style={styles.iconSection}>
                   <MaterialCommunityIcons
                     name='soccer-field'
-                    size={ui.moderateScale(32, 0.35)}
+                    size={moderateScale(32, 0.35)}
                     color='#22c55e'
                   />
                 </View>
@@ -90,7 +89,7 @@ const EventMarkerEventCreate = ({ orlikData, onClose }) => {
                   onPress={() => handleCreateEvent(place)}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name='add-circle' size={ui.moderateScale(18, 0.35)} color={COLORS.background} />
+                  <Ionicons name='add-circle' size={moderateScale(18, 0.35)} color={colors.background} />
                   <Text style={styles.createButtonText}>Stwórz</Text>
                 </TouchableOpacity>
               </View>
@@ -113,103 +112,103 @@ const EventMarkerEventCreate = ({ orlikData, onClose }) => {
 
 export default EventMarkerEventCreate
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: ui.spacing(20, 0.45),
+    padding: SPACING.lg,
   },
   container: {
-    backgroundColor: COLORS.background,
-    borderRadius: ui.moderateScale(16, 0.35),
+    backgroundColor: colors.background,
+    borderRadius: BORDER_RADIUS.lg,
     width: '100%',
     maxHeight: '70%',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.third,
+    borderColor: colors.border,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: ui.spacing(16),
-    paddingVertical: ui.verticalScale(14),
+    paddingHorizontal: SPACING.md,
+    paddingVertical: verticalScale(14),
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.third,
-    backgroundColor: COLORS.backgroundSecondary,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.backgroundSecondary,
   },
   headerTitle: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   closeButton: {
-    padding: ui.spacing(4, 0.25),
+    padding: SPACING.xs,
   },
   listWrapper: {
-    padding: ui.spacing(12, 0.35),
+    padding: SPACING.sm,
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(12, 0.35),
-    padding: ui.spacing(12, 0.35),
-    marginBottom: ui.verticalScale(10),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.sm,
+    marginBottom: verticalScale(10),
   },
   iconSection: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: ui.spacing(12, 0.35),
-    width: ui.moderateScale(44, 0.35),
-    height: ui.moderateScale(44, 0.35),
+    marginRight: SPACING.md,
+    width: moderateScale(44, 0.35),
+    height: moderateScale(44, 0.35),
     backgroundColor: 'rgba(34, 197, 94, 0.15)',
-    borderRadius: ui.moderateScale(10, 0.35),
+    borderRadius: BORDER_RADIUS.sm,
   },
   infoSection: {
     flex: 1,
-    marginRight: ui.spacing(10, 0.35),
+    marginRight: SPACING.sm,
   },
   placeName: {
-    fontSize: ui.scaleFont(14, 0.35),
+    fontSize: scaleFont(14, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginBottom: ui.verticalScale(4),
+    color: colors.primaryText,
+    marginBottom: verticalScale(4),
   },
   placeAddress: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
     opacity: 0.8,
-    lineHeight: ui.verticalScale(16),
+    lineHeight: verticalScale(16),
   },
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.secondary,
-    paddingHorizontal: ui.spacing(12, 0.35),
-    paddingVertical: ui.verticalScale(8),
-    borderRadius: ui.moderateScale(8, 0.35),
-    gap: ui.spacing(4, 0.25),
+    backgroundColor: colors.PrimaryGreen,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: verticalScale(8),
+    borderRadius: BORDER_RADIUS.sm,
+    gap: SPACING.xs,
   },
   createButtonText: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
+    color: colors.background,
   },
   footer: {
-    paddingHorizontal: ui.spacing(16),
-    paddingVertical: ui.verticalScale(12),
+    paddingHorizontal: SPACING.md,
+    paddingVertical: verticalScale(12),
     borderTopWidth: 1,
-    borderTopColor: COLORS.third,
-    backgroundColor: COLORS.backgroundSecondary,
+    borderTopColor: colors.border,
+    backgroundColor: colors.backgroundSecondary,
   },
   footerText: {
-    fontSize: ui.scaleFont(11, 0.3),
+    fontSize: scaleFont(11, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
     opacity: 0.7,
     textAlign: 'center',
   },

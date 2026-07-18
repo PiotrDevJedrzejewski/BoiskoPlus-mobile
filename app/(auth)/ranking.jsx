@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo} from 'react'
+import { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -11,10 +11,13 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Picker } from '@react-native-picker/picker'
-import { COLORS } from '../../constants/colors'
 import customFetch from '../../assets/utils/customFetch'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
 import { dbg, useDebugMount } from '../../assets/utils/debugLogger'
+import BottomSpacer from '../../components/BottomSpacer'
+
+import { useThemedStyles } from '../../context/themeStore'
+import { SPACING, BORDER_RADIUS } from '../../Theme/StyleConstants'
+import { scale, verticalScale, moderateScale, scaleFont } from '../../Theme/ScalableStyles'
 
 const defaultAvatar = require('../../assets/images/defaultAvatar.png')
 
@@ -25,7 +28,7 @@ const SORT_OPTIONS = [
   { label: 'Łączne polubienia', value: 'totalLikes' },
 ]
 
-const RankingCard = ({ user, rank, sortBy, styles, ui }) => {
+const RankingCard = ({ user, rank, sortBy, styles, colors }) => {
   // Zabezpieczenie przed null userID
   if (!user.userID) return null
 
@@ -55,7 +58,7 @@ const RankingCard = ({ user, rank, sortBy, styles, ui }) => {
     if (rank === 1) return '#FFD700' // Złoto
     if (rank === 2) return '#C0C0C0' // Srebro
     if (rank === 3) return '#CD7F32' // Brąz
-    return COLORS.primary
+    return colors.primaryText
   }
 
   return (
@@ -87,8 +90,7 @@ const RankingCard = ({ user, rank, sortBy, styles, ui }) => {
 const Ranking = () => {
   dbg('RankingScreen')
   useDebugMount('RankingScreen')
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const { styles, colors } = useThemedStyles(createStyles)
   const usePickerOverlay = Platform.OS === 'android'
   const [sortBy, setSortBy] = useState('points')
   const [loading, setLoading] = useState(true)
@@ -142,7 +144,7 @@ const Ranking = () => {
     <View style={styles.container} pointerEvents='box-none'>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name='trophy' size={ui.moderateScale(26, 0.35)} color={COLORS.secondary} />
+        <Ionicons name='trophy' size={moderateScale(26, 0.35)} color={colors.PrimaryGreen} />
         <Text style={styles.headerText}>Ranking</Text>
       </View>
 
@@ -161,7 +163,7 @@ const Ranking = () => {
             selectedValue={sortBy}
             onValueChange={handleSortChange}
             style={[styles.picker, usePickerOverlay && styles.androidPicker]}
-            dropdownIconColor={COLORS.secondary}
+            dropdownIconColor={colors.PrimaryGreen}
             mode='dropdown'
           >
             {SORT_OPTIONS.map((option) => (
@@ -169,7 +171,7 @@ const Ranking = () => {
                 key={option.value}
                 label={option.label}
                 value={option.value}
-                color={COLORS.background}
+                color={colors.background}
               />
             ))}
           </Picker>
@@ -195,15 +197,15 @@ const Ranking = () => {
       {/* Lista rankingu */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size='large' color={COLORS.secondary} />
+          <ActivityIndicator size='large' color={colors.PrimaryGreen} />
           <Text style={styles.loadingText}>Ładowanie rankingu...</Text>
         </View>
       ) : error ? (
         <View style={styles.errorContainer}>
           <Ionicons
             name='alert-circle-outline'
-            size={ui.moderateScale(60, 0.3)}
-            color={COLORS.error}
+            size={moderateScale(60, 0.3)}
+            color={colors.Danger}
           />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
@@ -226,16 +228,17 @@ const Ranking = () => {
               rank={user.rank}
               sortBy={sortBy}
               styles={styles}
-              ui={ui}
+              colors={colors}
             />
           ))}
 
           {leaderboardData.length === 0 && (
             <View style={styles.emptyState}>
-              <Ionicons name='trophy-outline' size={ui.moderateScale(60, 0.3)} color={COLORS.gray} />
+              <Ionicons name='trophy-outline' size={moderateScale(60, 0.3)} color={colors.thirdText} />
               <Text style={styles.emptyText}>Brak danych w rankingu</Text>
             </View>
           )}
+          <BottomSpacer />
         </ScrollView>
       )}
     </View>
@@ -244,84 +247,83 @@ const Ranking = () => {
 
 export default Ranking
 
-const createStyles = (ui) => StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: ui.verticalScale(20),
+    paddingVertical: verticalScale(20),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   headerText: {
-    fontSize: ui.scaleFont(24, 0.45),
+    fontSize: scaleFont(24, 0.45),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginLeft: ui.spacing(12, 0.35),
+    color: colors.primaryText,
+    marginLeft: SPACING.md,
   },
   sortContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: ui.spacing(16),
-    paddingVertical: ui.verticalScale(12),
+    paddingHorizontal: SPACING.md,
+    paddingVertical: verticalScale(12),
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   sortLabel: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
-    marginRight: ui.spacing(12, 0.35),
+    color: colors.primaryText,
+    marginRight: SPACING.md,
   },
   pickerWrapper: {
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: ui.controlRadius,
-    minWidth: ui.scale(180),
-    minHeight: ui.controlMinHeight,
+    borderColor: colors.PrimaryGreen,
+    borderRadius: BORDER_RADIUS.md,
+    minWidth: scale(180),
+    minHeight: verticalScale(40),
     justifyContent: 'center',
     position: 'relative',
   },
   picker: {
-    color: COLORS.primary,
-    height: ui.pickerHeight,
+    color: colors.primaryText,
   },
   androidPicker: {
     color: 'transparent',
   },
   pickerValueContainer: {
     position: 'absolute',
-    left: ui.controlPaddingHorizontal,
-    right: ui.scale(36),
+    left: SPACING.md,
+    right: scale(36),
     top: 0,
     bottom: 0,
     justifyContent: 'center',
     zIndex: 1,
   },
   pickerValue: {
-    color: COLORS.primary,
-    fontSize: ui.scaleFont(16, 0.35),
+    color: colors.primaryText,
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
     includeFontPadding: false,
   },
   columnHeaders: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: ui.spacing(16),
-    paddingVertical: ui.verticalScale(12),
+    paddingHorizontal: SPACING.md,
+    paddingVertical: verticalScale(12),
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondary,
+    borderBottomColor: colors.PrimaryGreen,
   },
   columnHeader: {
-    fontSize: ui.scaleFont(12, 0.3),
+    fontSize: scaleFont(12, 0.3),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
-    width: ui.scale(50),
+    color: colors.PrimaryGreen,
+    width: scale(50),
     textAlign: 'center',
   },
   loadingContainer: {
@@ -330,100 +332,100 @@ const createStyles = (ui) => StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: ui.verticalScale(12),
-    fontSize: ui.scaleFont(16, 0.35),
+    marginTop: verticalScale(12),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.primary,
+    color: colors.primaryText,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: ui.spacing(20, 0.45),
+    padding: SPACING.lg,
   },
   errorText: {
-    marginTop: ui.verticalScale(16),
-    fontSize: ui.scaleFont(16, 0.35),
+    marginTop: verticalScale(16),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.error,
+    color: colors.Danger,
     textAlign: 'center',
   },
   retryButton: {
-    marginTop: ui.verticalScale(20),
-    backgroundColor: COLORS.secondary,
-    paddingHorizontal: ui.spacing(24, 0.45),
-    paddingVertical: ui.verticalScale(12),
-    borderRadius: ui.moderateScale(12, 0.35),
+    marginTop: verticalScale(20),
+    backgroundColor: colors.PrimaryGreen,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: verticalScale(12),
+    borderRadius: BORDER_RADIUS.md,
   },
   retryButtonText: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.background,
+    color: colors.background,
   },
   list: {
     flex: 1,
   },
   listContent: {
-    padding: ui.spacing(16),
-    paddingBottom: ui.verticalScale(32),
+    padding: SPACING.md,
+    paddingBottom: verticalScale(32),
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.backgroundSecondary,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(12, 0.35),
-    marginBottom: ui.verticalScale(12),
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: verticalScale(12),
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondary,
+    borderBottomColor: colors.PrimaryGreen,
   },
   rankContainer: {
-    width: ui.scale(40),
+    width: scale(40),
     alignItems: 'center',
   },
   rankText: {
-    fontSize: ui.scaleFont(22, 0.45),
+    fontSize: scaleFont(22, 0.45),
     fontFamily: 'Montserrat-Bold',
   },
   avatar: {
-    width: ui.scale(50),
-    height: ui.scale(50),
-    borderRadius: ui.moderateScale(10, 0.35),
-    marginRight: ui.spacing(12, 0.35),
+    width: scale(50),
+    height: scale(50),
+    borderRadius: BORDER_RADIUS.sm,
+    marginRight: SPACING.md,
   },
   userInfo: {
     flex: 1,
   },
   nickname: {
-    fontSize: ui.scaleFont(16, 0.35),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    marginBottom: ui.verticalScale(2),
+    color: colors.primaryText,
+    marginBottom: verticalScale(2),
   },
   mainValueLabel: {
-    fontSize: ui.scaleFont(11, 0.3),
+    fontSize: scaleFont(11, 0.3),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
+    color: colors.thirdText,
   },
   valueContainer: {
     alignItems: 'flex-end',
-    minWidth: ui.scale(60),
+    minWidth: scale(60),
   },
   mainValue: {
-    fontSize: ui.scaleFont(18, 0.4),
+    fontSize: scaleFont(18, 0.4),
     fontFamily: 'Montserrat-Bold',
-    color: COLORS.secondary,
+    color: colors.PrimaryGreen,
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: ui.verticalScale(60),
+    paddingVertical: verticalScale(60),
   },
   emptyText: {
-    marginTop: ui.verticalScale(16),
-    fontSize: ui.scaleFont(16, 0.35),
+    marginTop: verticalScale(16),
+    fontSize: scaleFont(16, 0.35),
     fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
+    color: colors.thirdText,
   },
 })
