@@ -1,70 +1,72 @@
-import 'dotenv/config'
+import "dotenv/config";
 
 export default {
   expo: {
-    name: 'BoiskoPlus',
-    slug: 'boiskoplus',
-    version: '1.0.4',
-    orientation: 'portrait',
-    icon: './assets/images/BoiskoPlusNewLogoForMobile.png',
-    scheme: 'boiskoplusmobile',
-    userInterfaceStyle: 'automatic',
+    name: "BoiskoPlus",
+    slug: "boiskoplus",
+    version: "1.0.4",
+    orientation: "portrait",
+    icon: "./assets/images/BoiskoPlusNewLogoForMobile.png",
+    scheme: "boiskoplusmobile",
+    userInterfaceStyle: "automatic",
     newArchEnabled: true,
     splash: {
-      image: './assets/images/BoiskoPlusNewLogoForMobile.png',
-      resizeMode: 'contain',
-      backgroundColor: '#012115',
+      image: "./assets/images/BoiskoPlusNewLogoForMobile.png",
+      resizeMode: "contain",
+      backgroundColor: "#012115",
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'com.boiskoplusmobile.app',
+      bundleIdentifier: "com.boiskoplusmobile.app",
       usesAppleSignIn: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSLocationWhenInUseUsageDescription:
-          'Aplikacja potrzebuje jednorazowego dostępu do lokalizacji, aby wskazać Twoje położenie na mapie.',
+          "Aplikacja potrzebuje jednorazowego dostępu do lokalizacji, aby wskazać Twoje położenie na mapie.",
         NSPhotoLibraryUsageDescription:
-          'Aplikacja potrzebuje dostępu do galerii, aby umożliwić zmianę zdjęcia profilowego.',
+          "Aplikacja potrzebuje dostępu do galerii, aby umożliwić zmianę zdjęcia profilowego.",
       },
-      googleServicesFile: './GoogleService-Info.plist',
+      googleServicesFile: "./GoogleService-Info.plist",
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/images/BoiskoPlusNewLogoForMobileSmaller.png',
-        backgroundColor: '#012115',
+        foregroundImage:
+          "./assets/images/BoiskoPlusNewLogoForMobileSmaller.png",
+        backgroundColor: "#012115",
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
-      package: 'com.boiskoplusmobile.app',
-      permissions: ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION'],
-      googleServicesFile: './google-services.json',
+      package: "com.boiskoplusmobile.app",
+      permissions: ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      googleServicesFile: "./google-services.json",
     },
     web: {
-      bundler: 'metro',
-      output: 'static',
-      favicon: './assets/images/favicon.ico',
+      bundler: "metro",
+      output: "static",
+      favicon: "./assets/images/favicon.ico",
     },
     plugins: [
-      'expo-router',
-      'expo-secure-store',
-      'expo-asset',
-      'expo-audio',
-      'expo-font',
-      'expo-web-browser',
-      'expo-location',
-      'expo-image-picker',
-      'expo-apple-authentication',
-      '@react-native-google-signin/google-signin',
+      "expo-router",
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      "expo-asset",
+      "expo-audio",
+      "expo-font",
+      "expo-web-browser",
+      "expo-location",
+      "expo-image-picker",
+      "expo-apple-authentication",
+      "@react-native-google-signin/google-signin",
       [
-        'expo-notifications',
+        "expo-notifications",
         {
-          icon: './assets/images/BoiskoPlusNewLogoForMobile.png',
-          color: '#012115',
-          defaultChannel: 'default',
+          icon: "./assets/images/BoiskoPlusNewLogoForMobile.png",
+          color: "#012115",
+          defaultChannel: "default",
         },
       ],
       [
-        '@rnmapbox/maps',
+        "@rnmapbox/maps",
         {
           RNMapboxMapsPublicToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
           RNMapboxMapsDownloadToken:
@@ -100,8 +102,8 @@ export default {
       eas: {
         projectId:
           process.env.EXPO_PUBLIC_EAS_PROJECT_ID ||
-          '826ce042-408b-47a0-b6f6-5718e63e52b3',
+          "826ce042-408b-47a0-b6f6-5718e63e52b3",
       },
     },
   },
-}
+};

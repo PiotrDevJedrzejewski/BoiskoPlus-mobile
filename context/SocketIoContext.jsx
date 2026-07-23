@@ -14,23 +14,27 @@
  * Konsumenci importują z socketStore.js bezpośrednio.
  */
 
-import { useRef, useEffect } from 'react'
-import { AppState } from 'react-native'
-import { useAudioPlayer } from 'expo-audio'
-import Constants from 'expo-constants'
-import * as SecureStore from 'expo-secure-store'
-import io from 'socket.io-client'
-import { useAuth } from './AuthContext'
-import { useNotification } from './NotificationContext'
-import customFetch from '../assets/utils/customFetch'
+import { useRef, useEffect } from "react";
+import { AppState } from "react-native";
+import { useAudioPlayer } from "expo-audio";
+import Constants from "expo-constants";
+import * as SecureStore from "expo-secure-store";
+import io from "socket.io-client";
+import { useAuth } from "./AuthContext";
+import { useNotification } from "./NotificationContext";
+import customFetch from "../assets/utils/customFetch";
 import {
   useSocketStore,
   ConnectionState,
   _getJoinedRooms,
   _getChatListeners,
   _getNotificationListeners,
-} from './socketStore'
-import { dbg, useDebugMount, useProviderRenderCount } from '../assets/utils/debugLogger'
+} from "./socketStore";
+import {
+  dbg,
+  useDebugMount,
+  useProviderRenderCount,
+} from "../assets/utils/debugLogger";
 
 // =====================================================
 // SOCKET CONFIG
@@ -40,208 +44,234 @@ const getSocketUrl = () => {
   return (
     Constants.expoConfig?.extra?.socketUrl ||
     process.env.EXPO_PUBLIC_SERVER_URL_SOCKET ||
-    'http://localhost:3000'
-  )
-}
+    "http://localhost:3000"
+  );
+};
 
 const getSocketOptions = (authToken) => ({
-  transports: ['polling', 'websocket'],
+  transports: ["polling", "websocket"],
   upgrade: true,
   auth: { token: authToken },
   reconnection: true,
-  reconnectionAttempts: 10,
+  // Infinity — w tle socket jest świadomie rozłączany (patrz AppState effect),
+  // więc próby lecą tylko w foreground; backoff do 30 s ogranicza ruch.
+  // Skończony limit zostawiał socket martwy na zawsze po wyczerpaniu prób.
+  reconnectionAttempts: Infinity,
   reconnectionDelay: 1000,
   reconnectionDelayMax: 30000,
   randomizationFactor: 0.5,
   timeout: 20000,
   autoConnect: true,
   secure: true,
-})
+});
 
 // =====================================================
 // RE-EXPORTS for backward compatibility
 // =====================================================
 
-export { ConnectionState, useSocketStore } from './socketStore'
+export { ConnectionState, useSocketStore } from "./socketStore";
 
 /**
  * @deprecated Use useSocketStore with selectors instead.
  * Kept for backward compatibility during migration.
  */
-export const useSocketIo = () => useSocketStore()
+export const useSocketIo = () => useSocketStore();
 
 // =====================================================
 // MANAGER COMPONENT
 // =====================================================
 
 export const SocketIoProvider = ({ children }) => {
-  dbg('SocketIoProvider')
-  useDebugMount('SocketIoProvider')
-  useProviderRenderCount('SocketIoProvider')
+  dbg("SocketIoProvider");
+  useDebugMount("SocketIoProvider");
+  useProviderRenderCount("SocketIoProvider");
 
-  const { user, isAuthChecked } = useAuth()
-  const { shouldShowNotification } = useNotification()
+  const { user, isAuthChecked } = useAuth();
+  const { shouldShowNotification } = useNotification();
 
   // ─── Audio ──
   const notificationPlayer = useAudioPlayer(
-    require('../assets/sounds/notification-alert-269289.mp3')
-  )
+    require("../assets/sounds/notification-alert-269289.mp3"),
+  );
 
   // ─── Refs for stable access in socket handlers (avoid stale closures) ──
-  const shouldShowNotificationRef = useRef(shouldShowNotification)
+  const shouldShowNotificationRef = useRef(shouldShowNotification);
   useEffect(() => {
-    shouldShowNotificationRef.current = shouldShowNotification
-  }, [shouldShowNotification])
+    shouldShowNotificationRef.current = shouldShowNotification;
+  }, [shouldShowNotification]);
 
-  const userIdRef = useRef(user?._id)
+  const userIdRef = useRef(user?._id);
   useEffect(() => {
-    userIdRef.current = user?._id
-  }, [user?._id])
+    userIdRef.current = user?._id;
+  }, [user?._id]);
 
-  const notificationPlayerRef = useRef(notificationPlayer)
+  const notificationPlayerRef = useRef(notificationPlayer);
   useEffect(() => {
-    notificationPlayerRef.current = notificationPlayer
-  }, [notificationPlayer])
+    notificationPlayerRef.current = notificationPlayer;
+  }, [notificationPlayer]);
 
   const playNotificationSound = () => {
     try {
-      const player = notificationPlayerRef.current
+      const player = notificationPlayerRef.current;
       if (player) {
-        player.seekTo(0)
-        player.play()
+        player.seekTo(0);
+        player.play();
       }
     } catch (error) {
-      console.error('[Audio] Błąd odtwarzania dźwięku:', error)
+      console.error("[Audio] Błąd odtwarzania dźwięku:", error);
     }
-  }
+  };
 
   // ═════════════════════════════════════════════════
   // EFFECT: Inicjalizacja socketów
   // ═════════════════════════════════════════════════
 
-  const reconnectKey = useSocketStore((s) => s.reconnectKey)
+  const reconnectKey = useSocketStore((s) => s.reconnectKey);
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     const initSockets = async () => {
-      if (!isAuthChecked) return
+      if (!isAuthChecked) return;
 
-      const isAuthenticated = user && user.userID && user.userID !== null
+      const isAuthenticated = user && user.userID && user.userID !== null;
       if (!isAuthenticated) {
-        useSocketStore.getState().disconnectSockets()
-        return
+        useSocketStore.getState().disconnectSockets();
+        return;
       }
 
       // Jeśli sockety już połączone, nie twórz nowych
       const { chatSocket: existingChat, notificationSocket: existingNotif } =
-        useSocketStore.getState()
-      if (existingChat?.connected && existingNotif?.connected) return
+        useSocketStore.getState();
+      if (existingChat?.connected && existingNotif?.connected) return;
 
-      let authToken = null
+      let authToken = null;
       try {
-        authToken = await SecureStore.getItemAsync('authToken')
+        authToken = await SecureStore.getItemAsync("authToken");
       } catch (error) {
-        console.error('[Socket] Błąd pobierania tokena:', error)
+        console.error("[Socket] Błąd pobierania tokena:", error);
       }
       if (!authToken) {
-        console.warn('[Socket] Brak tokena - sockety nie zostaną połączone')
-        return
+        console.warn("[Socket] Brak tokena - sockety nie zostaną połączone");
+        return;
       }
 
-      if (cancelled) return
+      if (cancelled) return;
 
-      const socketUrl = getSocketUrl()
-      const socketOptions = getSocketOptions(authToken)
-      const store = useSocketStore.getState()
-      const _joinedRooms = _getJoinedRooms()
+      const socketUrl = getSocketUrl();
+      const socketOptions = getSocketOptions(authToken);
+      const store = useSocketStore.getState();
+      const _joinedRooms = _getJoinedRooms();
 
       // ── Handler for auth failure (server says session expired) ──
       const handleAuthError = () => {
-        console.warn('[Socket] Server auth error — forcing full reconnect')
+        console.warn("[Socket] Server auth error — forcing full reconnect");
         if (!cancelled) {
-          useSocketStore.getState().forceReconnect()
+          useSocketStore.getState().forceReconnect();
         }
-      }
+      };
 
       // ── Chat socket ──
-      store.setChatConnectionState(ConnectionState.CONNECTING)
-      const newChatSocket = io(`${socketUrl}/chat`, socketOptions)
+      store.setChatConnectionState(ConnectionState.CONNECTING);
+      const newChatSocket = io(`${socketUrl}/chat`, socketOptions);
 
-      newChatSocket.on('connect', () => {
-        useSocketStore.getState().setChatConnectionState(ConnectionState.CONNECTED)
+      newChatSocket.on("connect", () => {
+        useSocketStore
+          .getState()
+          .setChatConnectionState(ConnectionState.CONNECTED);
 
         // Verify server recognizes us after (re)connect
-        newChatSocket.emit('healthCheck', (result) => {
+        newChatSocket.emit("healthCheck", (result) => {
           if (!result?.success) {
-            console.warn('[Chat] Health check failed — forcing reconnect')
-            useSocketStore.getState().forceReconnect()
+            console.warn("[Chat] Health check failed — forcing reconnect");
+            useSocketStore.getState().forceReconnect();
           }
-        })
-      })
-      newChatSocket.on('disconnect', (reason) => {
-        useSocketStore.getState().setChatConnectionState(
-          reason === 'io server disconnect'
-            ? ConnectionState.DISCONNECTED
-            : ConnectionState.RECONNECTING
-        )
-      })
-      newChatSocket.on('connect_error', (error) => {
-        console.error('[Chat] Connection error:', error.message)
-        useSocketStore.getState().setChatConnectionState(ConnectionState.ERROR)
-      })
-      newChatSocket.on('roomsRestored', (rooms) => {
-        rooms.forEach((roomId) => _joinedRooms.add(roomId))
-      })
-      newChatSocket.on('authError', handleAuthError)
+        });
+      });
+      newChatSocket.on("disconnect", (reason) => {
+        // Serwer traci członkostwo pokoi przy każdym rozłączeniu (nowy socket.id).
+        // Czyścimy cache, żeby joinRoom nie zwracał stale "alreadyJoined".
+        // Serwerowy userRoomsMap i tak odtworzy pokoje po connect → 'roomsRestored'.
+        _joinedRooms.clear();
+        const isIntentional =
+          reason === "io server disconnect" ||
+          reason === "io client disconnect";
+        useSocketStore
+          .getState()
+          .setChatConnectionState(
+            isIntentional
+              ? ConnectionState.DISCONNECTED
+              : ConnectionState.RECONNECTING,
+          );
+      });
+      newChatSocket.on("connect_error", (error) => {
+        console.error("[Chat] Connection error:", error.message);
+        useSocketStore.getState().setChatConnectionState(ConnectionState.ERROR);
+      });
+      newChatSocket.on("roomsRestored", (rooms) => {
+        rooms.forEach((roomId) => _joinedRooms.add(roomId));
+      });
+      newChatSocket.on("authError", handleAuthError);
 
-      store.setChatSocket(newChatSocket)
+      store.setChatSocket(newChatSocket);
 
       // ── Notification socket ──
-      store.setNotificationConnectionState(ConnectionState.CONNECTING)
-      const newNotificationSocket = io(`${socketUrl}/notifications`, socketOptions)
+      store.setNotificationConnectionState(ConnectionState.CONNECTING);
+      const newNotificationSocket = io(
+        `${socketUrl}/notifications`,
+        socketOptions,
+      );
 
-      newNotificationSocket.on('connect', () => {
-        useSocketStore.getState().setNotificationConnectionState(ConnectionState.CONNECTED)
-      })
-      newNotificationSocket.on('disconnect', (reason) => {
-        useSocketStore.getState().setNotificationConnectionState(
-          reason === 'io server disconnect'
-            ? ConnectionState.DISCONNECTED
-            : ConnectionState.RECONNECTING
-        )
-      })
-      newNotificationSocket.on('connect_error', (error) => {
-        console.error('[Notifications] Connection error:', error.message)
-        useSocketStore.getState().setNotificationConnectionState(ConnectionState.ERROR)
-      })
-      newNotificationSocket.on('authError', handleAuthError)
+      newNotificationSocket.on("connect", () => {
+        useSocketStore
+          .getState()
+          .setNotificationConnectionState(ConnectionState.CONNECTED);
+      });
+      newNotificationSocket.on("disconnect", (reason) => {
+        const isIntentional =
+          reason === "io server disconnect" ||
+          reason === "io client disconnect";
+        useSocketStore
+          .getState()
+          .setNotificationConnectionState(
+            isIntentional
+              ? ConnectionState.DISCONNECTED
+              : ConnectionState.RECONNECTING,
+          );
+      });
+      newNotificationSocket.on("connect_error", (error) => {
+        console.error("[Notifications] Connection error:", error.message);
+        useSocketStore
+          .getState()
+          .setNotificationConnectionState(ConnectionState.ERROR);
+      });
+      newNotificationSocket.on("authError", handleAuthError);
 
-      store.setNotificationSocket(newNotificationSocket)
-    }
+      store.setNotificationSocket(newNotificationSocket);
+    };
 
-    initSockets()
+    initSockets();
 
     return () => {
-      cancelled = true
-    }
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.userID, isAuthChecked, reconnectKey])
+  }, [user?.userID, isAuthChecked, reconnectKey]);
 
   // ═════════════════════════════════════════════════
   // EFFECT: Rozłącz przy wylogowaniu
   // ═════════════════════════════════════════════════
 
-  const prevUserIdRef = useRef(user?.userID ?? null)
+  const prevUserIdRef = useRef(user?.userID ?? null);
   useEffect(() => {
-    const prevId = prevUserIdRef.current
-    const currentId = user?.userID ?? null
-    prevUserIdRef.current = currentId
+    const prevId = prevUserIdRef.current;
+    const currentId = user?.userID ?? null;
+    prevUserIdRef.current = currentId;
 
     if (prevId && !currentId) {
-      useSocketStore.getState().disconnectSockets()
+      useSocketStore.getState().disconnectSockets();
     }
-  }, [user?.userID])
+  }, [user?.userID]);
 
   // ═════════════════════════════════════════════════
   // EFFECT: Cleanup socketów przy unmount
@@ -249,186 +279,234 @@ export const SocketIoProvider = ({ children }) => {
 
   useEffect(() => {
     return () => {
-      const { chatSocket, notificationSocket } = useSocketStore.getState()
-      const chatLis = _getChatListeners()
-      const notifLis = _getNotificationListeners()
+      const { chatSocket, notificationSocket } = useSocketStore.getState();
+      const chatLis = _getChatListeners();
+      const notifLis = _getNotificationListeners();
 
       if (chatSocket) {
-        chatLis.forEach((handler, event) => chatSocket.off(event, handler))
-        chatLis.clear()
-        chatSocket.disconnect()
+        chatLis.forEach((handler, event) => chatSocket.off(event, handler));
+        chatLis.clear();
+        chatSocket.disconnect();
       }
       if (notificationSocket) {
-        notifLis.forEach((handler, event) => notificationSocket.off(event, handler))
-        notifLis.clear()
-        notificationSocket.disconnect()
+        notifLis.forEach((handler, event) =>
+          notificationSocket.off(event, handler),
+        );
+        notifLis.clear();
+        notificationSocket.disconnect();
       }
-      _getJoinedRooms().clear()
-    }
-  }, [])
+      _getJoinedRooms().clear();
+    };
+  }, []);
 
-  // ═════════════════════════════════════════════════
-  // EFFECT: AppState — odśwież sockety po powrocie z tła
-  // ═════════════════════════════════════════════════
+  // ═════════════════════════════════════════════
+  // EFFECT: AppState — "disconnect on background, resync on foreground"
+  // JS w tle jest zamrażany (timery/pętle nie działają), więc zamiast
+  // zostawiać pół-martwe połączenie — rozłączamy czysto przy 'background'
+  // i wznawiamy connect() na TYCH SAMYCH instancjach przy 'active'
+  // (listenery zostają podpięte, serwer odtwarza pokoje przez userRoomsMap).
+  // ═════════════════════════════════════════════
 
-  const appStateRef = useRef(AppState.currentState)
+  const appStateRef = useRef(AppState.currentState);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState) => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
       const wasBackground =
-        appStateRef.current === 'background' || appStateRef.current === 'inactive'
-      const isNowActive = nextAppState === 'active'
-      appStateRef.current = nextAppState
+        appStateRef.current === "background" ||
+        appStateRef.current === "inactive";
+      const isNowActive = nextAppState === "active";
+      appStateRef.current = nextAppState;
 
+      // ── Tło: czysty disconnect — tylko 'background', NIE 'inactive'
+      //    (iOS: szuflada powiadomień / app switcher nie powinny zrywać połączenia) ──
+      if (nextAppState === "background") {
+        const { chatSocket: cs, notificationSocket: ns } =
+          useSocketStore.getState();
+        if (cs || ns) {
+          console.log("[AppState] Background — disconnecting sockets");
+        }
+        // Instancje ZOSTAJĄ w store — tylko rozłączone.
+        // disconnect() zatrzymuje też ewentualny trwający auto-reconnect.
+        cs?.disconnect();
+        ns?.disconnect();
+        _getJoinedRooms().clear();
+        return;
+      }
+
+      // ── Powrót do foreground: wznów połączenie ──
       if (wasBackground && isNowActive && user?.userID) {
         const { chatSocket: cs, notificationSocket: ns } =
-          useSocketStore.getState()
+          useSocketStore.getState();
 
-        // If sockets are disconnected or missing, force reconnect
-        if (!cs?.connected || !ns?.connected) {
-          console.log('[AppState] Sockets not connected after resume — forcing reconnect')
-          useSocketStore.getState().forceReconnect()
-          return
+        // Brak instancji (init nie zdążył / race przy logout) — pełna re-inicjalizacja
+        if (!cs || !ns) {
+          console.log(
+            "[AppState] Sockets missing after resume — forcing reconnect",
+          );
+          useSocketStore.getState().forceReconnect();
+          return;
         }
 
-        // If sockets look connected, verify with health check
-        cs.emit('healthCheck', (result) => {
-          if (!result?.success) {
-            console.warn('[AppState] Health check failed after resume — forcing reconnect')
-            useSocketStore.getState().forceReconnect()
-          }
-        })
-      }
-    })
+        // Standardowa ścieżka: connect() na istniejących instancjach.
+        // 'connect' → CONNECTED → efekt re-join (joinRoomsBatch) + refresh unread.
+        if (!cs.connected) {
+          console.log("[AppState] Resume — reconnecting chat socket");
+          cs.connect();
+        }
+        if (!ns.connected) {
+          console.log("[AppState] Resume — reconnecting notification socket");
+          ns.connect();
+        }
 
-    return () => subscription.remove()
-  }, [user?.userID])
+        // Powrót z 'inactive' (socket nie był rozłączany) — zweryfikuj sesję
+        if (cs.connected) {
+          cs.emit("healthCheck", (result) => {
+            if (!result?.success) {
+              console.warn(
+                "[AppState] Health check failed after resume — forcing reconnect",
+              );
+              useSocketStore.getState().forceReconnect();
+            }
+          });
+        }
+      }
+    });
+
+    return () => subscription.remove();
+  }, [user?.userID]);
 
   // ═════════════════════════════════════════════════
   // EFFECT: Pobierz pokoje i dołącz (BATCH)
   // ═════════════════════════════════════════════════
 
-  const chatSocket = useSocketStore((s) => s.chatSocket)
-  const chatConnectionState = useSocketStore((s) => s.chatConnectionState)
+  const chatSocket = useSocketStore((s) => s.chatSocket);
+  const chatConnectionState = useSocketStore((s) => s.chatConnectionState);
 
   useEffect(() => {
-    if (!chatSocket || chatConnectionState !== ConnectionState.CONNECTED) return
-    if (!user?.userID) return
+    if (!chatSocket || chatConnectionState !== ConnectionState.CONNECTED)
+      return;
+    if (!user?.userID) return;
 
-    let cancelled = false
-    let timeoutId = null
-    const _joinedRooms = _getJoinedRooms()
+    let cancelled = false;
+    let timeoutId = null;
+    const _joinedRooms = _getJoinedRooms();
 
     const joinAndSetRooms = (rooms) => {
-      if (cancelled) return
+      if (cancelled) return;
       if (rooms.length === 0) {
-        useSocketStore.getState().setRoomsState([])
-        return
+        useSocketStore.getState().setRoomsState([]);
+        return;
       }
-      const roomIds = rooms.map((room) => room.roomId)
-      chatSocket.emit('joinRoomsBatch', roomIds, (joinResult) => {
+      const roomIds = rooms.map((room) => room.roomId);
+      chatSocket.emit("joinRoomsBatch", roomIds, (joinResult) => {
         if (joinResult?.success) {
-          joinResult.joined.forEach((roomId) => _joinedRooms.add(roomId))
+          joinResult.joined.forEach((roomId) => _joinedRooms.add(roomId));
         }
-      })
-      useSocketStore.getState().setRoomsState(rooms)
-    }
+      });
+      useSocketStore.getState().setRoomsState(rooms);
+    };
 
     const fetchRoomsHTTP = async () => {
-      if (cancelled) return
+      if (cancelled) return;
       try {
-        const response = await customFetch.get('/chat/rooms')
-        const rooms = response.data.chatRooms || []
+        const response = await customFetch.get("/chat/rooms");
+        const rooms = response.data.chatRooms || [];
         const roomsWithUnread = rooms.map((room) => ({
           ...room,
           unreadCount: room.unreadCount || 0,
-        }))
-        joinAndSetRooms(roomsWithUnread)
+        }));
+        joinAndSetRooms(roomsWithUnread);
       } catch (error) {
-        console.error('[fetchAndJoinRooms] HTTP fallback failed:', error.message)
-        if (!cancelled) useSocketStore.getState().setRoomsState([])
+        console.error(
+          "[fetchAndJoinRooms] HTTP fallback failed:",
+          error.message,
+        );
+        if (!cancelled) useSocketStore.getState().setRoomsState([]);
       }
-    }
+    };
 
-    let webSocketResolved = false
+    let webSocketResolved = false;
     timeoutId = setTimeout(() => {
-      if (!webSocketResolved && !cancelled) fetchRoomsHTTP()
-    }, 8000)
+      if (!webSocketResolved && !cancelled) fetchRoomsHTTP();
+    }, 8000);
 
-    chatSocket.emit('getRoomsWithUnreadCounts', (result) => {
-      webSocketResolved = true
-      if (timeoutId) clearTimeout(timeoutId)
-      if (cancelled) return
+    chatSocket.emit("getRoomsWithUnreadCounts", (result) => {
+      webSocketResolved = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      if (cancelled) return;
       if (!result?.success) {
-        fetchRoomsHTTP()
-        return
+        fetchRoomsHTTP();
+        return;
       }
-      joinAndSetRooms(result.chatRooms || [])
-    })
+      joinAndSetRooms(result.chatRooms || []);
+    });
 
     return () => {
-      cancelled = true
-      if (timeoutId) clearTimeout(timeoutId)
-    }
-  }, [chatSocket, chatConnectionState, user?.userID])
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [chatSocket, chatConnectionState, user?.userID]);
 
   // ═════════════════════════════════════════════════
   // EFFECT: Pobierz nieprzeczytane powiadomienia
   // ═════════════════════════════════════════════════
 
-  const notificationSocket = useSocketStore((s) => s.notificationSocket)
+  const notificationSocket = useSocketStore((s) => s.notificationSocket);
   const notificationConnectionState = useSocketStore(
-    (s) => s.notificationConnectionState
-  )
+    (s) => s.notificationConnectionState,
+  );
 
   useEffect(() => {
     if (!user?.userID) {
-      const s = useSocketStore.getState()
-      s.setUnreadEventsCount(0)
-      s.setUnreadEventsList([])
-      return
+      const s = useSocketStore.getState();
+      s.setUnreadEventsCount(0);
+      s.setUnreadEventsList([]);
+      return;
     }
 
     const fetchUnreadEventsHTTP = async () => {
       try {
-        const response = await customFetch.get('/notifications/unread')
-        const unreadEvents = response.data.unreadNotifications || []
-        useSocketStore.getState().setUnreadEventsCount(unreadEvents.length)
-        useSocketStore.getState().setUnreadEventsList(unreadEvents)
+        const response = await customFetch.get("/notifications/unread");
+        const unreadEvents = response.data.unreadNotifications || [];
+        useSocketStore.getState().setUnreadEventsCount(unreadEvents.length);
+        useSocketStore.getState().setUnreadEventsList(unreadEvents);
       } catch (error) {
-        console.error('[Notifications] HTTP fetch error:', error)
-        useSocketStore.getState().setUnreadEventsCount(0)
-        useSocketStore.getState().setUnreadEventsList([])
+        console.error("[Notifications] HTTP fetch error:", error);
+        useSocketStore.getState().setUnreadEventsCount(0);
+        useSocketStore.getState().setUnreadEventsList([]);
       }
-    }
+    };
 
     if (
       notificationSocket &&
       notificationConnectionState === ConnectionState.CONNECTED
     ) {
-      notificationSocket.emit('getUnreadNotifications', (result) => {
+      notificationSocket.emit("getUnreadNotifications", (result) => {
         if (result.success) {
-          useSocketStore.getState().setUnreadEventsCount(result.count)
-          useSocketStore.getState().setUnreadEventsList(result.unreadNotifications)
+          useSocketStore.getState().setUnreadEventsCount(result.count);
+          useSocketStore
+            .getState()
+            .setUnreadEventsList(result.unreadNotifications);
         } else {
-          fetchUnreadEventsHTTP()
+          fetchUnreadEventsHTTP();
         }
-      })
+      });
     } else {
-      fetchUnreadEventsHTTP()
+      fetchUnreadEventsHTTP();
     }
-  }, [user?.userID, notificationSocket, notificationConnectionState])
+  }, [user?.userID, notificationSocket, notificationConnectionState]);
 
   // ═════════════════════════════════════════════════
   // EFFECT: Listener — nowe wiadomości
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
-    if (!chatSocket) return
+    if (!chatSocket) return;
 
     const handleNewMessage = (msg) => {
-      const isOwnMessage = msg.sender?._id === userIdRef.current
-      const isActiveRoom = msg.roomId === useSocketStore.getState().activeRoomId
+      const isOwnMessage = msg.sender?._id === userIdRef.current;
+      const isActiveRoom =
+        msg.roomId === useSocketStore.getState().activeRoomId;
 
       // Zawsze aktualizuj lastMessage (w tym własne wiadomości)
       // Zwiększ unreadCount tylko dla cudzych wiadomości spoza aktywnego pokoju
@@ -443,135 +521,140 @@ export const SocketIoProvider = ({ children }) => {
                     ? (room.unreadCount || 0) + 1
                     : room.unreadCount,
               }
-            : room
-        )
-      )
+            : room,
+        ),
+      );
 
       // Dźwięk tylko dla cudzych wiadomości spoza aktywnego pokoju
       if (!isOwnMessage && !isActiveRoom) {
         const shouldNotify = shouldShowNotificationRef.current(
-          'chatMessages',
-          msg.roomId
-        )
-        if (shouldNotify) playNotificationSound()
+          "chatMessages",
+          msg.roomId,
+        );
+        if (shouldNotify) playNotificationSound();
       }
-    }
+    };
 
-    useSocketStore.getState()._addChatListener('newMessage', handleNewMessage)
+    useSocketStore.getState()._addChatListener("newMessage", handleNewMessage);
 
     return () => {
-      chatSocket.off('newMessage', handleNewMessage)
-      _getChatListeners().delete('newMessage')
-    }
-  }, [chatSocket])
+      chatSocket.off("newMessage", handleNewMessage);
+      _getChatListeners().delete("newMessage");
+    };
+  }, [chatSocket]);
 
   // ═════════════════════════════════════════════════
   // EFFECT: Online users tracking
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
-    if (!chatSocket || chatConnectionState !== ConnectionState.CONNECTED) return
+    if (!chatSocket || chatConnectionState !== ConnectionState.CONNECTED)
+      return;
 
-    chatSocket.emit('getOnlineUsers', (result) => {
+    chatSocket.emit("getOnlineUsers", (result) => {
       if (result.success) {
-        useSocketStore.getState().setOnlineUsers(new Set(result.onlineUsers))
+        useSocketStore.getState().setOnlineUsers(new Set(result.onlineUsers));
       }
-    })
+    });
 
     const handleUserOnline = ({ userId }) => {
-      useSocketStore.getState().setOnlineUsers((prev) => new Set(prev).add(userId))
-    }
+      useSocketStore
+        .getState()
+        .setOnlineUsers((prev) => new Set(prev).add(userId));
+    };
     const handleUserOffline = ({ userId }) => {
       useSocketStore.getState().setOnlineUsers((prev) => {
-        const next = new Set(prev)
-        next.delete(userId)
-        return next
-      })
-    }
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+    };
 
-    const store = useSocketStore.getState()
-    store._addChatListener('userOnline', handleUserOnline)
-    store._addChatListener('userOffline', handleUserOffline)
+    const store = useSocketStore.getState();
+    store._addChatListener("userOnline", handleUserOnline);
+    store._addChatListener("userOffline", handleUserOffline);
 
     return () => {
-      chatSocket.off('userOnline', handleUserOnline)
-      chatSocket.off('userOffline', handleUserOffline)
-      const cl = _getChatListeners()
-      cl.delete('userOnline')
-      cl.delete('userOffline')
-    }
-  }, [chatSocket, chatConnectionState])
+      chatSocket.off("userOnline", handleUserOnline);
+      chatSocket.off("userOffline", handleUserOffline);
+      const cl = _getChatListeners();
+      cl.delete("userOnline");
+      cl.delete("userOffline");
+    };
+  }, [chatSocket, chatConnectionState]);
 
   // ═════════════════════════════════════════════════
   // EFFECT: Listener — status eventów
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
-    if (!notificationSocket) return
+    if (!notificationSocket) return;
 
     const handleStatusUpdate = (data) => {
-      const store = useSocketStore.getState()
+      const store = useSocketStore.getState();
 
       store.setLastStatusUpdate({
         timestamp: Date.now(),
         eventId: data.eventId,
         newStatus: data.newStatus,
-      })
+      });
 
       // Invite cancelled: remove from invites list, no sound
-      if (data.newStatus === 'inviteCancelled') {
-        store.clearInvite(data.eventId)
-        return
+      if (data.newStatus === "inviteCancelled") {
+        store.clearInvite(data.eventId);
+        return;
       }
 
       // New invite: add to invites list, play sound
-      if (data.newStatus === 'invited') {
+      if (data.newStatus === "invited") {
         const shouldNotify = shouldShowNotificationRef.current(
-          'eventStatusUpdates',
+          "eventStatusUpdates",
           null,
-          data.eventId
-        )
+          data.eventId,
+        );
         if (shouldNotify) {
-          playNotificationSound()
+          playNotificationSound();
           store.setUnreadInvitesList((prev) => {
-            const exists = prev.some((item) => item.eventID._id === data.eventId)
-            if (exists) return prev
+            const exists = prev.some(
+              (item) => item.eventID._id === data.eventId,
+            );
+            if (exists) return prev;
             const newList = [
               ...prev,
               {
                 eventID: { _id: data.eventId, eventName: data.eventName },
-                status: 'invited',
+                status: "invited",
                 readBy: false,
               },
-            ]
-            store.setUnreadInvitesCount(newList.length)
-            return newList
-          })
+            ];
+            store.setUnreadInvitesCount(newList.length);
+            return newList;
+          });
         }
-        return
+        return;
       }
 
       // All other statuses (accepted, rejected, finished, inviteAccepted, etc.)
       const shouldNotify = shouldShowNotificationRef.current(
-        'eventStatusUpdates',
+        "eventStatusUpdates",
         null,
-        data.eventId
-      )
+        data.eventId,
+      );
 
       if (shouldNotify) {
-        playNotificationSound()
+        playNotificationSound();
 
         store.setUnreadEventsList((prev) => {
           const existingIndex = prev.findIndex(
-            (event) => event.eventID._id === data.eventId
-          )
+            (event) => event.eventID._id === data.eventId,
+          );
           if (existingIndex !== -1) {
-            const updated = [...prev]
+            const updated = [...prev];
             updated[existingIndex] = {
               ...updated[existingIndex],
               status: data.newStatus,
-            }
-            return updated
+            };
+            return updated;
           } else {
             const newList = [
               ...prev,
@@ -580,75 +663,74 @@ export const SocketIoProvider = ({ children }) => {
                 status: data.newStatus,
                 readBy: false,
               },
-            ]
-            store.setUnreadEventsCount(newList.length)
-            return newList
+            ];
+            store.setUnreadEventsCount(newList.length);
+            return newList;
           }
-        })
+        });
       }
-    }
+    };
 
     useSocketStore
       .getState()
-      ._addNotificationListener('statusUpdate', handleStatusUpdate)
+      ._addNotificationListener("statusUpdate", handleStatusUpdate);
 
     return () => {
-      notificationSocket.off('statusUpdate', handleStatusUpdate)
-      _getNotificationListeners().delete('statusUpdate')
-    }
-  }, [notificationSocket])
+      notificationSocket.off("statusUpdate", handleStatusUpdate);
+      _getNotificationListeners().delete("statusUpdate");
+    };
+  }, [notificationSocket]);
 
   // ═════════════════════════════════════════════════
   // EFFECT: Listener — zaproszenia do znajomych
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
-    if (!notificationSocket) return
+    if (!notificationSocket) return;
 
     const handleFriendRequest = () => {
-      const shouldNotify =
-        shouldShowNotificationRef.current('chatMessages')
-      if (shouldNotify !== false) playNotificationSound()
+      const shouldNotify = shouldShowNotificationRef.current("chatMessages");
+      if (shouldNotify !== false) playNotificationSound();
 
       useSocketStore
         .getState()
-        .setUnreadFriendRequestsCount((prev) => prev + 1)
-    }
+        .setUnreadFriendRequestsCount((prev) => prev + 1);
+    };
 
     useSocketStore
       .getState()
-      ._addNotificationListener('friendRequest', handleFriendRequest)
+      ._addNotificationListener("friendRequest", handleFriendRequest);
 
     return () => {
-      notificationSocket.off('friendRequest', handleFriendRequest)
-      _getNotificationListeners().delete('friendRequest')
-    }
-  }, [notificationSocket])
+      notificationSocket.off("friendRequest", handleFriendRequest);
+      _getNotificationListeners().delete("friendRequest");
+    };
+  }, [notificationSocket]);
 
   // ═════════════════════════════════════════════════
   // EFFECT: Listener — usunięcie pokoju czatu (usunięcie konta rozmówcy)
   // ═════════════════════════════════════════════════
 
   useEffect(() => {
-    if (!notificationSocket) return
+    if (!notificationSocket) return;
 
     const handleChatRoomRemoved = ({ roomId }) => {
-      useSocketStore.getState().removeRoom(roomId)
-    }
+      useSocketStore.getState().removeRoom(roomId);
+    };
 
     useSocketStore
       .getState()
-      ._addNotificationListener('chatRoomRemoved', handleChatRoomRemoved)
+      ._addNotificationListener("chatRoomRemoved", handleChatRoomRemoved);
 
     return () => {
-      notificationSocket.off('chatRoomRemoved', handleChatRoomRemoved)
-      _getNotificationListeners().delete('chatRoomRemoved')
-    }
-  }, [notificationSocket])
+      notificationSocket.off("chatRoomRemoved", handleChatRoomRemoved);
+      _getNotificationListeners().delete("chatRoomRemoved");
+    };
+  }, [notificationSocket]);
 
   // ═════════════════════════════════════════════════
   // RENDER — no context provider, just children
   // ═════════════════════════════════════════════════
 
-  return children
-}
+  return children;
+};
