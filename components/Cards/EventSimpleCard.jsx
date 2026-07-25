@@ -14,7 +14,7 @@ import {
   getParticipationBadge,
 } from "../../assets/utils/eventDisplay";
 
-import RecommendCardBG from "../../assets/images/V2/IMG_2313.png";
+import RecommendCardBG from "../../assets/images/V2/football.png";
 
 const EventSimpleCard = ({ event, myStatus, onPress, highlighted = false }) => {
   const { styles, colors } = useThemedStyles(createStyles);
@@ -34,6 +34,14 @@ const EventSimpleCard = ({ event, myStatus, onPress, highlighted = false }) => {
         source={RecommendCardBG}
         style={styles.event_card_backgroundImage}
       />
+      <View style={styles.event_card_status}>
+        <Ionicons
+          name={badge.icon}
+          size={scaleFont(12)}
+          color={colors[badge.colorKey]}
+        />
+        <Text style={styles.event_card_status_text}>{badge.text}</Text>
+      </View>
       <View style={styles.event_card_content}>
         {!!date && <Text style={styles.event_card_date}>{date}</Text>}
         <Text style={styles.event_card_titel} numberOfLines={1}>
@@ -73,14 +81,6 @@ const EventSimpleCard = ({ event, myStatus, onPress, highlighted = false }) => {
             {formatEventFormat(event.format)}
           </Text>
         </View>
-        <View style={styles.event_card_status}>
-          <Ionicons
-            name={badge.icon}
-            size={scaleFont(12)}
-            color={colors[badge.colorKey]}
-          />
-          <Text style={styles.event_card_status_text}>{badge.text}</Text>
-        </View>
       </View>
     </Pressable>
   );
@@ -100,6 +100,7 @@ const createStyles = (colors) =>
       backgroundColor: colors.secondaryCard,
       flexDirection: "row",
       justifyContent: "flex-start",
+      position: "relative",
     },
     // Nieprzeczytane powiadomienie dot. eventu — wyróżnienie ramką
     event_card_highlighted: {
@@ -149,11 +150,11 @@ const createStyles = (colors) =>
 
     event_card_AdditionalContent: {
       width: "17%",
-      justifyContent: "space-between",
+      justifyContent: "flex-end",
     },
     event_card_format: {
       marginRight: SPACING.xs,
-      marginTop: SPACING.sm,
+      marginBottom: SPACING.sm,
       justifyContent: "center",
       alignItems: "center",
     },
@@ -168,14 +169,18 @@ const createStyles = (colors) =>
       borderColor: colors.border,
     },
     event_card_status: {
-      marginRight: SPACING.xs,
-      marginBottom: SPACING.sm,
+      marginRight: SPACING.sm,
+      marginTop: SPACING.sm,
       justifyContent: "center",
       alignItems: "center",
       gap: SPACING.xs,
+      flexDirection: "row",
+      position: "absolute",
+      top: 0,
+      right: 0,
     },
     event_card_status_text: {
-      fontSize: scaleFont(8, 0.3),
+      fontSize: scaleFont(10, 0.3),
       color: colors.primaryText,
       textAlign: "center",
     },

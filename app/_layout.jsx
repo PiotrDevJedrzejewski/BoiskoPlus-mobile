@@ -1,90 +1,138 @@
-import 'react-native-gesture-handler' // MUST be at the top!
-import { useEffect } from 'react'
-import { Stack } from 'expo-router'
-import { useFonts } from 'expo-font'
-import HeaderStack from '../Navigation/HeaderStack'
-import LottieView from 'lottie-react-native'
-import spinner from '../assets/utils/spinner.json'
-import { View } from 'react-native'
-import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { KeyboardProvider } from 'react-native-keyboard-controller'
-import ToastManager from 'toastify-react-native'
-import { dbg, useDebugMount, scheduleSummary } from '../assets/utils/debugLogger'
-import { useThemeStore } from '../context/themeStore'
+import "react-native-gesture-handler"; // MUST be at the top!
+import { useCallback, useEffect, useState } from "react";
+import { Stack } from "expo-router";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import HeaderStack from "../Navigation/HeaderStack";
+import AnimatedSplash from "../components/AnimatedSplash";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
+import ToastManager from "toastify-react-native";
+import {
+  dbg,
+  useDebugMount,
+  scheduleSummary,
+} from "../assets/utils/debugLogger";
+import { useThemeStore } from "../context/themeStore";
 
 // Only AuthProvider at root — all other providers scoped to (auth) layout
-import { AuthProvider } from '../context/AuthContext'
+import { AuthProvider, useAuth } from "../context/AuthContext";
 
-const Layout = () => {
-  dbg('RootLayout')
-  useDebugMount('RootLayout')
-  scheduleSummary(5)
+// Natywny splash zostaje na ekranie, dopóki nie zamontuje się <AnimatedSplash />
+SplashScreen.preventAutoHideAsync().catch(() => {});
+SplashScreen.setOptions({ duration: 300, fade: true });
 
-  const colors = useThemeStore((s) => s.theme.colors)
-  const isThemeReady = useThemeStore((s) => s.isReady)
-  const initTheme = useThemeStore((s) => s.initTheme)
+// Bezpiecznik — gdyby sprawdzanie sesji trwało zbyt długo (np. zimny start
+// backendu), splash i tak zniknie i pokaże się własny loader ekranu.
+const MAX_SPLASH_WAIT = 6000;
+
+// Przekazuje w górę informację, że AuthContext skończył sprawdzać sesję.
+// Dzięki temu <AnimatedSplash /> może zostać zamontowany na stałe w rootcie
+// (bez restartu animacji Lottie), a mimo to czekać na dane z AuthProvider.
+const AuthReadyBridge = ({ onResolved }) => {
+  const { loading } = useAuth();
 
   useEffect(() => {
-    initTheme()
-  }, [])
+    if (!loading) onResolved();
+  }, [loading]);
+
+  return null;
+};
+
+const Layout = () => {
+  dbg("RootLayout");
+  useDebugMount("RootLayout");
+  scheduleSummary(5);
+
+  const colors = useThemeStore((s) => s.theme.colors);
+  const themeMode = useThemeStore((s) => s.theme.mode);
+  const isThemeReady = useThemeStore((s) => s.isReady);
+  const initTheme = useThemeStore((s) => s.initTheme);
+
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
+  const [isAuthResolved, setIsAuthResolved] = useState(false);
+
+  useEffect(() => {
+    initTheme();
+  }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsAuthResolved(true), MAX_SPLASH_WAIT);
+    return () => clearTimeout(timeout);
+  }, []);
 
   const [fontsLoaded] = useFonts({
-    'Montserrat-Bold': require('../assets/fonts/Montserrat-Bold.ttf'),
-    'Montserrat-Regular': require('../assets/fonts/Montserrat-Regular.ttf'),
-    'Montserrat-Italic': require('../assets/fonts/Montserrat-Italic.ttf'),
-    'Lato-Bold': require('../assets/fonts/Lato-Bold.ttf'),
-    'Lato-Regular': require('../assets/fonts/Lato-Regular.ttf'),
-    ObjectFont: require('../assets/fonts/object.ttf'),
-  })
+    "Montserrat-Bold": require("../assets/fonts/Montserrat-Bold.ttf"),
+    "Montserrat-Regular": require("../assets/fonts/Montserrat-Regular.ttf"),
+    "Montserrat-Italic": require("../assets/fonts/Montserrat-Italic.ttf"),
+    "Lato-Bold": require("../assets/fonts/Lato-Bold.ttf"),
+    "Lato-Regular": require("../assets/fonts/Lato-Regular.ttf"),
+    ObjectFont: require("../assets/fonts/object.ttf"),
+  });
 
-  if (!fontsLoaded || !isThemeReady) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: colors.background,
-        }}
-      >
-        <LottieView
-          source={spinner}
-          autoPlay
-          loop
-          style={{ width: 80, height: 80 }}
-        />
-      </View>
-    )
-  }
+  // Nawigacja może się montować, gdy mamy czcionki i motyw...
+  const areAssetsReady = fontsLoaded && isThemeReady;
+  // ...ale splash trzymamy do końca sprawdzania sesji, żeby zasłonić
+  // pierwsze przejście na /(auth) (montowanie headera, tab baru itd.).
+  const isAppReady = areAssetsReady && isAuthResolved;
+
+  const handleAuthResolved = useCallback(() => setIsAuthResolved(true), []);
+
+  // Natywny splash chowamy dopiero, gdy nasz pełnoekranowy splash jest już
+  // wyrenderowany — dzięki temu nie ma przebłysku pustego ekranu.
+  const handleSplashLayout = useCallback(() => {
+    SplashScreen.hideAsync().catch(() => {});
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <KeyboardProvider>
-        <AuthProvider>
-          <Stack
-            screenOptions={{
-              headerStyle: { backgroundColor: colors.background },
-              headerTintColor: colors.secondary,
-              headerTitleStyle: {
-                fontSize: 16,
-              },
-              header: (props) => <HeaderStack {...props} />,
-              gestureEnabled: false,
-            }}
-          >
-            {/* Public screens */}
-            <Stack.Screen name='index' options={{ headerShown: true }} />
-            <Stack.Screen name='login' options={{ headerShown: true }} />
-            <Stack.Screen name='register' options={{ headerShown: true }} />
-            <Stack.Screen name='rules' options={{ headerShown: true }} />
-            {/* Protected screens — providers are inside (auth)/_layout.jsx */}
-            <Stack.Screen name='(auth)' options={{ headerShown: false, gestureEnabled: false }} />
-          </Stack>
-          <ToastManager />
-        </AuthProvider>
-      </KeyboardProvider>
-    </GestureHandlerRootView>
-  )
-}
-export default Layout
+      {/* Jeden globalny StatusBar — bez niego po opuszczeniu ekranu, który
+          ustawia własny styl (np. index), ikony wracają do trybu systemowego
+          i "migają" przy przejściu na /(auth). */}
+      <StatusBar
+        style={isSplashVisible || themeMode === "dark" ? "light" : "dark"}
+      />
 
+      {areAssetsReady && (
+        <KeyboardProvider>
+          <AuthProvider>
+            <AuthReadyBridge onResolved={handleAuthResolved} />
+            <Stack
+              screenOptions={{
+                headerStyle: { backgroundColor: colors.background },
+                headerTintColor: colors.secondary,
+                headerTitleStyle: {
+                  fontSize: 16,
+                },
+                header: (props) => <HeaderStack {...props} />,
+                gestureEnabled: false,
+              }}
+            >
+              {/* Public screens */}
+              <Stack.Screen name="index" options={{ headerShown: true }} />
+              <Stack.Screen name="login" options={{ headerShown: true }} />
+              <Stack.Screen name="register" options={{ headerShown: true }} />
+              <Stack.Screen name="rules" options={{ headerShown: true }} />
+              {/* Protected screens — providers are inside (auth)/_layout.jsx */}
+              <Stack.Screen
+                name="(auth)"
+                options={{ headerShown: false, gestureEnabled: false }}
+              />
+            </Stack>
+            <ToastManager />
+          </AuthProvider>
+        </KeyboardProvider>
+      )}
+
+      {isSplashVisible && (
+        <AnimatedSplash
+          isAppReady={isAppReady}
+          onLayout={handleSplashLayout}
+          onFinish={() => setIsSplashVisible(false)}
+        />
+      )}
+    </GestureHandlerRootView>
+  );
+};
+export default Layout;

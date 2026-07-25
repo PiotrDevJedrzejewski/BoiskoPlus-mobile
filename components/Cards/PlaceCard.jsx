@@ -4,43 +4,43 @@ import Entypo from "@expo/vector-icons/Entypo";
 import { useThemedStyles } from "../../context/themeStore";
 import { SPACING, BORDER_RADIUS } from "../../Theme/StyleConstants";
 import { moderateScale, scaleFont } from "../../Theme/ScalableStyles";
+import { formatDistanceKm } from "../../assets/utils/geoDistance";
 
-import RecommendCardBG from "../../assets/images/V2/IMG_2313.png";
+import RecommendCardBG from "../../assets/images/V2/orlik.png";
+import SecondaryCardBG from "../../assets/images/V2/hala.png";
 
-const getStars = (rating) => {
-  const rounded = Math.round(rating);
-  const clamped = Math.max(0, Math.min(5, rounded));
-  return "★".repeat(clamped) + "☆".repeat(5 - clamped);
-};
-
-const PlaceCard = ({
-  type = "Orlik",
-  name,
-  rating,
-  address,
-  geoDistance = 0,
-}) => {
+const PlaceCard = ({ type, name, address, geoDistance }) => {
   const { styles, colors } = useThemedStyles(createStyles);
+  const safeType = type || "orlik";
+  const safeName = name || "Miasto";
+  const safeAddress = address || "Miasto";
+  const distanceLabel = formatDistanceKm(geoDistance) || "0 KM";
 
   return (
     <View style={styles.place_card}>
-      <Image
-        source={RecommendCardBG}
-        style={styles.place_card_backgroundImage}
-      />
+      {safeType === "orlik" ? (
+        <Image
+          source={RecommendCardBG}
+          style={styles.place_card_backgroundImage}
+        />
+      ) : (
+        <Image
+          source={SecondaryCardBG}
+          style={styles.place_card_backgroundImage}
+        />
+      )}
       <View style={styles.place_card_content}>
-        <Text style={styles.place_card_content_date}>{type}</Text>
-        <Text style={styles.place_card_content_title}>{name}</Text>
-        <Text style={styles.place_card_content_rating}>
-          {getStars(rating)} {rating}
-        </Text>
+        <Text style={styles.place_card_content_date}>{safeType}</Text>
+        <Text style={styles.place_card_content_title}>{safeName}</Text>
         <View style={styles.place_card_content_address}>
-          <Text style={styles.place_card_content_address_text}>{address}</Text>
+          <Text style={styles.place_card_content_address_text}>
+            {safeAddress}
+          </Text>
         </View>
         <View style={styles.place_card_additionalInfo}>
           <Entypo name="location-pin" size={14} color={colors.PrimaryGreen} />
           <Text style={styles.place_card_additionalInfo_text}>
-            {geoDistance} KM
+            {distanceLabel}
           </Text>
         </View>
       </View>
@@ -83,16 +83,14 @@ const createStyles = (colors) =>
     place_card_content_date: {
       fontSize: scaleFont(12),
       color: colors.PrimaryGreen,
+      textTransform: "capitalize",
     },
     place_card_content_title: {
       fontSize: scaleFont(14),
       color: colors.primaryText,
       fontWeight: "bold",
     },
-    place_card_content_rating: {
-      fontSize: scaleFont(12),
-      color: colors.GoldYellow,
-    },
+
     place_card_content_address: {
       flexDirection: "row",
       alignItems: "center",

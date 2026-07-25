@@ -119,7 +119,7 @@ context/
   DrawerContext.jsx
   FriendshipContext.jsx
   mapStore.js             # Zustand store for map state (show-map.jsx + MapboxMobile.jsx only)
-  useMapManager.js        # Map lifecycle hook (NOT a Provider) — location init/permissions, called only in show-map.jsx
+  useMapManager.js        # Location/map lifecycle hook (NOT a Provider) — permissions + location bootstrap, called in app/(auth)/_layout.jsx
   NotificationContext.jsx
   SocketIoContext.jsx     # Socket.IO lifecycle manager (NOT a context provider — renders children directly)
   socketStore.js          # Zustand store for all socket state (source of truth)
@@ -180,7 +180,10 @@ babel.config.js
 - Predefined sport courts (orliki) with geolocation
 - Geocoding via Mapbox API (both address → coords and coords → city)
 - State lives in `context/mapStore.js` (Zustand, selector-based — no MapContext/Provider anymore). Only `app/(auth)/show-map.jsx` and `components/MapboxMobile.jsx` consume it.
-- `context/useMapManager.js` is a hook (not a Provider) called once inside `show-map.jsx`; owns AuthContext-dependent side effects (initial location, permission checks, consent-change reactions). It is NOT wrapped around the whole `(auth)` tree — only the map screen needs it.
+- `context/useMapManager.js` is a hook (not a Provider) called once inside `app/(auth)/_layout.jsx`; owns AuthContext-dependent side effects (system permission prompt, initial location, consent-change reactions). It must run at the `(auth)` tree level — not only on the map screen — otherwise the OS location dialog only appears after opening the map.
+- Location persistence: `fetchAndSaveLocation()` in `assets/utils/getUserLocation.js` is the single place that pulls GPS → reverse-geocodes via `/location-mobile/reverse-geocode` → writes to AsyncStorage. Used by `useMapManager` on bootstrap (only when nothing is saved yet) and by the "Moja lokalizacja" button in `show-map.jsx`.
+- `mapStore.geolocationAccepted` mirrors `consents.locationAccepted` (set by `useMapManager`) so `MapboxMobile` can decide whether to render the user marker without subscribing to `AuthContext`.
+- `mapStore` is the reactive source of truth for the user's location: `userLocation` (always a valid object, falls back to the centre of Poland), `hasUserLocation` (is it a _real_ location or the fallback?) and `locationResolved` (has `useMapManager` finished the permission + storage + GPS bootstrap?). Screens that need the location (`dashboard-home`, `find-event`) must subscribe to these instead of calling `getSavedLocation()` in their own effect — on a first launch the AsyncStorage write happens _after_ those effects run, so the direct read races and never retries.
 - `mapRef`/`cameraRef` are plain imperative refs registered via `registerCameraRef`/`registerMapRef` (not reactive store state) so `flyTo()` can imperatively drive the camera without triggering re-renders.
 - Cross-screen navigation: to center the map on a specific point before navigating to `show-map` from an unrelated screen (e.g. `events-managment/*`), call `useMapStore.getState().setPendingFlyTo({ coordinates: [lon, lat], zoom })` then navigate — no subscription needed in the calling screen. `show-map.jsx` consumes and clears `pendingFlyTo` once `isMapReady` is true.
 
@@ -264,33 +267,6 @@ All routes prefixed with `/api/v1`:
 | Reports              | `/reports`         |
 
 Socket.IO namespaces: `/chat`, `/notifications`
-
----
-
-## Known Bugs / TODO
-
-### 🐛 Bug: Push notifications only fire when app is fully closed
-
-- **Status**: Open
-- **Description**: Push notifications are sent correctly when the app is fully terminated. When the app is minimised (background state), push notifications are **not delivered**.
-- **Suspected cause**: The push token registration or notification handler may not be correctly handling the `AppState` `background` transition. The `expo-notifications` background task / notification handler may not be registered outside of the foreground.
-- **Files to investigate**: `context/NotificationContext.jsx`, `app.config.js` (notification plugin config), backend `utils/` (push sending logic)
-
-### 🐛 Bug: Push notification deep-link navigates to empty/non-existent route
-
-- **Status**: Open
-- **Description**: Tapping a push notification sometimes navigates to an empty or broken route instead of the intended screen.
-- **Suspected cause**: The notification `data.path` or deep-link URL stored in the notification payload does not match the current Expo Router file-based route structure, or the navigation handler fires before the navigator is ready.
-- **Files to investigate**: Notification response handler in `context/NotificationContext.jsx`, `app/_layout.jsx` (navigation ready state), notification payload construction on the backend
-
-### 🐛 Bug: Chat stops working after app is minimised
-
-- **Status**: Open
-- **Description**: After the app is sent to background and resumed, the chat becomes unresponsive — new messages are not received and sending may fail.
-- **Suspected cause 1**: Socket.IO connection is lost on `AppState` change to `background` and reconnection does not re-join the active chat room. The `joinedRooms` Set is in-memory and is the source of truth for which rooms are joined — after reconnect, rooms are not automatically re-joined.
-- **Suspected cause 2**: The socket instance reference stored in Zustand (`socketStore.js`) becomes stale after a reconnect because a new socket object is created but the old reference persists in some consumers.
-- **Files to investigate**: `context/SocketIoContext.jsx` (AppState listener, reconnect logic), `context/socketStore.js` (`joinedRooms` Set, reconnect action)
-- **Partial fix hint**: Listen to `AppState` change to `active`, check connection state, and force re-join all rooms that were previously joined
 
 ---
 

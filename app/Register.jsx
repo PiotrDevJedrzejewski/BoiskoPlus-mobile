@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,271 +8,304 @@ import {
   ScrollView,
   Pressable,
   Platform,
-} from 'react-native'
-import { useRouter } from 'expo-router'
-import LottieView from 'lottie-react-native'
-import { COLORS } from '../constants/colors'
-import Button1 from '../components/Button1'
-import customFetch from '../assets/utils/customFetch'
-import spinner from '../assets/utils/spinner.json'
-import { Toast } from 'toastify-react-native'
-import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
-import { auth } from '../assets/utils/firebase'
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
-import DatePicker from '../components/popup/DatePicker'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
-import { dbg, useDebugMount } from '../assets/utils/debugLogger'
-import * as AppleAuthentication from 'expo-apple-authentication'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useAuth } from '../context/AuthContext'
+} from "react-native";
+import { useRouter } from "expo-router";
+import LottieView from "lottie-react-native";
+import Button1 from "../components/Button1";
+import customFetch from "../assets/utils/customFetch";
+import spinner from "../assets/utils/spinner.json";
+import { Toast } from "toastify-react-native";
+import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { auth } from "../assets/utils/firebase";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+import DatePicker from "../components/popup/DatePicker";
+import { useThemedStyles } from "../context/themeStore";
+import { SPACING, BORDER_RADIUS } from "../Theme/StyleConstants";
+import {
+  scale,
+  verticalScale,
+  moderateScale,
+  scaleFont,
+} from "../Theme/ScalableStyles";
+import { dbg, useDebugMount } from "../assets/utils/debugLogger";
+import * as AppleAuthentication from "expo-apple-authentication";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../context/AuthContext";
 
 const parseIsoDate = (value) => {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return null
+    return null;
   }
 
-  const [yearStr, monthStr, dayStr] = value.split('-')
-  const year = Number(yearStr)
-  const month = Number(monthStr)
-  const day = Number(dayStr)
+  const [yearStr, monthStr, dayStr] = value.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const day = Number(dayStr);
 
   if (!year || !month || !day) {
-    return null
+    return null;
   }
 
-  const parsed = new Date(year, month - 1, day)
+  const parsed = new Date(year, month - 1, day);
   if (
     parsed.getFullYear() !== year ||
     parsed.getMonth() + 1 !== month ||
     parsed.getDate() !== day
   ) {
-    return null
+    return null;
   }
 
-  return parsed
-}
+  return parsed;
+};
 
 const Register = () => {
-  dbg('RegisterScreen')
-  useDebugMount('RegisterScreen')
-  const router = useRouter()
-  const { loginWithApple } = useAuth()
-  const ui = useResponsiveScale()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState([false, false])
+  dbg("RegisterScreen");
+  useDebugMount("RegisterScreen");
+  const router = useRouter();
+  const { loginWithApple } = useAuth();
+  const { styles, colors } = useThemedStyles(createStyles);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState([false, false]);
 
   const maxBirthDate = useMemo(() => {
-    const today = new Date()
-    today.setFullYear(today.getFullYear() - 13)
-    return today
-  }, [])
-
-  const styles = useMemo(() => createStyles(ui), [ui])
+    const today = new Date();
+    today.setFullYear(today.getFullYear() - 13);
+    return today;
+  }, []);
 
   // GoogleSignin is already configured globally in AuthContext – no need to repeat here
 
   const [formData, setFormData] = useState({
-    nickName: '',
-    name: '',
-    surname: '',
-    email: '',
-    password: '',
-    passwordConfirm: '',
-    phoneNumber: '',
-  })
+    nickName: "",
+    name: "",
+    surname: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
+    phoneNumber: "",
+  });
 
-  const [birthDate, setBirthDate] = useState('')
+  const [birthDate, setBirthDate] = useState("");
 
   // ────────────────────────────────────────────────────────────────────────────
 
   const handleChange = useCallback((name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }, [])
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }, []);
 
   // Google OAuth configuration
 
   // Handle Google Sign In response
 
   const handleGoogleAuthSuccess = async (idToken, user) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // Use the original Google ID token (not Firebase token)
       // Backend uses OAuth2Client.verifyIdToken() which expects a Google ID token
       try {
-        console.log('[Google Auth] Checking if user exists in backend...')
-        await customFetch.post('/auth-mobile/login-oauth', {
+        console.log("[Google Auth] Checking if user exists in backend...");
+        await customFetch.post("/auth-mobile/login-oauth", {
           email: user.email,
           googleIdToken: idToken,
-        })
+        });
 
-        console.log('[Google Auth] User exists, logging in...')
-        Toast.success('Zalogowano pomyślnie przez Google!')
-        router.replace('/(auth)/dashboard-home')
+        console.log("[Google Auth] User exists, logging in...");
+        Toast.success("Zalogowano pomyślnie przez Google!");
+        router.replace("/(auth)/dashboard-home");
       } catch (loginError) {
-        if (loginError.response?.status === 401 || loginError.response?.status === 404) {
-          console.log('[Google Auth] User not found, redirecting to complete registration')
+        if (
+          loginError.response?.status === 401 ||
+          loginError.response?.status === 404
+        ) {
+          console.log(
+            "[Google Auth] User not found, redirecting to complete registration",
+          );
           router.push({
-            pathname: '/register-with-oauth',
+            pathname: "/register-with-oauth",
             params: {
               email: user.email,
-              name: user.displayName?.split(' ')[0] || '',
-              surname: user.displayName?.split(' ').slice(1).join(' ') || '',
+              name: user.displayName?.split(" ")[0] || "",
+              surname: user.displayName?.split(" ").slice(1).join(" ") || "",
               googleIdToken: idToken,
-              avatarUrl: user.photoURL || '',
+              avatarUrl: user.photoURL || "",
             },
-          })
+          });
         } else {
-          throw loginError
+          throw loginError;
         }
       }
     } catch (error) {
-      console.error('[Google Auth] Exception:', error)
-      console.error('[Google Auth] Error details:', {
+      console.error("[Google Auth] Exception:", error);
+      console.error("[Google Auth] Error details:", {
         message: error.message,
         code: error.code,
         response: error.response?.data,
-      })
+      });
 
       if (error.response?.data?.msg) {
-        Toast.error(error.response.data.msg)
-      } else if (error.code === 'auth/account-exists-with-different-credential') {
-        Toast.error('Konto z tym emailem już istnieje. Użyj innej metody logowania.')
+        Toast.error(error.response.data.msg);
+      } else if (
+        error.code === "auth/account-exists-with-different-credential"
+      ) {
+        Toast.error(
+          "Konto z tym emailem już istnieje. Użyj innej metody logowania.",
+        );
       } else {
-        Toast.error('Błąd podczas rejestracji przez Google')
+        Toast.error("Błąd podczas rejestracji przez Google");
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async () => {
     // Walidacje
-    if (!formData.nickName || formData.nickName.length < 3 || formData.nickName.length > 20) {
-      Toast.error('Nick musi mieć od 3 do 20 znaków')
-      return
+    if (
+      !formData.nickName ||
+      formData.nickName.length < 3 ||
+      formData.nickName.length > 20
+    ) {
+      Toast.error("Nick musi mieć od 3 do 20 znaków");
+      return;
     }
 
-    if (!formData.name || formData.name.length < 1 || formData.name.length > 20) {
-      Toast.error('Imię jest wymagane (max 20 znaków)')
-      return
+    if (
+      !formData.name ||
+      formData.name.length < 1 ||
+      formData.name.length > 20
+    ) {
+      Toast.error("Imię jest wymagane (max 20 znaków)");
+      return;
     }
 
-    if (!formData.surname || formData.surname.length < 1 || formData.surname.length > 20) {
-      Toast.error('Nazwisko jest wymagane (max 20 znaków)')
-      return
+    if (
+      !formData.surname ||
+      formData.surname.length < 1 ||
+      formData.surname.length > 20
+    ) {
+      Toast.error("Nazwisko jest wymagane (max 20 znaków)");
+      return;
     }
 
     if (!formData.email) {
-      Toast.error('Email jest wymagany')
-      return
+      Toast.error("Email jest wymagany");
+      return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      Toast.error('Podaj poprawny adres email')
-      return
+      Toast.error("Podaj poprawny adres email");
+      return;
     }
 
     if (!birthDate) {
-      Toast.error('Data urodzenia jest wymagana')
-      return
+      Toast.error("Data urodzenia jest wymagana");
+      return;
     }
 
-    const parsedBirthDate = parseIsoDate(birthDate)
+    const parsedBirthDate = parseIsoDate(birthDate);
     if (!parsedBirthDate) {
-      Toast.error('Podaj prawidlowa date urodzenia')
-      return
+      Toast.error("Podaj prawidlowa date urodzenia");
+      return;
     }
 
     if (parsedBirthDate > maxBirthDate) {
-      Toast.error('Musisz mieć co najmniej 13 lat')
-      return
+      Toast.error("Musisz mieć co najmniej 13 lat");
+      return;
     }
 
     if (formData.password.length < 6 || formData.password.length > 20) {
-      Toast.error('Hasło musi mieć od 6 do 20 znaków')
-      return
+      Toast.error("Hasło musi mieć od 6 do 20 znaków");
+      return;
     }
 
     if (formData.password !== formData.passwordConfirm) {
-      Toast.error('Hasła nie są identyczne')
-      return
+      Toast.error("Hasła nie są identyczne");
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       const submitData = {
         ...formData,
         age: birthDate,
-      }
+      };
 
-      await customFetch.post('/auth/register', submitData)
+      await customFetch.post("/auth/register", submitData);
 
-      Toast.success('Rejestracja zakończona pomyślnie!')
-      router.replace('/login')
+      Toast.success("Rejestracja zakończona pomyślnie!");
+      router.replace("/login");
     } catch (error) {
-      console.error('Registration failed:', error.response ? error.response.data : error.message)
+      console.error(
+        "Registration failed:",
+        error.response ? error.response.data : error.message,
+      );
 
-      let errorMessage = 'Rejestracja nie powiodła się. Spróbuj ponownie.'
+      let errorMessage = "Rejestracja nie powiodła się. Spróbuj ponownie.";
 
       if (error.response?.data?.msg) {
-        errorMessage = error.response.data.msg
+        errorMessage = error.response.data.msg;
       } else if (error.response?.data?.errors) {
-        const errors = error.response.data.errors
+        const errors = error.response.data.errors;
         errorMessage = Object.values(errors)
           .map((err) => err.msg || err)
-          .join('\n')
+          .join("\n");
       }
 
-      Toast.error(errorMessage)
+      Toast.error(errorMessage);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      console.log('[Google OAuth] Starting sign in flow')
-      await GoogleSignin.hasPlayServices()
-      const userInfo = await GoogleSignin.signIn()
-      const idToken = userInfo.data?.idToken
+      console.log("[Google OAuth] Starting sign in flow");
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo.data?.idToken;
 
       if (!idToken) {
-        Toast.error('Nie udało się uzyskać tokena Google')
-        return
+        Toast.error("Nie udało się uzyskać tokena Google");
+        return;
       }
 
-      const credential = GoogleAuthProvider.credential(idToken)
-      const result = await signInWithCredential(auth, credential)
-      await handleGoogleAuthSuccess(idToken, result.user)
+      const credential = GoogleAuthProvider.credential(idToken);
+      const result = await signInWithCredential(auth, credential);
+      await handleGoogleAuthSuccess(idToken, result.user);
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log('[Google Sign-in] User cancelled')
+        console.log("[Google Sign-in] User cancelled");
       } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log('[Google Sign-in] Already in progress')
+        console.log("[Google Sign-in] Already in progress");
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        Toast.error('Google Play Services niedostępne')
+        Toast.error("Google Play Services niedostępne");
       } else {
-        console.error('[Google Sign-in] Exception:', error)
-        Toast.error('Błąd podczas logowania przez Google')
+        console.error("[Google Sign-in] Exception:", error);
+        Toast.error("Błąd podczas logowania przez Google");
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Apple Sign-In
   const handleAppleSignIn = async () => {
-    if (__DEV__) console.log('[Apple Sign-In] Starting flow from register')
-    setIsLoading(true)
+    if (__DEV__) console.log("[Apple Sign-In] Starting flow from register");
+    setIsLoading(true);
     try {
-      const isAvailable = await AppleAuthentication.isAvailableAsync()
-      if (__DEV__) console.log('[Apple Sign-In] isAvailable:', isAvailable)
+      const isAvailable = await AppleAuthentication.isAvailableAsync();
+      if (__DEV__) console.log("[Apple Sign-In] isAvailable:", isAvailable);
       if (!isAvailable) {
-        Toast.error('Logowanie przez Apple nie jest dostępne na tym urządzeniu.')
-        return
+        Toast.error(
+          "Logowanie przez Apple nie jest dostępne na tym urządzeniu.",
+        );
+        return;
       }
 
       const credential = await AppleAuthentication.signInAsync({
@@ -280,83 +313,94 @@ const Register = () => {
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
-      })
-      if (__DEV__) console.log('[Apple Sign-In] Credential received, appleUserId:', credential.user)
-      if (__DEV__) console.log('[Apple Sign-In] email:', credential.email, 'givenName:', credential.fullName?.givenName)
+      });
+      if (__DEV__)
+        console.log(
+          "[Apple Sign-In] Credential received, appleUserId:",
+          credential.user,
+        );
+      if (__DEV__)
+        console.log(
+          "[Apple Sign-In] email:",
+          credential.email,
+          "givenName:",
+          credential.fullName?.givenName,
+        );
 
-      const { identityToken, user: appleUserId, email, fullName } = credential
+      const { identityToken, user: appleUserId, email, fullName } = credential;
       if (!identityToken) {
-        Toast.error('Nie udało się uzyskać tokena Apple.')
-        return
+        Toast.error("Nie udało się uzyskać tokena Apple.");
+        return;
       }
 
       // Cache key per user — Apple zwraca email/imię tylko przy pierwszym logowaniu
-      const CACHE_KEY = `apple_user_cache_${appleUserId}`
-      let cachedData = {}
+      const CACHE_KEY = `apple_user_cache_${appleUserId}`;
+      let cachedData = {};
       try {
-        const stored = await AsyncStorage.getItem(CACHE_KEY)
-        if (stored) cachedData = JSON.parse(stored)
-        if (__DEV__) console.log('[Apple Sign-In] Cache loaded:', cachedData)
-      } catch { }
+        const stored = await AsyncStorage.getItem(CACHE_KEY);
+        if (stored) cachedData = JSON.parse(stored);
+        if (__DEV__) console.log("[Apple Sign-In] Cache loaded:", cachedData);
+      } catch {}
 
-      const resolvedEmail = email || cachedData.email || null
-      const resolvedName = fullName?.givenName || cachedData.name || ''
-      const resolvedSurname = fullName?.familyName || cachedData.surname || ''
+      const resolvedEmail = email || cachedData.email || null;
+      const resolvedName = fullName?.givenName || cachedData.name || "";
+      const resolvedSurname = fullName?.familyName || cachedData.surname || "";
 
       if (email || fullName?.givenName) {
         try {
-          await AsyncStorage.setItem(CACHE_KEY, JSON.stringify({
-            email: resolvedEmail,
-            name: resolvedName,
-            surname: resolvedSurname,
-          }))
-          if (__DEV__) console.log('[Apple Sign-In] Cache saved')
-        } catch { }
+          await AsyncStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({
+              email: resolvedEmail,
+              name: resolvedName,
+              surname: resolvedSurname,
+            }),
+          );
+          if (__DEV__) console.log("[Apple Sign-In] Cache saved");
+        } catch {}
       }
 
-      const result = await loginWithApple(identityToken, appleUserId)
-      if (__DEV__) console.log('[Apple Sign-In] Result:', result)
+      const result = await loginWithApple(identityToken, appleUserId);
+      if (__DEV__) console.log("[Apple Sign-In] Result:", result);
 
       if (!result.success && result.userNotFound) {
-        if (__DEV__) console.log('[Apple Sign-In] User not found, redirecting to registration')
+        if (__DEV__)
+          console.log(
+            "[Apple Sign-In] User not found, redirecting to registration",
+          );
         router.push({
-          pathname: '/register-with-oauth',
+          pathname: "/register-with-oauth",
           params: {
-            email: resolvedEmail || '',
+            email: resolvedEmail || "",
             name: resolvedName,
             surname: resolvedSurname,
             appleIdentityToken: identityToken,
             appleUserId,
           },
-        })
+        });
       } else if (!result.success) {
-        Toast.error(result.error || 'Błąd logowania przez Apple.')
+        Toast.error(result.error || "Błąd logowania przez Apple.");
       }
       // sukces: redirect handled by loginWithApple → authorized() in AuthContext
     } catch (error) {
-      if (error.code === 'ERR_REQUEST_CANCELED') {
-        if (__DEV__) console.log('[Apple Sign-In] Cancelled by user')
-        return
+      if (error.code === "ERR_REQUEST_CANCELED") {
+        if (__DEV__) console.log("[Apple Sign-In] Cancelled by user");
+        return;
       }
-      if (__DEV__) console.error('[Apple Sign-In] Exception:', error)
-      Toast.error('Wystąpił błąd podczas logowania przez Apple.')
+      if (__DEV__) console.error("[Apple Sign-In] Exception:", error);
+      Toast.error("Wystąpił błąd podczas logowania przez Apple.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <LottieView
-          source={spinner}
-          autoPlay
-          loop
-          style={styles.spinner}
-        />
+        <LottieView source={spinner} autoPlay loop style={styles.spinner} />
         <Text style={styles.loadingText}>Rejestrowanie...</Text>
       </View>
-    )
+    );
   }
 
   return (
@@ -371,12 +415,12 @@ const Register = () => {
             <Text style={styles.label}>Nazwa użytkownika</Text>
             <TextInput
               style={styles.input}
-              placeholder='Nick/login/pseudonim'
-              placeholderTextColor='#999'
+              placeholder="Nick/login/pseudonim"
+              placeholderTextColor="#999"
               value={formData.nickName}
-              onChangeText={(value) => handleChange('nickName', value)}
+              onChangeText={(value) => handleChange("nickName", value)}
               maxLength={20}
-              autoCapitalize='none'
+              autoCapitalize="none"
             />
             <Text style={styles.smallText}>3-20 znaków</Text>
           </View>
@@ -386,10 +430,10 @@ const Register = () => {
             <Text style={styles.label}>Imię</Text>
             <TextInput
               style={styles.input}
-              placeholder='Wprowadź imię'
-              placeholderTextColor='#999'
+              placeholder="Wprowadź imię"
+              placeholderTextColor="#999"
               value={formData.name}
-              onChangeText={(value) => handleChange('name', value)}
+              onChangeText={(value) => handleChange("name", value)}
               maxLength={20}
             />
           </View>
@@ -399,10 +443,10 @@ const Register = () => {
             <Text style={styles.label}>Nazwisko</Text>
             <TextInput
               style={styles.input}
-              placeholder='Wprowadź nazwisko'
-              placeholderTextColor='#999'
+              placeholder="Wprowadź nazwisko"
+              placeholderTextColor="#999"
               value={formData.surname}
-              onChangeText={(value) => handleChange('surname', value)}
+              onChangeText={(value) => handleChange("surname", value)}
               maxLength={20}
             />
           </View>
@@ -412,12 +456,12 @@ const Register = () => {
             <Text style={styles.label}>Email</Text>
             <TextInput
               style={styles.input}
-              placeholder='Wprowadź email'
-              placeholderTextColor='#999'
+              placeholder="Wprowadź email"
+              placeholderTextColor="#999"
               value={formData.email}
-              onChangeText={(value) => handleChange('email', value)}
-              keyboardType='email-address'
-              autoCapitalize='none'
+              onChangeText={(value) => handleChange("email", value)}
+              keyboardType="email-address"
+              autoCapitalize="none"
               autoCorrect={false}
             />
           </View>
@@ -427,11 +471,11 @@ const Register = () => {
             <Text style={styles.label}>Numer telefonu (opcjonalnie)</Text>
             <TextInput
               style={styles.input}
-              placeholder='Wprowadź numer telefonu'
-              placeholderTextColor='#999'
+              placeholder="Wprowadź numer telefonu"
+              placeholderTextColor="#999"
               value={formData.phoneNumber}
-              onChangeText={(value) => handleChange('phoneNumber', value)}
-              keyboardType='phone-pad'
+              onChangeText={(value) => handleChange("phoneNumber", value)}
+              keyboardType="phone-pad"
               maxLength={15}
             />
           </View>
@@ -452,19 +496,21 @@ const Register = () => {
             <Text style={styles.label}>Hasło</Text>
             <TextInput
               style={styles.input}
-              placeholder='Wprowadź hasło'
-              placeholderTextColor='#999'
+              placeholder="Wprowadź hasło"
+              placeholderTextColor="#999"
               secureTextEntry={!showPassword[0]}
               value={formData.password}
-              onChangeText={(value) => handleChange('password', value)}
+              onChangeText={(value) => handleChange("password", value)}
               maxLength={20}
             />
             <Pressable
               style={styles.authFormShow}
-              onPress={() => setShowPassword([!showPassword[0], showPassword[1]])}
+              onPress={() =>
+                setShowPassword([!showPassword[0], showPassword[1]])
+              }
             >
               <Text style={styles.showButtonText}>
-                {showPassword[0] ? 'Ukryj' : 'Pokaż'}
+                {showPassword[0] ? "Ukryj" : "Pokaż"}
               </Text>
             </Pressable>
             <Text style={styles.smallText}>6-20 znaków</Text>
@@ -475,203 +521,211 @@ const Register = () => {
             <Text style={styles.label}>Potwierdź hasło</Text>
             <TextInput
               style={styles.input}
-              placeholder='Potwierdź hasło'
-              placeholderTextColor='#999'
+              placeholder="Potwierdź hasło"
+              placeholderTextColor="#999"
               secureTextEntry={!showPassword[1]}
               value={formData.passwordConfirm}
-              onChangeText={(value) => handleChange('passwordConfirm', value)}
+              onChangeText={(value) => handleChange("passwordConfirm", value)}
               maxLength={20}
             />
             <Pressable
               style={styles.authFormShow}
-              onPress={() => setShowPassword([showPassword[0], !showPassword[1]])}
+              onPress={() =>
+                setShowPassword([showPassword[0], !showPassword[1]])
+              }
             >
               <Text style={styles.showButtonText}>
-                {showPassword[1] ? 'Ukryj' : 'Pokaż'}
+                {showPassword[1] ? "Ukryj" : "Pokaż"}
               </Text>
             </Pressable>
           </View>
 
           {/* Submit Button */}
           <Button1
-            text='Zarejestruj się'
-            width={'100%'}
-            height={ui.verticalScale(50)}
-            fontSize={ui.scaleFont(20, 0.4)}
-            lineColor='#fff'
-            backgroundColor={COLORS.secondary}
-            color={COLORS.background}
+            text="Zarejestruj się"
+            width={"100%"}
+            height={verticalScale(50)}
+            fontSize={scaleFont(20, 0.4)}
+            lineColor="#fff"
+            backgroundColor={colors.PrimaryGreen}
+            color={colors.background}
             onPress={handleSubmit}
           />
         </View>
 
         {/* Alternate Options */}
         <View style={styles.authFormAlternate}>
-          <Pressable onPress={() => router.push('/login')}>
+          <Pressable onPress={() => router.push("/login")}>
             <Text style={styles.authFormAlternateText}>
               Masz już konto? <Text style={styles.link}>Zaloguj się</Text>
             </Text>
           </Pressable>
           <View style={styles.oauthRow}>
-            <Pressable style={styles.authFormAlternateIcon} onPress={handleAppleSignIn} disabled={isLoading || Platform.OS !== 'ios'}>
+            <Pressable
+              style={styles.authFormAlternateIcon}
+              onPress={handleAppleSignIn}
+              disabled={isLoading || Platform.OS !== "ios"}
+            >
               <Image
-                source={require('../assets/images/appleWhite.png')}
+                source={require("../assets/images/appleWhite.png")}
                 style={styles.appleIconImage}
               />
-              {Platform.OS !== 'ios' && (
-                <View style={styles.disabledOverlay} />
-              )}
+              {Platform.OS !== "ios" && <View style={styles.disabledOverlay} />}
             </Pressable>
-            <Pressable style={styles.authFormAlternateIcon} onPress={handleGoogleSignIn} disabled={isLoading}>
+            <Pressable
+              style={styles.authFormAlternateIcon}
+              onPress={handleGoogleSignIn}
+              disabled={isLoading}
+            >
               <Image
-                source={require('../assets/images/google-icon.png')}
+                source={require("../assets/images/google-icon.png")}
                 style={styles.googleIconImage}
               />
             </Pressable>
-
           </View>
         </View>
       </View>
     </ScrollView>
-  )
-}
+  );
+};
 
-export default Register
+export default Register;
 
-const createStyles = (ui) => StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-  },
-  spinner: {
-    width: ui.scale(150),
-    height: ui.scale(150),
-  },
-  loadingText: {
-    marginTop: ui.verticalScale(20),
-    fontSize: ui.scaleFont(18, 0.4),
-    color: COLORS.primary,
-  },
-  auth: {
-    flexGrow: 1,
-    backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: ui.verticalScale(40),
-  },
-  authMask: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#000',
-    opacity: 0.6,
-  },
-  authFormContainer: {
-    backgroundColor: COLORS.background,
-    borderRadius: ui.moderateScale(16, 0.35),
-    padding: ui.spacing(30, 0.45),
-    width: '90%',
-    maxWidth: 400,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  authFormTitle: {
-    fontSize: ui.scaleFont(32, 0.5),
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    textAlign: 'center',
-    marginBottom: ui.verticalScale(30),
-  },
-  authForm: {
-    width: '100%',
-  },
-  authFormGroup: {
-    marginBottom: ui.verticalScale(20),
-  },
-  label: {
-    fontSize: ui.scaleFont(16, 0.35),
-    fontWeight: '600',
-    color: COLORS.primary,
-    marginBottom: ui.verticalScale(8),
-  },
-  input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: ui.controlRadius,
-    minHeight: ui.controlMinHeight,
-    paddingHorizontal: ui.controlPaddingHorizontal,
-    paddingVertical: ui.controlPaddingVertical,
-    fontSize: ui.scaleFont(16, 0.35),
-    color: COLORS.background,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  authFormShow: {
-    padding: ui.spacing(5, 0.35),
-    marginTop: ui.verticalScale(5),
-    alignSelf: 'flex-start',
-  },
-  showButtonText: {
-    color: COLORS.secondary,
-    fontSize: ui.scaleFont(14, 0.35),
-    fontWeight: '600',
-  },
-  smallText: {
-    color: '#666',
-    fontSize: ui.scaleFont(12, 0.3),
-    marginTop: ui.verticalScale(4),
-  },
-  authFormAlternate: {
-    marginTop: ui.verticalScale(30),
-    alignItems: 'center',
-  },
-  authFormAlternateText: {
-    fontSize: ui.scaleFont(14, 0.35),
-    color: '#666',
-    marginBottom: ui.verticalScale(15),
-  },
-  link: {
-    color: COLORS.secondary,
-    fontWeight: 'bold',
-  },
-  oauthRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 15,
-  },
-  authFormAlternateIcon: {
-    width: ui.moderateScale(50, 0.35),
-    height: ui.moderateScale(50, 0.35),
-    borderRadius: ui.moderateScale(25, 0.35),
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  googleIconImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain',
-  },
-  appleIconImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: ui.moderateScale(25, 0.35),
-    resizeMode: 'contain',
-  },
-  disabledOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    borderRadius: ui.moderateScale(25, 0.35),
-  },
-})
+const createStyles = (colors) =>
+  StyleSheet.create({
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.background,
+    },
+    spinner: {
+      width: scale(150),
+      height: scale(150),
+    },
+    loadingText: {
+      marginTop: verticalScale(20),
+      fontSize: scaleFont(18, 0.4),
+      color: colors.primaryText,
+    },
+    auth: {
+      flexGrow: 1,
+      backgroundColor: colors.background,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingVertical: verticalScale(40),
+    },
+    authMask: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "#000",
+      opacity: 0.6,
+    },
+    authFormContainer: {
+      backgroundColor: colors.background,
+      borderRadius: BORDER_RADIUS.lg,
+      padding: SPACING.xl,
+      width: "90%",
+      maxWidth: 400,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 5,
+    },
+    authFormTitle: {
+      fontSize: scaleFont(32, 0.5),
+      fontWeight: "bold",
+      color: colors.primaryText,
+      textAlign: "center",
+      marginBottom: verticalScale(30),
+    },
+    authForm: {
+      width: "100%",
+    },
+    authFormGroup: {
+      marginBottom: verticalScale(20),
+    },
+    label: {
+      fontSize: scaleFont(16, 0.35),
+      fontWeight: "600",
+      color: colors.primaryText,
+      marginBottom: verticalScale(8),
+    },
+    input: {
+      backgroundColor: "#f5f5f5",
+      borderRadius: BORDER_RADIUS.lg,
+      minHeight: verticalScale(44),
+      paddingHorizontal: SPACING.md,
+      paddingVertical: verticalScale(10),
+      fontSize: scaleFont(16, 0.35),
+      color: colors.background,
+      borderWidth: 1,
+      borderColor: "#e0e0e0",
+    },
+    authFormShow: {
+      padding: SPACING.xs,
+      marginTop: verticalScale(5),
+      alignSelf: "flex-start",
+    },
+    showButtonText: {
+      color: colors.PrimaryGreen,
+      fontSize: scaleFont(14, 0.35),
+      fontWeight: "600",
+    },
+    smallText: {
+      color: colors.thirdText,
+      fontSize: scaleFont(12, 0.3),
+      marginTop: verticalScale(4),
+    },
+    authFormAlternate: {
+      marginTop: verticalScale(30),
+      alignItems: "center",
+    },
+    authFormAlternateText: {
+      fontSize: scaleFont(14, 0.35),
+      color: colors.thirdText,
+      marginBottom: verticalScale(15),
+    },
+    link: {
+      color: colors.PrimaryGreen,
+      fontWeight: "bold",
+    },
+    oauthRow: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: SPACING.md,
+    },
+    authFormAlternateIcon: {
+      width: moderateScale(50, 0.35),
+      height: moderateScale(50, 0.35),
+      borderRadius: moderateScale(25, 0.35),
+      backgroundColor: "#fff",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    googleIconImage: {
+      width: "100%",
+      height: "100%",
+      resizeMode: "contain",
+    },
+    appleIconImage: {
+      width: "100%",
+      height: "100%",
+      borderRadius: moderateScale(25, 0.35),
+      resizeMode: "contain",
+    },
+    disabledOverlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.45)",
+      borderRadius: moderateScale(25, 0.35),
+    },
+  });

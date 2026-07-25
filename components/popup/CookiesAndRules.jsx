@@ -1,19 +1,24 @@
-import { useMemo } from 'react'
-import { useRouter, usePathname } from 'expo-router'
-import { useAuth } from '../../context/AuthContext'
-import Button1 from '../../components/Button1'
-import React from 'react'
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
-import { LinearGradient } from 'expo-linear-gradient'
-import { COLORS } from '../../constants/colors'
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
-import { useResponsiveScale } from '../../assets/utils/scaleUI.UX'
+import { useRouter, usePathname } from "expo-router";
+import { useAuth } from "../../context/AuthContext";
+import Button1 from "../../components/Button1";
+import React from "react";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+
+import { useThemedStyles } from "../../context/themeStore";
+import { SPACING, BORDER_RADIUS } from "../../Theme/StyleConstants";
+import {
+  verticalScale,
+  moderateScale,
+  scaleFont,
+  scale,
+} from "../../Theme/ScalableStyles";
 
 const CookiesAndRules = () => {
-  const router = useRouter()
-  const pathname = usePathname()
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  const router = useRouter();
+  const pathname = usePathname();
+  const { styles, colors } = useThemedStyles(createStyles);
   const {
     needsConsent,
     pendingConsents,
@@ -22,25 +27,29 @@ const CookiesAndRules = () => {
     setLocationAccepted,
     saveConsents,
     acceptAllConsents,
-  } = useAuth()
+  } = useAuth();
 
-  const isReadyToSave = pendingConsents.rulesAccepted
-  const isOnIndexScreen = pathname === '/'
+  const isReadyToSave = pendingConsents.rulesAccepted;
+  const isOnIndexScreen = pathname === "/";
 
   return (
-    <Modal visible={needsConsent && isOnIndexScreen} transparent animationType='fade'>
+    <Modal
+      visible={needsConsent && isOnIndexScreen}
+      transparent
+      animationType="fade"
+    >
       <View style={styles.modalBackdrop}>
         <LinearGradient
-          colors={[COLORS.third, COLORS.background]}
+          colors={[colors.backgroundSecondary, colors.background]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 0.75 }}
           style={styles.modalCard}
         >
           <View style={styles.modalHeader}>
             <FontAwesome6
-              name='cookie-bite'
-              size={ui.moderateScale(24, 0.35)}
-              color={COLORS.secondary}
+              name="cookie-bite"
+              size={moderateScale(24, 0.35)}
+              color={colors.PrimaryGreen}
               style={styles.modalIcon}
             />
             <Text style={styles.modalTitle}>Zgody i regulamin</Text>
@@ -98,31 +107,35 @@ const CookiesAndRules = () => {
                 Akceptuję udostępnianie mojej lokalizacji
               </Text>
             </Pressable>
-            <Pressable onPress={() => router.push('/rules')}>
-              <Text style={styles.rulesLink}>Zobacz regulamin i politykę prywatności</Text>
+            <Pressable onPress={() => router.push("/rules")}>
+              <Text style={styles.rulesLink}>
+                Zobacz regulamin i politykę prywatności
+              </Text>
             </Pressable>
           </View>
 
           <View style={styles.modalButtons}>
             <Button1
-              text='Akceptuj wszystko'
-              height={ui.moderateScale(46, 0.35)}
-              width={ui.scale(220)}
-              fontSize={ui.scaleFont(16, 0.35)}
-              padding={ui.spacing(12, 0.35)}
-              backgroundColor='#ffcf00'
-              color='#003b22'
+              text="Akceptuj wszystko"
+              height={moderateScale(46, 0.35)}
+              width={scale(220)}
+              fontSize={scaleFont(16, 0.35)}
+              padding={SPACING.md}
+              backgroundColor={colors.PrimaryGreen}
+              color={colors.background}
               onPress={acceptAllConsents}
             />
           </View>
           <View style={styles.modalButtons}>
             <Button1
-              text='Zapisz wybrane'
-              height={ui.moderateScale(46, 0.35)}
-              width={ui.scale(220)}
-              fontSize={ui.scaleFont(16, 0.35)}
-              backgroundColor={isReadyToSave ? '#ffcf00' : '#5b5b5b'}
-              color='#003b22'
+              text="Zapisz wybrane"
+              height={moderateScale(46, 0.35)}
+              width={scale(220)}
+              fontSize={scaleFont(16, 0.35)}
+              backgroundColor={
+                isReadyToSave ? colors.PrimaryGreen : colors.NeutralButton
+              }
+              color={isReadyToSave ? colors.background : colors.primaryText}
               onPress={isReadyToSave ? saveConsents : undefined}
             />
             {!pendingConsents.rulesAccepted && (
@@ -134,114 +147,97 @@ const CookiesAndRules = () => {
         </LinearGradient>
       </View>
     </Modal>
-  )
-}
+  );
+};
 
-export default CookiesAndRules
+export default CookiesAndRules;
 
-const createStyles = (ui) => StyleSheet.create({
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: ui.spacing(20, 0.45),
-  },
-  modalCard: {
-    width: '98%',
-    maxWidth: 420,
-    borderRadius: ui.moderateScale(18, 0.35),
-    padding: ui.spacing(20, 0.45),
-    //shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: ui.spacing(12, 0.35),
-    marginBottom: ui.verticalScale(10),
-  },
-  modalIcon: {
-    fontSize: ui.scaleFont(28, 0.45),
-  },
-  modalTitle: {
-    color: '#ffcf00',
-    fontSize: ui.scaleFont(20, 0.4),
-    fontFamily: 'ObjectFont',
-  },
-  modalDescription: {
-    color: '#ffffff',
-    fontSize: ui.scaleFont(14, 0.35),
-    lineHeight: ui.verticalScale(20),
-    marginBottom: ui.verticalScale(16),
-  },
-  modalSection: {
-    marginBottom: ui.verticalScale(16),
-  },
-  modalSectionTitle: {
-    color: '#ffcf00',
-    fontSize: ui.scaleFont(16, 0.35),
-    marginBottom: ui.verticalScale(8),
-    fontFamily: 'ObjectFont',
-  },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: ui.spacing(10, 0.35),
-    marginBottom: ui.verticalScale(18),
-  },
-  checkbox: {
-    width: ui.scale(18),
-    height: ui.scale(18),
-    borderRadius: ui.moderateScale(4, 0.25),
-    borderWidth: 1,
-    borderColor: '#ffcf00',
-  },
-  checkboxChecked: {
-    backgroundColor: '#ffcf00',
-  },
-  optionText: {
-    color: '#ffffff',
-    fontSize: ui.scaleFont(13, 0.35),
-  },
-  rulesLink: {
-    color: '#ffcf00',
-    textDecorationLine: 'underline',
-    fontSize: ui.scaleFont(13, 0.35),
-  },
-  choiceRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  choiceButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ffcf00',
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  choiceButtonActive: {
-    backgroundColor: '#ffcf00',
-  },
-  choiceButtonText: {
-    color: '#003b22',
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  modalButtons: {
-    alignItems: 'center',
-    gap: ui.spacing(8, 0.35),
-    marginBottom: ui.verticalScale(12),
-  },
-  validationText: {
-    color: '#ff9b9b',
-    fontSize: ui.scaleFont(12, 0.3),
-    textAlign: 'center',
-  },
-})
+const createStyles = (colors) =>
+  StyleSheet.create({
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.65)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: SPACING.lg,
+    },
+    modalCard: {
+      width: "98%",
+      maxWidth: 420,
+      borderRadius: BORDER_RADIUS.lg,
+      padding: SPACING.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      //shadow
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
+    },
+    modalHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: SPACING.md,
+      marginBottom: verticalScale(10),
+    },
+    modalIcon: {
+      fontSize: scaleFont(28, 0.45),
+    },
+    modalTitle: {
+      color: colors.PrimaryGreen,
+      fontSize: scaleFont(20, 0.4),
+      fontFamily: "ObjectFont",
+    },
+    modalDescription: {
+      color: colors.primaryText,
+      fontSize: scaleFont(14, 0.35),
+      lineHeight: verticalScale(20),
+      marginBottom: verticalScale(16),
+    },
+    modalSection: {
+      marginBottom: verticalScale(16),
+    },
+    modalSectionTitle: {
+      color: colors.PrimaryGreen,
+      fontSize: scaleFont(16, 0.35),
+      marginBottom: verticalScale(8),
+      fontFamily: "ObjectFont",
+    },
+    optionRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: SPACING.sm,
+      marginBottom: verticalScale(18),
+    },
+    checkbox: {
+      width: scale(18),
+      height: scale(18),
+      borderRadius: BORDER_RADIUS.xs,
+      borderWidth: 1,
+      borderColor: colors.PrimaryGreen,
+    },
+    checkboxChecked: {
+      backgroundColor: colors.DarkGreen,
+    },
+    optionText: {
+      color: colors.primaryText,
+      fontSize: scaleFont(13, 0.35),
+    },
+    rulesLink: {
+      color: colors.PrimaryGreen,
+      textDecorationLine: "underline",
+      fontSize: scaleFont(13, 0.35),
+    },
+    modalButtons: {
+      alignItems: "center",
+      gap: SPACING.xs,
+      marginBottom: verticalScale(12),
+    },
+    validationText: {
+      color: colors.Danger,
+      fontSize: scaleFont(12, 0.3),
+      textAlign: "center",
+    },
+  });

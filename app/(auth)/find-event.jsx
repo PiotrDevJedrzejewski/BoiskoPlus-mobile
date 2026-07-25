@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import CitySuggestions from "../../components/CitySuggestions";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth } from "../../context/AuthContext";
+import { useMapStore } from "../../context/mapStore";
 import { Toast } from "toastify-react-native";
 import { useRouter } from "expo-router";
 import {
@@ -59,6 +60,16 @@ const SUGGESTIONS_DEBOUNCE_MS = 80;
 const SUGGESTIONS_LIMIT = 30;
 const EVENT_NAME_MAX = 50;
 
+// Używane dopóki mapStore nie ma REALNEJ lokalizacji — domyślny
+// środek Polski ze store’a nie może trafić do parametrów wyszukiwania.
+const EMPTY_LOCATION = {
+  latitude: null,
+  longitude: null,
+  City: "",
+  Country: "Poland",
+  region: "",
+};
+
 const FindEvent = () => {
   dbg("FindEventScreen");
   useDebugMount("FindEventScreen");
@@ -66,14 +77,15 @@ const FindEvent = () => {
   const { styles, colors } = useThemedStyles(createStyles);
 
   const router = useRouter();
-  const { consents, getSavedLocation } = useAuth();
-  const [userLocation, setUserLocation] = useState({
-    latitude: null,
-    longitude: null,
-    City: "",
-    Country: "Poland",
-    region: "",
-  });
+  const { consents } = useAuth();
+  // Lokalizacja płynie z mapStore (źródło prawdy uzupełniane przez
+  // useMapManager), zamiast wyścigu z asynchronicznym zapisem do AsyncStorage.
+  const storeUserLocation = useMapStore((s) => s.userLocation);
+  const hasUserLocation = useMapStore((s) => s.hasUserLocation);
+  const userLocation = useMemo(
+    () => (hasUserLocation ? storeUserLocation : EMPTY_LOCATION),
+    [hasUserLocation, storeUserLocation],
+  );
   const [loading, setLoading] = useState(false);
   const [userInput, setUserInput] = useState({
     latitude: null,
@@ -117,31 +129,6 @@ const FindEvent = () => {
       }
     };
   }, []);
-
-  // Pobierz zapisaną lokalizację użytkownika
-  useEffect(() => {
-    let isActive = true;
-
-    const loadLocation = async () => {
-      if (!consents.locationAccepted) return;
-      const result = await getSavedLocation();
-      if (isActive && result.success && result.location) {
-        setUserLocation({
-          latitude: result.location.latitude,
-          longitude: result.location.longitude,
-          City: result.location.City || "",
-          region: result.location.region || "",
-          Country: result.location.Country || "Poland",
-        });
-      }
-    };
-
-    loadLocation();
-
-    return () => {
-      isActive = false;
-    };
-  }, [consents.locationAccepted, getSavedLocation]);
 
   // Ustaw początkową lokalizację z userLocation
   useEffect(() => {
@@ -462,7 +449,12 @@ const FindEvent = () => {
       <View style={styles.searchContainer}>
         <View style={styles.searchHeader}>
           <Text style={styles.searchHeaderText}>Znajdź wydarzenie</Text>
-          <Pressable style={styles.filters}>
+          <Pressable
+            style={styles.filters}
+            onPress={() =>
+              Toast.info("Filtry jeszcze nie zaimplementowane", "top")
+            }
+          >
             <AntDesign
               name="unordered-list"
               size={16}

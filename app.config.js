@@ -4,17 +4,12 @@ export default {
   expo: {
     name: "BoiskoPlus",
     slug: "boiskoplus",
-    version: "1.0.4",
+    version: "2.0.0",
     orientation: "portrait",
-    icon: "./assets/images/BoiskoPlusNewLogoForMobile.png",
+    icon: "./assets/images/BoiskoPlus512.png",
     scheme: "boiskoplusmobile",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
-    splash: {
-      image: "./assets/images/BoiskoPlusNewLogoForMobile.png",
-      resizeMode: "contain",
-      backgroundColor: "#012115",
-    },
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.boiskoplusmobile.app",
@@ -30,9 +25,8 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage:
-          "./assets/images/BoiskoPlusNewLogoForMobileSmaller.png",
-        backgroundColor: "#012115",
+        foregroundImage: "./assets/images/BoiskoPlus512.png",
+        backgroundColor: "#010000",
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
@@ -48,6 +42,21 @@ export default {
     plugins: [
       "expo-router",
       "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          // Natywny splash (Android 12+ dopuszcza tylko wyśrodkowaną ikonę).
+          // Pełnoekranowy BoiskoPlusMain.png + spinner renderuje <AnimatedSplash />.
+          image: "./assets/images/BoiskoPlus512.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#010000",
+          dark: {
+            image: "./assets/images/BoiskoPlus512.png",
+            backgroundColor: "#010000",
+          },
+        },
+      ],
       "@react-native-community/datetimepicker",
       "expo-asset",
       "expo-audio",
@@ -60,8 +69,8 @@ export default {
       [
         "expo-notifications",
         {
-          icon: "./assets/images/BoiskoPlusNewLogoForMobile.png",
-          color: "#012115",
+          icon: "./assets/images/BoiskoPlus512.png",
+          color: "#0B0D10",
           defaultChannel: "default",
         },
       ],

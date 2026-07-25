@@ -10,13 +10,18 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 import { LinearGradient } from "expo-linear-gradient";
 import { dbg, useDebugMount } from "../../assets/utils/debugLogger";
 import { useAuth } from "../../context/AuthContext";
 import { useDashboard } from "../../context/DashboardContext";
+import { useMapStore } from "../../context/mapStore";
 import { fetchNearbyEvents } from "../../assets/utils/eventsApi";
+import { getNearbyPlaces } from "../../assets/utils/geoDistance";
+import sportsPlacesData from "../../assets/data/orliki_hale_polska.json";
 import {
   formatEventDateLabel,
   getEventTitle,
@@ -35,9 +40,16 @@ import {
 import BottomSpacer from "../../components/BottomSpacer";
 
 import DashboardProfileBG from "../../assets/images/V2/DBProfileBG.png";
-import RecommendCardBG from "../../assets/images/V2/IMG_2313.png";
+
+import basketballR from "../../assets/images/V2/basketballR.png";
+import footR from "../../assets/images/V2/footR.png";
+import volleyR from "../../assets/images/V2/volleyR.png";
+import other from "../../assets/images/V2/other.png";
+
 import PlaceCard from "../../components/Cards/PlaceCard";
 import EventSimpleCard from "../../components/Cards/EventSimpleCard";
+
+import { getLevelData } from "../../assets/utils/level";
 
 const DashboardHome = () => {
   dbg("DashboardHomeScreen");
@@ -46,36 +58,43 @@ const DashboardHome = () => {
 
   const { styles, colors } = useThemedStyles(createStyles);
 
-  const { consents, getSavedLocation } = useAuth();
+  const { consents, user, userStats } = useAuth();
   const { eventsData } = useDashboard();
+  // Lokalizacja z mapStore, nie z AsyncStorage — zapis jest asynchroniczny
+  // (GPS + reverse-geocoding), więc przy pierwszym uruchomieniu odczyt
+  // storage’u wyścigował się z bootstrapem i zwracał pustkę.
+  const userLocation = useMapStore((s) => s.userLocation);
+  const hasUserLocation = useMapStore((s) => s.hasUserLocation);
+  const locationResolved = useMapStore((s) => s.locationResolved);
   const [featuredEvent, setFeaturedEvent] = useState(null);
   const [nearbyEvents, setNearbyEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const nearbyPlaces = useMemo(
+    () => getNearbyPlaces(sportsPlacesData, userLocation, { limit: 3 }),
+    [userLocation.latitude, userLocation.longitude],
+  );
 
   useEffect(() => {
+    // Czekaj aż useMapManager rozstrzygnie lokalizację (uprawnienia + GPS)
+    if (!locationResolved) return;
+
     let isActive = true;
 
     const loadNearbyEvents = async () => {
-      if (!consents.locationAccepted) {
-        if (isActive) setLoadingEvents(false);
-        return;
-      }
-
-      const result = await getSavedLocation();
-      if (!isActive) return;
-
-      if (!result?.success || !result.location) {
+      if (!consents.locationAccepted || !hasUserLocation) {
         setLoadingEvents(false);
         return;
       }
 
+      setLoadingEvents(true);
+
       try {
         const data = await fetchNearbyEvents({
-          latitude: result.location.latitude,
-          longitude: result.location.longitude,
-          City: result.location.City,
-          region: result.location.region,
-          Country: result.location.Country || "Poland",
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          City: userLocation.City,
+          region: userLocation.region,
+          Country: userLocation.Country || "Poland",
           distance: 25,
           limit: 4,
         });
@@ -96,7 +115,12 @@ const DashboardHome = () => {
     return () => {
       isActive = false;
     };
-  }, [consents.locationAccepted, getSavedLocation]);
+  }, [
+    locationResolved,
+    hasUserLocation,
+    userLocation,
+    consents.locationAccepted,
+  ]);
 
   const featuredOccupancy = featuredEvent
     ? getEventOccupancy(featuredEvent)
@@ -108,6 +132,19 @@ const DashboardHome = () => {
 
   const goToEvent = (id) => router.push(`/(auth)/single-event?id=${id}`);
   const goToFind = () => router.push("/(auth)/find-event");
+
+  const getBackgroundImage = (gameType) => {
+    switch (gameType) {
+      case "basketball":
+        return basketballR;
+      case "football":
+        return footR;
+      case "volleyball":
+        return volleyR;
+      default:
+        return other;
+    }
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -124,7 +161,7 @@ const DashboardHome = () => {
                 CZEŚĆ,
               </Text>
               <Text style={styles.LevelCard_section_header_textNickname}>
-                LEGENDA!
+                {user?.nickName || "Gracz"}
               </Text>
             </View>
             <Text style={styles.LevelCard_section_header_textSubtitle}>
@@ -136,7 +173,7 @@ const DashboardHome = () => {
               Poziom
             </Text>
             <Text style={styles.LevelCard_section_header_level_number}>
-              LVL 12
+              {getLevelData(userStats?.points || 0).level}
             </Text>
           </View>
         </View>
@@ -148,10 +185,24 @@ const DashboardHome = () => {
               { paddingLeft: SPACING.md },
             ]}
           >
-            1540 PKT
+            {getLevelData(userStats?.points || 0).pointsToNextLevel} pkt do
+            kolejnego poziomu
           </Text>
           {/* custom component */}
-          <View style={styles.LevelCard_fillBar_custom}></View>
+          <View style={styles.LevelCard_fillBar_custom}>
+            <View
+              style={{
+                height: "100%",
+                width: `${
+                  (getLevelData(userStats?.points || 0).currentLevelPoints /
+                    getLevelData(userStats?.points || 0).pointsToNextLevel) *
+                  100
+                }%`,
+                backgroundColor: colors.PrimaryGreen,
+                borderRadius: BORDER_RADIUS.sm,
+              }}
+            />
+          </View>
         </View>
       </View>
 
@@ -159,15 +210,19 @@ const DashboardHome = () => {
       <View style={styles.StatsCard}>
         <View style={[styles.StatsCard_section]}>
           <FontAwesome5 name="trophy" size={12} color={colors.PrimaryGreen} />
-          <Text style={styles.StatsCard_section_text}>14 GIER</Text>
+          <Text style={styles.StatsCard_section_text}>
+            {userStats?.eventsOrganized || 0} GIER
+          </Text>
         </View>
         <View style={[styles.StatsCard_section]}>
           <FontAwesome5 name="trophy" size={12} color={colors.PrimaryGreen} />
-          <Text style={styles.StatsCard_section_text}>100 ZAGRANYCH</Text>
+          <Text style={styles.StatsCard_section_text}>
+            {userStats?.gamesPlayed || 0} ZAGRANYCH
+          </Text>
         </View>
         <View style={styles.StatsCard_section}>
           <FontAwesome5 name="trophy" size={12} color={colors.PrimaryGreen} />
-          <Text style={styles.StatsCard_section_text}>6 DNI SERII</Text>
+          <Text style={styles.StatsCard_section_text}>0 DNI SERII</Text>
         </View>
       </View>
 
@@ -178,7 +233,7 @@ const DashboardHome = () => {
           onPress={() => goToEvent(featuredEvent._id)}
         >
           <Image
-            source={RecommendCardBG}
+            source={getBackgroundImage(featuredEvent.gameType)}
             style={styles.RecommendCard_backgroundImage}
           />
           <View style={styles.RecommendCard_wrapper}>
@@ -250,56 +305,88 @@ const DashboardHome = () => {
       <View style={styles.NavigationBoxes}>
         <Text style={styles.NavigationBoxes_title}>SZYBKIE AKCJE</Text>
         <View style={styles.NavigationBoxes_buttonsWrapper}>
-          <LinearGradient
-            colors={[colors.backgroundSecondary, "#000"]}
-            style={styles.NavigationBoxes_button}
+          <Pressable
+            style={({ pressed }) => [
+              styles.NavigationBoxes_buttonWrapper,
+              pressed && styles.NavigationBoxes_buttonWrapper_pressed,
+            ]}
+            onPress={() => router.navigate("/(auth)/find-event")}
           >
-            <AntDesign
-              name="arrow-right"
-              size={18}
-              color={colors.PrimaryGreen}
-              style={styles.NavigationBoxes_button_icon}
-            />
-            <Text style={styles.NavigationBoxes_button_text}>ZNAJDŹ</Text>
-            <Text style={styles.NavigationBoxes_button_text}>MECZ</Text>
-          </LinearGradient>
-          <LinearGradient
-            colors={[colors.backgroundSecondary, "#000"]}
-            style={styles.NavigationBoxes_button}
+            <LinearGradient
+              colors={[colors.backgroundSecondary, "#000"]}
+              style={styles.NavigationBoxes_button}
+            >
+              <FontAwesome
+                name="search"
+                size={18}
+                color={colors.PrimaryGreen}
+                style={styles.NavigationBoxes_button_icon}
+              />
+              <Text style={styles.NavigationBoxes_button_text}>ZNAJDŹ</Text>
+              <Text style={styles.NavigationBoxes_button_text}>MECZ</Text>
+            </LinearGradient>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.NavigationBoxes_buttonWrapper,
+              pressed && styles.NavigationBoxes_buttonWrapper_pressed,
+            ]}
+            onPress={() => router.navigate("/(auth)/add-event")}
           >
-            <AntDesign
-              name="arrow-right"
-              size={18}
-              color={colors.PrimaryGreen}
-              style={styles.NavigationBoxes_button_icon}
-            />
-            <Text style={styles.NavigationBoxes_button_text}>STWÓRZ </Text>
-            <Text style={styles.NavigationBoxes_button_text}>WYDARZENIE</Text>
-          </LinearGradient>
-          <LinearGradient
-            colors={[colors.backgroundSecondary, "#000"]}
-            style={styles.NavigationBoxes_button}
+            <LinearGradient
+              colors={[colors.backgroundSecondary, "#000"]}
+              style={styles.NavigationBoxes_button}
+            >
+              <AntDesign
+                name="plus"
+                size={18}
+                color={colors.PrimaryGreen}
+                style={styles.NavigationBoxes_button_icon}
+              />
+              <Text style={styles.NavigationBoxes_button_text}>STWÓRZ </Text>
+              <Text style={styles.NavigationBoxes_button_text}>WYDARZENIE</Text>
+            </LinearGradient>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.NavigationBoxes_buttonWrapper,
+              pressed && styles.NavigationBoxes_buttonWrapper_pressed,
+            ]}
+            onPress={() => router.navigate("/(auth)/ranking")}
           >
-            <AntDesign
-              name="arrow-right"
-              size={18}
-              color={colors.PrimaryGreen}
-              style={styles.NavigationBoxes_button_icon}
-            />
-            <Text style={styles.NavigationBoxes_button_text}>RANKING</Text>
-          </LinearGradient>
-          <LinearGradient
-            colors={[colors.backgroundSecondary, "#000"]}
-            style={styles.NavigationBoxes_button}
+            <LinearGradient
+              colors={[colors.backgroundSecondary, "#000"]}
+              style={styles.NavigationBoxes_button}
+            >
+              <MaterialCommunityIcons
+                name="podium"
+                size={18}
+                color={colors.PrimaryGreen}
+                style={styles.NavigationBoxes_button_icon}
+              />
+              <Text style={styles.NavigationBoxes_button_text}>RANKING</Text>
+            </LinearGradient>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.NavigationBoxes_buttonWrapper,
+              pressed && styles.NavigationBoxes_buttonWrapper_pressed,
+            ]}
+            onPress={() => router.navigate("/(auth)/profile")}
           >
-            <AntDesign
-              name="arrow-right"
-              size={18}
-              color={colors.PrimaryGreen}
-              style={styles.NavigationBoxes_button_icon}
-            />
-            <Text style={styles.NavigationBoxes_button_text}>STATYSTYKI</Text>
-          </LinearGradient>
+            <LinearGradient
+              colors={[colors.backgroundSecondary, "#000"]}
+              style={styles.NavigationBoxes_button}
+            >
+              <AntDesign
+                name="pie-chart"
+                size={18}
+                color={colors.PrimaryGreen}
+                style={styles.NavigationBoxes_button_icon}
+              />
+              <Text style={styles.NavigationBoxes_button_text}>STATYSTYKI</Text>
+            </LinearGradient>
+          </Pressable>
         </View>
       </View>
       {/* Nadchodzące wydarzenia w pobliżu */}
@@ -331,30 +418,20 @@ const DashboardHome = () => {
       <View style={styles.NearEvent}>
         <View style={styles.NearEvent_titleWrapper}>
           <Text style={styles.NearEvent_title}>OBIEKTY W OKOLICY</Text>
-          <Text style={styles.NearEvent_title_more}>MAPA ►</Text>
+          <Pressable onPress={() => router.navigate("/(auth)/show-map")}>
+            <Text style={styles.NearEvent_title_more}>MAPA ►</Text>
+          </Pressable>
         </View>
 
-        <PlaceCard
-          type="Orlik"
-          name="Orlik Centrum"
-          rating={2.3}
-          address="Mszczonowska 2137"
-          geoDistance={1.2}
-        />
-        <PlaceCard
-          type="Orlik"
-          name="Orlik Centrum"
-          rating={3.7}
-          address="Mszczonowska 2137"
-          geoDistance={1.2}
-        />
-        <PlaceCard
-          type="Orlik"
-          name="Orlik Centrum"
-          rating={4.5}
-          address="Mszczonowska 2137"
-          geoDistance={1.2}
-        />
+        {nearbyPlaces.map((place) => (
+          <PlaceCard
+            key={place.id}
+            type={place.type || "orlik"}
+            name={place.name || place.city || "Miasto"}
+            address={place.address || place.city || "Miasto"}
+            geoDistance={place.geoDistance}
+          />
+        ))}
         <BottomSpacer />
       </View>
     </ScrollView>
@@ -442,7 +519,7 @@ const createStyles = (colors) =>
       height: 5,
       width: "86%",
       marginTop: SPACING.sm,
-      backgroundColor: colors.PrimaryGreen,
+      backgroundColor: colors.border,
       borderRadius: BORDER_RADIUS.sm,
     },
 
@@ -473,7 +550,7 @@ const createStyles = (colors) =>
       flex: 1,
       position: "relative",
       overflow: "hidden",
-      height: moderateScale(300),
+      // height: moderateScale(300),
       borderRadius: BORDER_RADIUS.lg,
       borderWidth: 1,
       borderColor: colors.border,
@@ -494,8 +571,9 @@ const createStyles = (colors) =>
     RecommendCard_wrapper: {
       flex: 1,
       zIndex: 2,
-      paddingLeft: SPACING.xl,
+      paddingHorizontal: SPACING.md,
       paddingTop: SPACING.xl,
+      // maxWidth: "80%",
     },
     RecommendCard_date: {
       flexDirection: "row",
@@ -541,6 +619,7 @@ const createStyles = (colors) =>
       borderRadius: BORDER_RADIUS.md,
       backgroundColor: colors.PrimaryYellow,
       paddingVertical: SPACING.sm,
+      marginBottom: SPACING.lg,
     },
     RecommendCard_pressable: {
       flexDirection: "row",
@@ -593,13 +672,20 @@ const createStyles = (colors) =>
       width: "100%",
       justifyContent: "space-between",
     },
-    NavigationBoxes_button: {
+    NavigationBoxes_buttonWrapper: {
       width: "22%",
+      borderRadius: BORDER_RADIUS.md,
+    },
+    NavigationBoxes_buttonWrapper_pressed: {
+      opacity: 0.7,
+    },
+    NavigationBoxes_button: {
       borderRadius: BORDER_RADIUS.md,
       paddingVertical: SPACING.sm,
       justifyContent: "flex-start",
       alignItems: "center",
       borderWidth: 1,
+      flex: 1,
       borderColor: colors.border,
     },
     NavigationBoxes_button_icon: {

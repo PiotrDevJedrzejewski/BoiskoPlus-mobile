@@ -29,59 +29,59 @@
  * === true (żeby nie zgubić komendy zanim <Mapbox.Camera> się zamontuje).
  */
 
-import { create } from 'zustand'
+import { create } from "zustand";
 
 // =====================================================
 // PROVINCE COORDINATES (Polska)
 // =====================================================
 
 const PROVINCE_COORDINATES = {
-  'dolnośląskie': { lat: 51.1079, lon: 16.9252, zoom: 7 },
-  'kujawsko-pomorskie': { lat: 53.0138, lon: 18.0060, zoom: 7 },
-  'lubelskie': { lat: 51.2465, lon: 22.5684, zoom: 7 },
-  'lubuskie': { lat: 52.2500, lon: 15.5000, zoom: 7 },
-  'łódzkie': { lat: 51.463477, lon: 19.172697, zoom: 7 },
-  'małopolskie': { lat: 50.0647, lon: 19.9450, zoom: 7 },
-  'mazowieckie': { lat: 52.3423, lon: 21.1017, zoom: 7 },
-  'opolskie': { lat: 50.6751, lon: 17.9270, zoom: 8 },
-  'podkarpackie': { lat: 50.0413, lon: 21.9990, zoom: 7 },
-  'podlaskie': { lat: 53.1325, lon: 23.1688, zoom: 7 },
-  'pomorskie': { lat: 54.3520, lon: 18.6466, zoom: 7 },
-  'śląskie': { lat: 50.2975, lon: 19.0238, zoom: 8 },
-  'świętokrzyskie': { lat: 50.8661, lon: 20.6286, zoom: 8 },
-  'warmińsko-mazurskie': { lat: 53.7784, lon: 20.4801, zoom: 7 },
-  'wielkopolskie': { lat: 52.3337, lon: 17.2417, zoom: 7 },
-  'zachodniopomorskie': { lat: 53.4300, lon: 15.5000, zoom: 7 },
-}
+  dolnośląskie: { lat: 51.1079, lon: 16.9252, zoom: 7 },
+  "kujawsko-pomorskie": { lat: 53.0138, lon: 18.006, zoom: 7 },
+  lubelskie: { lat: 51.2465, lon: 22.5684, zoom: 7 },
+  lubuskie: { lat: 52.25, lon: 15.5, zoom: 7 },
+  łódzkie: { lat: 51.463477, lon: 19.172697, zoom: 7 },
+  małopolskie: { lat: 50.0647, lon: 19.945, zoom: 7 },
+  mazowieckie: { lat: 52.3423, lon: 21.1017, zoom: 7 },
+  opolskie: { lat: 50.6751, lon: 17.927, zoom: 8 },
+  podkarpackie: { lat: 50.0413, lon: 21.999, zoom: 7 },
+  podlaskie: { lat: 53.1325, lon: 23.1688, zoom: 7 },
+  pomorskie: { lat: 54.352, lon: 18.6466, zoom: 7 },
+  śląskie: { lat: 50.2975, lon: 19.0238, zoom: 8 },
+  świętokrzyskie: { lat: 50.8661, lon: 20.6286, zoom: 8 },
+  "warmińsko-mazurskie": { lat: 53.7784, lon: 20.4801, zoom: 7 },
+  wielkopolskie: { lat: 52.3337, lon: 17.2417, zoom: 7 },
+  zachodniopomorskie: { lat: 53.43, lon: 15.5, zoom: 7 },
+};
 
 const DEFAULT_LOCATION = {
   latitude: 52.0,
   longitude: 19.5,
-  City: '',
-  Country: 'Poland',
-  region: '',
-}
+  City: "",
+  Country: "Poland",
+  region: "",
+};
 
 const DEFAULT_CAMERA = {
   centerCoordinate: [19.5, 52.0], // Polska - cały kraj
   zoomLevel: 6,
-}
+};
 
 // =====================================================
 // INTERNAL (non-reactive imperative refs, NOT zustand state)
 // =====================================================
 
-let cameraRefInstance = null
-let mapRefInstance = null
+let cameraRefInstance = null;
+let mapRefInstance = null;
 
 /** Wywoływane przez MapboxMobile przy mouncie/unmouncie */
 export const registerCameraRef = (ref) => {
-  cameraRefInstance = ref
-}
+  cameraRefInstance = ref;
+};
 
 export const registerMapRef = (ref) => {
-  mapRefInstance = ref
-}
+  mapRefInstance = ref;
+};
 
 // =====================================================
 // STORE
@@ -105,6 +105,26 @@ export const useMapStore = create((set, get) => ({
   // ── Lokalizacja użytkownika ──
   userLocation: DEFAULT_LOCATION,
 
+  // Czy `userLocation` to REALNA lokalizacja użytkownika, a nie fallback
+  // na środek Polski. Ekrany (dashboard-home, find-event) muszą to wiedzieć,
+  // żeby nie odpytywać backendu o wydarzenia "w środku Polski".
+  hasUserLocation: false,
+
+  // Czy useMapManager skończył bootstrap lokalizacji (uprawnienia +
+  // AsyncStorage + ewentualny strzał po GPS). Dopóki false, konsumenci
+  // powinni trzymać spinner zamiast wyciągać wnioski z pustej lokalizacji.
+  //
+  // ⚠️ To jest lek na wyścig: przy PIERWSZYM uruchomieniu (świeża zgoda)
+  // w AsyncStorage nie ma jeszcze nic, bo GPS + reverse-geocoding trwają.
+  // Efekty zależne tylko od `consents.locationAccepted` odpalały się za
+  // wcześnie, dostawały pustkę i nigdy nie ponawiały próby.
+  locationResolved: false,
+
+  // ── Czy użytkownik zgodził się na geolokalizację (mirror consents.locationAccepted) ──
+  // Trzymane w store, żeby MapboxMobile nie musiał subskrybować AuthContext
+  // tylko po to, by zdecydować o renderze markera lokalizacji.
+  geolocationAccepted: false,
+
   // ── "Zlecenie" wycentrowania mapy z ekranu spoza mapy (np. events-managment) ──
   pendingFlyTo: null,
 
@@ -114,18 +134,22 @@ export const useMapStore = create((set, get) => ({
 
   setShowMarkers: (valOrFn) =>
     set((s) => ({
-      showMarkers: typeof valOrFn === 'function' ? valOrFn(s.showMarkers) : valOrFn,
+      showMarkers:
+        typeof valOrFn === "function" ? valOrFn(s.showMarkers) : valOrFn,
     })),
 
   setShowEvents: (valOrFn) =>
     set((s) => ({
-      showEvents: typeof valOrFn === 'function' ? valOrFn(s.showEvents) : valOrFn,
+      showEvents:
+        typeof valOrFn === "function" ? valOrFn(s.showEvents) : valOrFn,
     })),
 
   setOverlayOpacity: (v) => set({ overlayOpacity: v }),
   setIsInteractive: (v) => set({ isInteractive: v }),
   setIsMapReady: (v) => set({ isMapReady: v }),
   setUserLocation: (v) => set({ userLocation: v }),
+  setGeolocationAccepted: (v) => set({ geolocationAccepted: v }),
+  setLocationResolved: (v) => set({ locationResolved: v }),
 
   setPendingFlyTo: (target) => set({ pendingFlyTo: target }),
   clearPendingFlyTo: () => set({ pendingFlyTo: null }),
@@ -140,62 +164,80 @@ export const useMapStore = create((set, get) => ({
       cameraRefInstance.current.setCamera({
         centerCoordinate: coordinates,
         zoomLevel: zoom,
-        animationMode: 'flyTo',
+        animationMode: "flyTo",
         animationDuration: 1000,
-      })
+      });
     }
-    set({ camera: { centerCoordinate: coordinates, zoomLevel: zoom } })
+    set({ camera: { centerCoordinate: coordinates, zoomLevel: zoom } });
   },
 
   /** Zwraca współrzędne środka województwa (lub null) */
   getProvinceCoordinates: (provinceName) => {
-    if (!provinceName) return null
-    const normalized = provinceName.toLowerCase().trim()
-    return PROVINCE_COORDINATES[normalized] || null
+    if (!provinceName) return null;
+    const normalized = provinceName.toLowerCase().trim();
+    return PROVINCE_COORDINATES[normalized] || null;
   },
 
   /** Wyśrodkowuje mapę na województwo */
   flyToProvince: (provinceName) => {
-    const coords = get().getProvinceCoordinates(provinceName)
+    const coords = get().getProvinceCoordinates(provinceName);
     if (coords) {
-      get().flyTo([coords.lon, coords.lat], coords.zoom)
-      return true
+      get().flyTo([coords.lon, coords.lat], coords.zoom);
+      return true;
     }
-    return false
+    return false;
   },
 
   /**
    * Ustawia lokalizację startową na podstawie zgody + zapisanej lokalizacji.
    * `getSavedLocation` jest wstrzykiwane z AuthContext przez useMapManager,
    * bo store nie ma dostępu do React Context.
+   *
+   * @returns {Promise<boolean>} true jeśli udało się zastosować ZAPISANĄ
+   *   lokalizację (wołający wie wtedy, że nie musi strzelać po GPS)
    */
   setStartLocation: async (locationAccepted, getSavedLocation) => {
     if (!locationAccepted) {
-      set({ userLocation: DEFAULT_LOCATION })
-      get().flyTo(DEFAULT_CAMERA.centerCoordinate, DEFAULT_CAMERA.zoomLevel)
-      return
+      set({ userLocation: DEFAULT_LOCATION, hasUserLocation: false });
+      get().flyTo(DEFAULT_CAMERA.centerCoordinate, DEFAULT_CAMERA.zoomLevel);
+      return false;
     }
 
     try {
-      const result = await getSavedLocation()
+      const result = await getSavedLocation();
       if (result.success && result.location) {
         const location = {
           latitude: result.location.latitude,
           longitude: result.location.longitude,
-          City: result.location.City || '',
-          region: result.location.region || '',
-          Country: result.location.Country || 'Poland',
-        }
-        set({ userLocation: location })
-        get().flyTo([result.location.longitude, result.location.latitude], 12)
-      } else {
-        set({ userLocation: DEFAULT_LOCATION })
-        get().flyTo(DEFAULT_CAMERA.centerCoordinate, DEFAULT_CAMERA.zoomLevel)
+          City: result.location.City || "",
+          region: result.location.region || "",
+          Country: result.location.Country || "Poland",
+        };
+        set({ userLocation: location, hasUserLocation: true });
+        get().flyTo([result.location.longitude, result.location.latitude], 12);
+        return true;
       }
+
+      set({ userLocation: DEFAULT_LOCATION, hasUserLocation: false });
+      get().flyTo(DEFAULT_CAMERA.centerCoordinate, DEFAULT_CAMERA.zoomLevel);
+      return false;
     } catch (error) {
-      console.error('Błąd pobierania lokalizacji:', error)
-      set({ userLocation: DEFAULT_LOCATION })
-      get().flyTo(DEFAULT_CAMERA.centerCoordinate, DEFAULT_CAMERA.zoomLevel)
+      console.error("Błąd pobierania lokalizacji:", error);
+      set({ userLocation: DEFAULT_LOCATION, hasUserLocation: false });
+      get().flyTo(DEFAULT_CAMERA.centerCoordinate, DEFAULT_CAMERA.zoomLevel);
+      return false;
     }
   },
-}))
+
+  /** Ustawia lokalizację użytkownika i od razu centruje na niej mapę */
+  applyUserLocation: (location, zoom = 12) => {
+    set({ userLocation: location, hasUserLocation: true });
+    get().flyTo([location.longitude, location.latitude], zoom);
+  },
+
+  /** Reset do fallbacku (używane po "Usuń lokalizację" w ustawieniach) */
+  clearUserLocation: () => {
+    set({ userLocation: DEFAULT_LOCATION, hasUserLocation: false });
+    get().flyTo(DEFAULT_CAMERA.centerCoordinate, DEFAULT_CAMERA.zoomLevel);
+  },
+}));

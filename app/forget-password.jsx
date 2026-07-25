@@ -1,45 +1,47 @@
-import { useMemo } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import { COLORS } from '../constants/colors'
-import { useResponsiveScale } from '../assets/utils/scaleUI.UX'
-import { dbg, useDebugMount } from '../assets/utils/debugLogger'
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { useThemedStyles } from "../context/themeStore";
+import { SPACING } from "../Theme/StyleConstants";
+import { verticalScale, scaleFont } from "../Theme/ScalableStyles";
+import { dbg, useDebugMount } from "../assets/utils/debugLogger";
 
 const ForgetPassword = () => {
-  dbg('ForgetPasswordScreen')
-  useDebugMount('ForgetPasswordScreen')
-  const ui = useResponsiveScale()
-  const styles = useMemo(() => createStyles(ui), [ui])
+  dbg("ForgetPasswordScreen");
+  useDebugMount("ForgetPasswordScreen");
+  const { styles } = useThemedStyles(createStyles);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Reset Hasła</Text>
-      <Text style={styles.description}>Ekran odzyskiwania hasła jest gotowy pod dalszą implementację.</Text>
+      <Text style={styles.description}>
+        Ekran odzyskiwania hasła jest gotowy pod dalszą implementację.
+      </Text>
     </View>
-  )
-}
+  );
+};
 
-export default ForgetPassword
+export default ForgetPassword;
 
-const createStyles = (ui) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: ui.spacing(24, 0.45),
-  },
-  title: {
-    fontSize: ui.scaleFont(28, 0.45),
-    fontFamily: 'Montserrat-Bold',
-    color: COLORS.primary,
-    textAlign: 'center',
-  },
-  description: {
-    marginTop: ui.verticalScale(12),
-    fontSize: ui.scaleFont(15, 0.35),
-    fontFamily: 'Lato-Regular',
-    color: COLORS.gray,
-    textAlign: 'center',
-  },
-})
+const createStyles = (colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: SPACING.lg,
+    },
+    title: {
+      fontSize: scaleFont(28, 0.45),
+      fontFamily: "Montserrat-Bold",
+      color: colors.primaryText,
+      textAlign: "center",
+    },
+    description: {
+      marginTop: verticalScale(12),
+      fontSize: scaleFont(15, 0.35),
+      fontFamily: "Lato-Regular",
+      color: colors.thirdText,
+      textAlign: "center",
+    },
+  });
