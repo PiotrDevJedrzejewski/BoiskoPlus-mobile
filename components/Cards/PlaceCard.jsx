@@ -30,9 +30,9 @@ const PlaceCard = ({ type, name, address, geoDistance }) => {
         />
       )}
       <View style={styles.place_card_content}>
-        <Text style={styles.place_card_content_date}>{safeType}</Text>
-        <Text style={styles.place_card_content_title}>{safeName}</Text>
         <View style={styles.place_card_content_address}>
+          <Text style={styles.place_card_content_date}>{safeType}</Text>
+          <Text style={styles.place_card_content_title}>{safeName}</Text>
           <Text style={styles.place_card_content_address_text}>
             {safeAddress}
           </Text>
@@ -54,8 +54,8 @@ const createStyles = (colors) =>
   StyleSheet.create({
     place_card: {
       flex: 1,
-      position: "relative",
       overflow: "hidden",
+      flexDirection: "row",
       height: moderateScale(80),
       borderRadius: BORDER_RADIUS.lg,
       borderWidth: 1,
@@ -64,21 +64,16 @@ const createStyles = (colors) =>
       backgroundColor: colors.secondaryCard,
     },
     place_card_backgroundImage: {
-      position: "absolute",
       height: "100%",
       width: "33%",
-      left: 0,
-      top: 0,
       resizeMode: "cover",
       borderRadius: BORDER_RADIUS.lg,
-      zIndex: 1,
     },
     place_card_content: {
       flex: 1,
-      marginLeft: "33%",
-      padding: SPACING.md,
-      justifyContent: "center",
       alignItems: "flex-start",
+      justifyContent: "space-between",
+      flexDirection: "row",
     },
     place_card_content_date: {
       fontSize: scaleFont(12),
@@ -92,20 +87,23 @@ const createStyles = (colors) =>
     },
 
     place_card_content_address: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: SPACING.sm,
+      flexDirection: "column",
+      alignItems: "flex-start",
+      width: "50%",
+      padding: SPACING.sm,
+      justifyContent: "flex-start",
     },
     place_card_content_address_text: {
       fontSize: scaleFont(12),
       color: colors.secondaryText,
     },
     place_card_additionalInfo: {
-      position: "absolute",
-      right: SPACING.sm,
-      bottom: SPACING.sm,
+      width: "17%",
+      height: "100%",
+      marginRight: SPACING.md,
+      paddingBottom: SPACING.sm,
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-end",
       justifyContent: "flex-end",
       gap: SPACING.xs,
     },

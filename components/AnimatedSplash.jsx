@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Animated, Image, StyleSheet } from "react-native";
+import { Animated, ImageBackground, StyleSheet } from "react-native";
 import LottieView from "lottie-react-native";
 import spinner from "../assets/utils/spinner.json";
 import splashImage from "../assets/images/BoiskoPlusMain.png";
@@ -36,7 +36,7 @@ const AnimatedSplash = ({ isAppReady, onFinish, onLayout }) => {
       pointerEvents={isAppReady ? "none" : "auto"}
       style={[StyleSheet.absoluteFill, styles.container, { opacity }]}
     >
-      <Image
+      <ImageBackground
         source={splashImage}
         style={styles.imageStyle}
         resizeMode="cover"
@@ -55,11 +55,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 10,
     elevation: 10,
-    position: "relative",
+    flex: 1,
   },
   imageStyle: {
-    resizeMode: "cover",
     flex: 1,
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
@@ -68,10 +68,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     position: "absolute",
-    bottom: 0,
-    top: 0,
-    left: 0,
-    right: 0,
+    bottom: 50,
   },
 });
 
