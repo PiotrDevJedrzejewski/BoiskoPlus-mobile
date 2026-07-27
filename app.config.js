@@ -67,6 +67,10 @@ export default {
       "expo-apple-authentication",
       "@react-native-google-signin/google-signin",
       [
+        "expo-build-properties",
+        { ios: { useFrameworks: "static", useModularHeaders: true } },
+      ],
+      [
         "expo-notifications",
         {
           icon: "./assets/images/BoiskoPlus512.png",
