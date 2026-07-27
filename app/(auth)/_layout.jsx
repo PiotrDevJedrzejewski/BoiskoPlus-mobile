@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Stack, Redirect } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import { SocketIoProvider } from "../../context/SocketIoContext";
@@ -12,13 +12,6 @@ import NetworkGuard from "../../components/NetworkGuard";
 import { dbg, useDebugMount } from "../../assets/utils/debugLogger";
 
 import { useThemedStyles } from "../../context/themeStore";
-import { SPACING, BORDER_RADIUS } from "../../Theme/StyleConstants";
-import {
-  scale,
-  verticalScale,
-  moderateScale,
-  scaleFont,
-} from "../../Theme/ScalableStyles";
 
 // Overlays
 import HeaderDrawer from "../../Navigation/HeaderDrawer";
@@ -35,12 +28,12 @@ const AuthLayout = () => {
   // w show-map.jsx — inaczej dialog pojawia się dopiero po wejściu na mapę.
   useMapManager();
 
+  const { styles } = useThemedStyles(createStyles);
+
   // Auth guard — redirect to home if not authenticated
   if (isAuthChecked && !user) {
     return <Redirect href="/" />;
   }
-
-  const { styles, colors } = useThemedStyles(createStyles);
 
   return (
     <NotificationProvider>

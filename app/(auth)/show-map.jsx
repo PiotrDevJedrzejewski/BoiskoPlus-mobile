@@ -558,11 +558,15 @@ export default ShowMap;
 
 const mapLayoutStyles = StyleSheet.create({
   mapBackground: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     zIndex: 0,
   },
   mapOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   contentContainer: {
     flex: 1,
@@ -570,7 +574,7 @@ const mapLayoutStyles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 10,
     justifyContent: "center",
     alignItems: "center",

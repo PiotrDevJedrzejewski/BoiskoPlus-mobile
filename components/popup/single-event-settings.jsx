@@ -151,7 +151,7 @@ export default SingleEventSettings;
 const createStyles = (colors) =>
   StyleSheet.create({
     overlay: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: "rgba(0, 0, 0, 0.65)",
       justifyContent: "flex-start",
       paddingTop: verticalScale(100),

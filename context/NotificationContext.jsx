@@ -73,22 +73,18 @@ const setupNotificationChannels = async () => {
       name: "Wiadomości czatu",
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
-      sound: "default",
     });
     await Notifications.setNotificationChannelAsync("event-updates", {
       name: "Aktualizacje wydarzeń",
       importance: Notifications.AndroidImportance.HIGH,
-      sound: "default",
     });
     await Notifications.setNotificationChannelAsync("friend-requests", {
       name: "Zaproszenia do znajomych",
       importance: Notifications.AndroidImportance.DEFAULT,
-      sound: "default",
     });
     await Notifications.setNotificationChannelAsync("event-reminders", {
       name: "Przypomnienia o wydarzeniach",
       importance: Notifications.AndroidImportance.HIGH,
-      sound: "default",
     });
   }
 };

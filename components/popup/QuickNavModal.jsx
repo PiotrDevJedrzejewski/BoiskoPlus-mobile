@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useMemo } from "react";
-import { BackHandler, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  BackHandler,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Animated, {
@@ -113,61 +120,70 @@ const QuickNavModal = ({ visible, onClose }) => {
   });
 
   return (
-    <GestureDetector gesture={backdropTap}>
-      <Animated.View style={[styles.overlay, overlayAnimatedStyle]}>
-        <Animated.View
-          style={[
-            styles.container,
-            containerAnimatedStyle,
-            { marginTop: SPACING.md + insets.top },
-          ]}
-        >
-          {/* Header label */}
-          <View style={styles.header}>
-            <Ionicons
-              name="notifications"
-              size={18}
-              color={colors.secondaryText}
-            />
-            <Text style={styles.headerText}>Powiadomienia</Text>
-          </View>
+    <Modal
+      visible={visible}
+      transparent
+      statusBarTranslucent
+      animationType="none"
+      presentationStyle="overFullScreen"
+      onRequestClose={onClose}
+    >
+      <GestureDetector gesture={backdropTap}>
+        <Animated.View style={[styles.overlay, overlayAnimatedStyle]}>
+          <Animated.View
+            style={[
+              styles.container,
+              containerAnimatedStyle,
+              { marginTop: SPACING.md + insets.top },
+            ]}
+          >
+            {/* Header label */}
+            <View style={styles.header}>
+              <Ionicons
+                name="notifications"
+                size={18}
+                color={colors.secondaryText}
+              />
+              <Text style={styles.headerText}>Powiadomienia</Text>
+            </View>
 
-          {/* Buttons row */}
-          <View style={styles.buttonsRow}>
-            {buttons.map((btn) => (
-              <View key={btn.key} style={styles.buttonWrapper}>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.roundButton,
-                    pressed && styles.roundButtonPressed,
-                  ]}
-                  onPress={() => navigate(btn.path)}
-                  android_ripple={{
-                    color: colors.backgroundSecondary,
-                    borderless: false,
-                  }}
-                >
-                  <Ionicons
-                    name={btn.icon}
-                    size={26}
-                    color={colors.primaryText}
-                  />
-                  {/* Badge - position absolute top-right */}
-                  {btn.count > 0 && (
-                    <View style={styles.badge}>
-                      <Text style={styles.badgeText}>
-                        {btn.count > 9 ? "9+" : btn.count}
-                      </Text>
-                    </View>
-                  )}
-                </Pressable>
-                <Text style={styles.buttonLabel}>{btn.label}</Text>
-              </View>
-            ))}
-          </View>
+            {/* Buttons row */}
+            <View style={styles.buttonsRow}>
+              {buttons.map((btn) => (
+                <View key={btn.key} style={styles.buttonWrapper}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.roundButton,
+                      pressed && styles.roundButtonPressed,
+                    ]}
+                    onPress={() => navigate(btn.path)}
+                    android_ripple={{
+                      color: colors.backgroundSecondary,
+                      borderless: false,
+                    }}
+                  >
+                    <Ionicons
+                      name={btn.icon}
+                      size={26}
+                      color={colors.primaryText}
+                    />
+                    {/* Badge - position absolute top-right */}
+                    {btn.count > 0 && (
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeText}>
+                          {btn.count > 9 ? "9+" : btn.count}
+                        </Text>
+                      </View>
+                    )}
+                  </Pressable>
+                  <Text style={styles.buttonLabel}>{btn.label}</Text>
+                </View>
+              ))}
+            </View>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
-    </GestureDetector>
+      </GestureDetector>
+    </Modal>
   );
 };
 
@@ -176,7 +192,7 @@ export default QuickNavModal;
 const createStyles = (colors) =>
   StyleSheet.create({
     overlay: {
-      ...StyleSheet.absoluteFillObject,
+      flex: 1,
       backgroundColor: "rgba(0, 0, 0, 0.65)",
       justifyContent: "flex-start",
       alignItems: "flex-end",
