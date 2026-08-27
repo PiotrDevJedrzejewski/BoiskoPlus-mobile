@@ -75,7 +75,7 @@ const createStyles = (colors) =>
     },
     btnText: {
       fontSize: scaleFont(14, 0.3),
-      fontFamily: "Montserrat-Medium",
+      fontFamily: "Inter-Medium",
       color: colors.primaryText,
       marginTop: SPACING.xs,
       flexShrink: 1,

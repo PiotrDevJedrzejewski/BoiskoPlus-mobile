@@ -81,7 +81,7 @@ const createStyles = (colors) => StyleSheet.create({
     },
 	actionChipText: {
 		fontSize: scaleFont(12, 0.3),
-		fontFamily: 'Lato-Regular',
+		fontFamily: 'Inter-Regular',
 		color: colors.background,
 	},
 	actionChipTextPrimary: {

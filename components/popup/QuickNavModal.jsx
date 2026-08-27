@@ -225,7 +225,7 @@ const createStyles = (colors) =>
     headerText: {
       color: colors.primaryText,
       fontSize: scaleFont(15, 0.35),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-ExtraBold",
     },
     buttonsRow: {
       flexDirection: "row",
@@ -252,7 +252,7 @@ const createStyles = (colors) =>
     buttonLabel: {
       color: colors.primaryText,
       fontSize: scaleFont(11, 0.3),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       textAlign: "center",
     },
     badge: {
@@ -270,6 +270,6 @@ const createStyles = (colors) =>
     badgeText: {
       color: "#fff",
       fontSize: scaleFont(10, 0.25),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
   });

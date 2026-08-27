@@ -2,9 +2,9 @@ import "dotenv/config";
 
 export default {
   expo: {
-    name: "BoiskoPlus",
+    name: "Boisko+",
     slug: "boiskoplus",
-    version: "2.0.0",
+    version: "2.2.0",
     orientation: "portrait",
     icon: "./assets/images/BoiskoPlus512.png",
     scheme: "boiskoplusmobile",
@@ -59,7 +59,12 @@ export default {
       ],
       "@react-native-community/datetimepicker",
       "expo-asset",
-      "expo-audio",
+      [
+        "expo-audio",
+        {
+          enableBackgroundPlayback: false,
+        },
+      ],
       "expo-font",
       "expo-web-browser",
       "expo-location",

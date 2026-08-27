@@ -56,7 +56,7 @@ const createStyles = (colors) =>
       flex: 1,
       overflow: "hidden",
       flexDirection: "row",
-      height: moderateScale(80),
+      minHeight: moderateScale(80),
       borderRadius: BORDER_RADIUS.lg,
       borderWidth: 1,
       borderColor: colors.border,
@@ -84,12 +84,13 @@ const createStyles = (colors) =>
       fontSize: scaleFont(14),
       color: colors.primaryText,
       fontWeight: "bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
 
     place_card_content_address: {
       flexDirection: "column",
       alignItems: "flex-start",
-      width: "50%",
+      width: "84%",
       padding: SPACING.sm,
       justifyContent: "flex-start",
     },
@@ -98,7 +99,7 @@ const createStyles = (colors) =>
       color: colors.secondaryText,
     },
     place_card_additionalInfo: {
-      width: "17%",
+      width: "15%",
       height: "100%",
       marginRight: SPACING.md,
       paddingBottom: SPACING.sm,

@@ -176,7 +176,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   title: {
     fontSize: scaleFont(18, 0.4),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.primaryText,
     textAlign: 'center',
   },
@@ -205,12 +205,12 @@ const createStyles = (colors) => StyleSheet.create({
   itemText: {
     flex: 1,
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
   },
   itemTextSelected: {
     color: colors.PrimaryGreen,
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
   },
   separator: {
     height: 1,

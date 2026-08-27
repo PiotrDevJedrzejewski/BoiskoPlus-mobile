@@ -141,7 +141,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   headerTitle: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.primaryText,
   },
   closeButton: {
@@ -173,13 +173,13 @@ const createStyles = (colors) => StyleSheet.create({
   },
   placeName: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
     marginBottom: verticalScale(4),
   },
   placeAddress: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     opacity: 0.8,
     lineHeight: verticalScale(16),
@@ -195,7 +195,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   createButtonText: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.background,
   },
   footer: {
@@ -207,7 +207,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   footerText: {
     fontSize: scaleFont(11, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     opacity: 0.7,
     textAlign: 'center',

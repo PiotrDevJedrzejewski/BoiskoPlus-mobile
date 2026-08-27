@@ -100,7 +100,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   infoText: {
     fontSize: scaleFont(13, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
   },
   statsContainer: {
@@ -110,7 +110,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   statsText: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
   },
 })

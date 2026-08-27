@@ -29,7 +29,7 @@ import {
 } from "../../assets/utils/citySearchUtils";
 import customFetch from "../../assets/utils/customFetch";
 import placesData from "../../assets/data/miejscowosci_wojewodztwa.json";
-import sportsPlacesData from "../../assets/data/orliki_hale_polska.json";
+import sportsPlacesData from "../../assets/data/orliki_hale_polaczony_naprawiony.json";
 import { getNearbyPlaces } from "../../assets/utils/geoDistance";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -613,7 +613,7 @@ const createStyles = (colors) =>
     switchButtonText: {
       marginLeft: 5,
       fontSize: scaleFont(16, 0.25),
-      // fontFamily: 'ObjectFont',
+      fontFamily: "Inter-SemiBold",
     },
 
     searchContainer: {
@@ -637,6 +637,7 @@ const createStyles = (colors) =>
       padding: 10,
       backgroundColor: colors.primaryCard,
       borderRadius: BORDER_RADIUS.md,
+      fontFamily: "Inter-Regular",
     },
     searchButton: {
       padding: 10,
@@ -650,6 +651,7 @@ const createStyles = (colors) =>
     searchButtonText: {
       color: colors.background,
       fontSize: scaleFont(16, 0.25),
+      fontFamily: "Inter-SemiBold",
     },
 
     controlsContainer: {
@@ -670,7 +672,7 @@ const createStyles = (colors) =>
       fontSize: scaleFont(10, 0.25),
       color: colors.primaryText,
       textAlign: "center",
-      fontFamily: "ObjectFont",
+      fontFamily: "Inter-SemiBold",
     },
     controlIconBasic: {
       fontSize: scale(24, 0.25),

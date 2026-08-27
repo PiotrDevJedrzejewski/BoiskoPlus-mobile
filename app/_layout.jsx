@@ -63,11 +63,11 @@ const Layout = () => {
   }, []);
 
   const [fontsLoaded] = useFonts({
-    "Montserrat-Bold": require("../assets/fonts/Montserrat-Bold.ttf"),
-    "Montserrat-Regular": require("../assets/fonts/Montserrat-Regular.ttf"),
-    "Montserrat-Italic": require("../assets/fonts/Montserrat-Italic.ttf"),
-    "Lato-Bold": require("../assets/fonts/Lato-Bold.ttf"),
-    "Lato-Regular": require("../assets/fonts/Lato-Regular.ttf"),
+    "BarlowCondensed-Bold": require("../assets/fonts/Barlow_Condensed/BarlowCondensed-Bold.ttf"),
+    "BarlowCondensed-ExtraBold": require("../assets/fonts/Barlow_Condensed/BarlowCondensed-ExtraBold.ttf"),
+    "Inter-Regular": require("../assets/fonts/Inter/static/Inter_18pt-Regular.ttf"),
+    "Inter-Medium": require("../assets/fonts/Inter/static/Inter_18pt-Medium.ttf"),
+    "Inter-SemiBold": require("../assets/fonts/Inter/static/Inter_18pt-SemiBold.ttf"),
     ObjectFont: require("../assets/fonts/object.ttf"),
   });
 

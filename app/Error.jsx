@@ -34,14 +34,14 @@ const createStyles = (colors) =>
     },
     title: {
       fontSize: scaleFont(28, 0.45),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-ExtraBold",
       color: colors.Danger,
       textAlign: "center",
     },
     description: {
       marginTop: verticalScale(12),
       fontSize: scaleFont(15, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
       textAlign: "center",
     },

@@ -195,7 +195,7 @@ const createStyles = (colors) =>
     calendar_day_number: {
       fontSize: scaleFont(15, 0.35),
       color: colors.primaryText,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     calendar_day_label: {
       fontSize: scaleFont(10, 0.3),

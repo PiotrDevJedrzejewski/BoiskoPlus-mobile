@@ -260,7 +260,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   headerTitle: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.primaryText,
   },
   closeButton: {
@@ -284,7 +284,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   gameType: {
     fontSize: scaleFont(8, 0.25),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
     marginTop: verticalScale(4),
     textAlign: 'center',
@@ -295,13 +295,13 @@ const createStyles = (colors) => StyleSheet.create({
   },
   eventName: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
     marginBottom: verticalScale(2),
   },
   eventAddress: {
     fontSize: scaleFont(11, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     opacity: 0.7,
     fontStyle: 'italic',
@@ -320,7 +320,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   detailText: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     opacity: 0.9,
   },

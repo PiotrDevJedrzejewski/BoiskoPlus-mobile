@@ -160,7 +160,7 @@ const MapboxMobile = ({ isInteractive = true }) => {
   // Załaduj dane predefiniowanych miejsc (Orliki) z lokalnego pliku JSON
   useEffect(() => {
     try {
-      const orlikData = require("../assets/data/orliki_hale_polska.json");
+      const orlikData = require("../assets/data/orliki_hale_polaczony_naprawiony.json");
       if (orlikData.features) {
         setPredefinedPlaces(orlikData.features);
       }

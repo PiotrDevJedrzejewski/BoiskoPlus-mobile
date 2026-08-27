@@ -64,7 +64,6 @@ const AuthLayout = () => {
                         name="show-map"
                         options={{ animation: "none" }}
                       />
-                      <Stack.Screen name="find-event" />
                       <Stack.Screen
                         name="chat"
                         options={{ animation: "none" }}

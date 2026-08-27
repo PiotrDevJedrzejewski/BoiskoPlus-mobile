@@ -1,32 +1,32 @@
-import { Pressable, Text, StyleSheet, Animated, View } from 'react-native'
-import { useRef } from 'react'
+import { Pressable, Text, StyleSheet, Animated, View } from "react-native";
+import { useRef } from "react";
 import {
   moderateScale,
   scale,
   scaleFont,
   verticalScale,
-} from '../assets/utils/scaleUI.UX'
+} from "../assets/utils/scaleUI.UX";
 
 const Button1 = ({
-  text = '',
+  text = "",
   height = verticalScale(80),
   width = scale(300),
-  backgroundColor = '#ffcf00', // $color-secondary
-  color = '#003b22', // $color-background
+  backgroundColor = "#ffcf00", // $color-secondary
+  color = "#003b22", // $color-background
   fontSize = scaleFont(36),
-  lineColor = '#edf9e5', // $color-primary
+  lineColor = "#edf9e5", // $color-primary
   padding = 0,
   margin = 0,
-  fontFamily = 'Montserrat-Bold',
-  weight = 'bold',
+  fontFamily = "Inter-SemiBold",
+  weight = "bold",
   borderRadius = moderateScale(20, 0.45),
   children = null,
   ...rest
 }) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current
-  const lineScaleAnim = useRef(new Animated.Value(0.2)).current
-  const lineOpacityAnim = useRef(new Animated.Value(0)).current
-  const pulseAnim = useRef(new Animated.Value(0.7)).current
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const lineScaleAnim = useRef(new Animated.Value(0.2)).current;
+  const lineOpacityAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(0.7)).current;
 
   const startPulse = () => {
     Animated.loop(
@@ -41,15 +41,15 @@ const Button1 = ({
           duration: 500,
           useNativeDriver: true,
         }),
-      ])
-    ).start()
-  }
+      ]),
+    ).start();
+  };
 
   const stopPulse = () => {
     pulseAnim.stopAnimation(() => {
-      pulseAnim.setValue(0.7)
-    })
-  }
+      pulseAnim.setValue(0.7);
+    });
+  };
 
   const handlePressIn = () => {
     Animated.parallel([
@@ -70,12 +70,12 @@ const Button1 = ({
         useNativeDriver: true,
       }),
     ]).start(() => {
-      startPulse() // pulsowanie jak @keyframes pulse-line
-    })
-  }
+      startPulse(); // pulsowanie jak @keyframes pulse-line
+    });
+  };
 
   const handlePressOut = () => {
-    stopPulse()
+    stopPulse();
     Animated.parallel([
       Animated.spring(scaleAnim, {
         toValue: 1,
@@ -93,8 +93,8 @@ const Button1 = ({
         duration: 300,
         useNativeDriver: true,
       }),
-    ]).start()
-  }
+    ]).start();
+  };
 
   return (
     <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} {...rest}>
@@ -141,30 +141,31 @@ const Button1 = ({
         />
       </Animated.View>
     </Pressable>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   button: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 20,
   },
   textWrapper: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   text: {
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
+    fontFamily: "Inter-SemiBold",
   },
   line: {
-    position: 'absolute',
-    bottom: '12%',
-    width: '80%',
+    position: "absolute",
+    bottom: "12%",
+    width: "80%",
     height: moderateScale(4, 0.45),
     borderRadius: moderateScale(2, 0.45),
   },
-})
+});
 
-export default Button1
+export default Button1;

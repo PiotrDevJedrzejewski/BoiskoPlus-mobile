@@ -753,7 +753,7 @@ const createStyles = (colors) =>
     },
     label: {
       fontSize: scaleFont(16, 0.35),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       color: colors.primaryText,
       marginTop: SPACING.md,
       marginBottom: SPACING.xs,
@@ -767,7 +767,7 @@ const createStyles = (colors) =>
       paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.md,
       fontSize: scaleFont(16, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
     },
     postalCodeWrapper: {
@@ -782,7 +782,7 @@ const createStyles = (colors) =>
     postalSeparator: {
       fontSize: scaleFont(20, 0.4),
       color: colors.primaryText,
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     postalPart2Input: {
       width: scale(80),
@@ -806,7 +806,7 @@ const createStyles = (colors) =>
     pickerButtonText: {
       flex: 1,
       fontSize: scaleFont(16, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
     },
     row: {
@@ -832,7 +832,7 @@ const createStyles = (colors) =>
     },
     checkboxLabel: {
       fontSize: scaleFont(16, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
       marginLeft: SPACING.sm,
     },
@@ -851,7 +851,7 @@ const createStyles = (colors) =>
     },
     ageRangeLabel: {
       fontSize: scaleFont(15, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.secondaryText,
       textAlign: "center",
       marginBottom: SPACING.xs,
@@ -878,7 +878,7 @@ const createStyles = (colors) =>
     },
     ageRangeMinMax: {
       fontSize: scaleFont(12, 0.3),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.thirdText,
     },
     privateWarning: {
@@ -891,13 +891,13 @@ const createStyles = (colors) =>
     },
     privateWarningText: {
       fontSize: scaleFont(13, 0.3),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.PrimaryYellow,
       lineHeight: scaleFont(20, 0.3),
     },
     submitButtonText: {
       fontSize: scaleFont(18, 0.4),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       color: colors.background,
     },
 
@@ -939,7 +939,7 @@ const createStyles = (colors) =>
     },
     mapJumpText: {
       fontSize: scaleFont(16, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.PrimaryGreen,
     },
     playerCountWrapper: {
@@ -960,7 +960,7 @@ const createStyles = (colors) =>
       paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.md,
       fontSize: scaleFont(18, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
       textAlign: "center",
       flex: 1,
@@ -974,7 +974,7 @@ const createStyles = (colors) =>
       borderColor: colors.border,
     },
     playerBtnText: {
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       color: colors.PrimaryGreen,
     },
   });

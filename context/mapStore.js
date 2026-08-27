@@ -106,8 +106,8 @@ export const useMapStore = create((set, get) => ({
   userLocation: DEFAULT_LOCATION,
 
   // Czy `userLocation` to REALNA lokalizacja użytkownika, a nie fallback
-  // na środek Polski. Ekrany (dashboard-home, find-event) muszą to wiedzieć,
-  // żeby nie odpytywać backendu o wydarzenia "w środku Polski".
+  // na środek Polski. Część ekranów używa tej flagi do odróżnienia GPS od
+  // fallbacku, ale wyszukiwarka wydarzeń świadomie obsługuje oba przypadki.
   hasUserLocation: false,
 
   // Czy useMapManager skończył bootstrap lokalizacji (uprawnienia +

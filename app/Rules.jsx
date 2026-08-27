@@ -117,7 +117,7 @@ const createStyles = (colors) =>
     },
     tabButtonText: {
       fontSize: scaleFont(13, 0.35),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "Inter-SemiBold",
       color: colors.primaryText,
     },
     tabButtonTextActive: {
@@ -125,14 +125,14 @@ const createStyles = (colors) =>
     },
     title: {
       fontSize: scaleFont(28, 0.45),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-ExtraBold",
       color: colors.PrimaryGreen,
       marginBottom: verticalScale(8),
       textAlign: "center",
     },
     subtitle: {
       fontSize: scaleFont(12, 0.35),
-      fontFamily: "Montserrat-Italic",
+      fontFamily: "Inter-Regular",
       color: colors.PrimaryGreen,
       marginBottom: verticalScale(24),
       textAlign: "center",
@@ -143,13 +143,13 @@ const createStyles = (colors) =>
     },
     sectionTitle: {
       fontSize: scaleFont(15, 0.35),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       color: colors.PrimaryGreen,
       marginBottom: verticalScale(8),
     },
     paragraph: {
       fontSize: scaleFont(13, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
       lineHeight: verticalScale(21),
       marginBottom: verticalScale(8),
@@ -165,11 +165,12 @@ const createStyles = (colors) =>
       color: colors.PrimaryGreen,
       marginRight: SPACING.xs,
       lineHeight: verticalScale(21),
+      fontFamily: "Inter-Regular",
     },
     itemText: {
       flex: 1,
       fontSize: scaleFont(13, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
       lineHeight: verticalScale(21),
       textAlign: "justify",

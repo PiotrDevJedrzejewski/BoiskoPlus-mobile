@@ -22,7 +22,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   sectionTitle: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
     textTransform: 'uppercase',
     marginBottom: verticalScale(12),

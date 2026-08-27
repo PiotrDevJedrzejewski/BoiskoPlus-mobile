@@ -5,7 +5,7 @@ import { useThemedStyles } from '../context/themeStore'
 import { SPACING, BORDER_RADIUS } from '../Theme/StyleConstants'
 import { scale, verticalScale, moderateScale, scaleFont } from '../Theme/ScalableStyles'
 
-const CitySuggestions = ({ suggestions, onSuggestionClick }) => {
+const CitySuggestions = ({ suggestions, onSuggestionClick, style }) => {
   const { styles, colors } = useThemedStyles(createStyles)
 
   const flatItems = useMemo(() => {
@@ -63,7 +63,7 @@ const CitySuggestions = ({ suggestions, onSuggestionClick }) => {
 
   return (
     <FlatList
-      style={styles.suggestionsContainer}
+      style={[styles.suggestionsContainer, style]}
       data={flatItems}
       renderItem={renderItem}
       keyExtractor={(item) => item.key}
@@ -98,6 +98,7 @@ const createStyles = (colors) =>
       color: colors.PrimaryGreen,
       fontSize: scaleFont(14),
       fontWeight: 'bold',
+      fontFamily: 'Inter-SemiBold',
     },
     suggestionItem: {
       paddingVertical: verticalScale(8),

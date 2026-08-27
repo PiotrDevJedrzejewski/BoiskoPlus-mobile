@@ -14,7 +14,23 @@ import {
   getParticipationBadge,
 } from "../../assets/utils/eventDisplay";
 
-import RecommendCardBG from "../../assets/images/V2/football.png";
+import BasketballCardBG from "../../assets/images/V2/basketball.png";
+import FootballCardBG from "../../assets/images/V2/football.png";
+import OtherCardBG from "../../assets/images/V2/other.png";
+import VolleyballCardBG from "../../assets/images/V2/volleyball.png";
+
+const getRecommendCardBackground = (gameType) => {
+  switch (gameType) {
+    case "basketball":
+      return BasketballCardBG;
+    case "football":
+      return FootballCardBG;
+    case "volleyball":
+      return VolleyballCardBG;
+    default:
+      return OtherCardBG;
+  }
+};
 
 const EventSimpleCard = ({ event, myStatus, onPress, highlighted = false }) => {
   const { styles, colors } = useThemedStyles(createStyles);
@@ -31,7 +47,7 @@ const EventSimpleCard = ({ event, myStatus, onPress, highlighted = false }) => {
       android_ripple={{ color: colors.GlowGreen }}
     >
       <Image
-        source={RecommendCardBG}
+        source={getRecommendCardBackground(event.gameType)}
         style={styles.event_card_backgroundImage}
       />
       <View style={styles.event_card_status}>
@@ -127,7 +143,7 @@ const createStyles = (colors) =>
     event_card_titel: {
       fontSize: scaleFont(14, 0.35),
       color: colors.primaryText,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     event_card_city: {
       fontSize: scaleFont(12, 0.3),

@@ -275,7 +275,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   headerText: {
     fontSize: scaleFont(20, 0.4),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.primaryText,
     marginLeft: SPACING.sm,
   },
@@ -299,7 +299,7 @@ const createStyles = (colors) => StyleSheet.create({
   infoBannerText: {
     flex: 1,
     fontSize: scaleFont(13, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     marginLeft: SPACING.sm,
   },
@@ -322,7 +322,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   typeText: {
     fontSize: scaleFont(18, 0.4),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
   },
   idContainer: {
@@ -333,13 +333,13 @@ const createStyles = (colors) => StyleSheet.create({
   },
   idLabel: {
     fontSize: scaleFont(13, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
   },
   idValue: {
     flex: 1,
     fontSize: scaleFont(13, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     marginLeft: SPACING.sm,
   },
@@ -354,12 +354,12 @@ const createStyles = (colors) => StyleSheet.create({
   },
   label: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
   },
   charCount: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
   },
   charCountWarning: {
@@ -373,7 +373,7 @@ const createStyles = (colors) => StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
     fontSize: scaleFont(15, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     minHeight: verticalScale(160),
   },
@@ -382,13 +382,13 @@ const createStyles = (colors) => StyleSheet.create({
   },
   errorText: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.Danger,
     marginTop: verticalScale(6),
   },
   warningText: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.PrimaryGreen,
     marginTop: verticalScale(6),
   },
@@ -409,7 +409,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   submitButtonText: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.background,
   },
   cancelButton: {
@@ -423,7 +423,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
   },
 })

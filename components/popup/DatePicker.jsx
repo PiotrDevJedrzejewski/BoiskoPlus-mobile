@@ -371,6 +371,7 @@ const createStyles = (colors) =>
   dateText: {
     fontSize: scaleFont(16, 0.35),
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: colors.primaryText,
   },
   datePlaceholder: {
@@ -414,7 +415,7 @@ const createStyles = (colors) =>
   },
   title: {
     fontSize: scaleFont(18, 0.4),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.primaryText,
     textAlign: 'center',
   },
@@ -438,7 +439,7 @@ const createStyles = (colors) =>
   },
   columnLabel: {
     fontSize: scaleFont(13, 0.3),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
     opacity: 0.7,
     paddingVertical: SPACING.xs,
@@ -465,12 +466,12 @@ const createStyles = (colors) =>
   },
   itemText: {
     fontSize: scaleFont(18, 0.35),
-    fontFamily: 'Montserrat-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
   },
   itemTextSelected: {
     color: colors.PrimaryGreen,
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     fontSize: scaleFont(20, 0.35),
   },
   errorText: {
@@ -498,7 +499,7 @@ const createStyles = (colors) =>
   },
   cancelBtnText: {
     color: colors.primaryText,
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     fontSize: scaleFont(14, 0.35),
   },
   confirmBtn: {
@@ -506,7 +507,7 @@ const createStyles = (colors) =>
   },
   confirmBtnText: {
     color: colors.background,
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     fontSize: scaleFont(14, 0.35),
   },
 })

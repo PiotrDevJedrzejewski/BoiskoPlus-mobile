@@ -126,7 +126,7 @@ const createStyles = (ui) => StyleSheet.create({
   },
   premiumText: {
     fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: COLORS.primary,
     marginLeft: ui.spacing(10, 0.35),
     textAlign: 'center',
@@ -145,13 +145,13 @@ const createStyles = (ui) => StyleSheet.create({
   },
   adPlaceholder: {
     fontSize: ui.scaleFont(24, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: COLORS.gray,
     marginTop: ui.verticalScale(12),
   },
   adSubtext: {
     fontSize: ui.scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: COLORS.gray,
     marginTop: ui.verticalScale(4),
   },
@@ -169,7 +169,7 @@ const createStyles = (ui) => StyleSheet.create({
   },
   closeButtonText: {
     fontSize: ui.scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: COLORS.background,
     marginLeft: ui.spacing(8, 0.35),
   },
@@ -182,7 +182,7 @@ const createStyles = (ui) => StyleSheet.create({
   },
   countdownText: {
     fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: COLORS.gray,
   },
 })

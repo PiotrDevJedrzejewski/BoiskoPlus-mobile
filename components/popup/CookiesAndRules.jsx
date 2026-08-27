@@ -188,7 +188,7 @@ const createStyles = (colors) =>
     modalTitle: {
       color: colors.PrimaryGreen,
       fontSize: scaleFont(20, 0.4),
-      fontFamily: "ObjectFont",
+      fontFamily: "BarlowCondensed-ExtraBold",
     },
     modalDescription: {
       color: colors.primaryText,
@@ -203,7 +203,7 @@ const createStyles = (colors) =>
       color: colors.PrimaryGreen,
       fontSize: scaleFont(16, 0.35),
       marginBottom: verticalScale(8),
-      fontFamily: "ObjectFont",
+      fontFamily: "BarlowCondensed-Bold",
     },
     optionRow: {
       flexDirection: "row",

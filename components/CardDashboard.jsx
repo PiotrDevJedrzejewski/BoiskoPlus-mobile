@@ -39,13 +39,13 @@ const createStyles = (ui) => StyleSheet.create({
   },
   title: {
     fontSize: ui.scaleFont(22, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: COLORS.primary,
     marginBottom: ui.verticalScale(4),
   },
   desc: {
     fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: COLORS.primary,
     opacity: 0.7,
   },

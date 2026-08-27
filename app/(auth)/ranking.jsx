@@ -261,7 +261,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   headerText: {
     fontSize: scaleFont(24, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.primaryText,
     marginLeft: SPACING.md,
   },
@@ -275,7 +275,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   sortLabel: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     marginRight: SPACING.md,
   },
@@ -307,7 +307,7 @@ const createStyles = (colors) => StyleSheet.create({
   pickerValue: {
     color: colors.primaryText,
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     includeFontPadding: false,
   },
   columnHeaders: {
@@ -321,7 +321,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   columnHeader: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
     width: scale(50),
     textAlign: 'center',
@@ -334,7 +334,7 @@ const createStyles = (colors) => StyleSheet.create({
   loadingText: {
     marginTop: verticalScale(12),
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
   },
   errorContainer: {
@@ -346,7 +346,7 @@ const createStyles = (colors) => StyleSheet.create({
   errorText: {
     marginTop: verticalScale(16),
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.Danger,
     textAlign: 'center',
   },
@@ -359,7 +359,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   retryButtonText: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.background,
   },
   list: {
@@ -385,7 +385,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   rankText: {
     fontSize: scaleFont(22, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
   },
   avatar: {
     width: scale(50),
@@ -398,13 +398,13 @@ const createStyles = (colors) => StyleSheet.create({
   },
   nickname: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
     marginBottom: verticalScale(2),
   },
   mainValueLabel: {
     fontSize: scaleFont(11, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
   },
   valueContainer: {
@@ -413,7 +413,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   mainValue: {
     fontSize: scaleFont(18, 0.4),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
   },
   emptyState: {
@@ -425,7 +425,7 @@ const createStyles = (colors) => StyleSheet.create({
   emptyText: {
     marginTop: verticalScale(16),
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
   },
 })

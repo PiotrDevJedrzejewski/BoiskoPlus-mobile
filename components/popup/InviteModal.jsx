@@ -167,7 +167,7 @@ const createStyles = (colors) =>
     },
     headerText: {
       fontSize: scaleFont(16, 0.45),
-      fontFamily: 'Montserrat-Bold',
+      fontFamily: 'BarlowCondensed-ExtraBold',
       color: colors.primaryText,
     },
     listContent: {
@@ -182,7 +182,7 @@ const createStyles = (colors) =>
     },
     stateText: {
       fontSize: scaleFont(14, 0.35),
-      fontFamily: 'Lato-Regular',
+      fontFamily: 'Inter-Regular',
       color: colors.thirdText,
     },
   })

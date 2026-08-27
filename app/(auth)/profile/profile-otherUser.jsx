@@ -411,7 +411,7 @@ const createStyles = (colors) => StyleSheet.create({
   loadingText: {
     marginTop: verticalScale(12),
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
   },
   backButton: {
@@ -423,7 +423,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   backButtonText: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.background,
   },
   header: {
@@ -446,7 +446,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   headerText: {
     fontSize: scaleFont(22, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
     marginLeft: SPACING.sm,
   },
@@ -471,7 +471,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   username: {
     fontSize: scaleFont(28, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
     marginBottom: verticalScale(24),
   },
@@ -490,14 +490,14 @@ const createStyles = (colors) => StyleSheet.create({
   },
   infoLabel: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
     width: scale(100),
   },
   infoValue: {
     flex: 1,
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
   },
   statsSection: {
@@ -506,7 +506,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   sectionTitle: {
     fontSize: scaleFont(18, 0.4),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
     textAlign: 'center',
     marginBottom: verticalScale(16),
@@ -526,12 +526,12 @@ const createStyles = (colors) => StyleSheet.create({
   },
   statValue: {
     fontSize: scaleFont(24, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
   },
   statLabel: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     marginTop: verticalScale(4),
     textAlign: 'center',
@@ -560,7 +560,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   likeButtonText: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
     marginLeft: SPACING.sm,
   },
@@ -580,7 +580,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   reportButtonText: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.Danger,
     marginLeft: SPACING.sm,
   },
@@ -596,7 +596,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   friendButtonText: {
     fontSize: scaleFont(15, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.background,
   },
   friendButtonPending: {
@@ -613,7 +613,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   friendButtonPendingText: {
     fontSize: scaleFont(15, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
   },
   friendButtonAccepted: {
@@ -630,7 +630,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   friendButtonAcceptedText: {
     fontSize: scaleFont(15, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.border,
   },
   friendResponseRow: {
@@ -649,7 +649,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   acceptButtonText: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.background,
   },
   rejectButton: {
@@ -666,7 +666,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   rejectButtonText: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.Danger,
   },
   chatButton: {
@@ -681,7 +681,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   chatButtonText: {
     fontSize: scaleFont(15, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
   },
 })

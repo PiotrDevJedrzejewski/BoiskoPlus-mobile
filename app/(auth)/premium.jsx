@@ -99,7 +99,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   headerText: {
     fontSize: scaleFont(24, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.primaryText,
     marginLeft: SPACING.md,
   },
@@ -115,7 +115,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   comingSoonTitle: {
     fontSize: scaleFont(24, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
     marginBottom: verticalScale(24),
     textAlign: 'center',
@@ -125,7 +125,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   comingSoonText: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     textAlign: 'center',
     lineHeight: verticalScale(24),
@@ -140,7 +140,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   featuresTitle: {
     fontSize: scaleFont(18, 0.4),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
     marginBottom: verticalScale(16),
     textAlign: 'center',
@@ -154,7 +154,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   featureText: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     marginLeft: SPACING.md,
   },

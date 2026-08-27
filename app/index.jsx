@@ -69,11 +69,13 @@ const Home = () => {
           <View style={styles.buttonContainer}>
             <Button1
               text="Zaloguj się"
+              fontFamily="Inter-SemiBold"
               {...buttonSettings}
               onPress={() => router.push("/login")}
             />
             <Button1
               text="Zarejestruj się"
+              fontFamily="Inter-SemiBold"
               {...buttonSettings}
               onPress={() => router.push("/register")}
             />
@@ -116,7 +118,7 @@ const createStyles = (colors) =>
     title: {
       color: colors.primaryText,
       fontSize: scaleFont(32, 0.5),
-      fontFamily: "ObjectFont",
+      fontFamily: "BarlowCondensed-ExtraBold",
       textAlign: "center",
     },
     description: {
@@ -124,7 +126,7 @@ const createStyles = (colors) =>
       fontSize: scaleFont(16, 0.4),
       marginTop: verticalScale(10),
       textAlign: "center",
-      fontFamily: "ObjectFont",
+      fontFamily: "Inter-Regular",
     },
     buttonContainer: {
       flex: 1,

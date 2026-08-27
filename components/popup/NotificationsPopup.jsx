@@ -178,7 +178,7 @@ const createStyles = (colors) =>
     },
     headerText: {
       fontSize: scaleFont(20, 0.4),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-ExtraBold",
       color: colors.primaryText,
       marginLeft: SPACING.sm,
       flex: 1,
@@ -194,7 +194,7 @@ const createStyles = (colors) =>
     },
     totalBadgeText: {
       fontSize: scaleFont(12, 0.3),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       color: "#fff",
     },
     listContainer: {
@@ -216,7 +216,7 @@ const createStyles = (colors) =>
     },
     notificationText: {
       fontSize: scaleFont(14, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
       marginLeft: SPACING.md,
     },
@@ -234,7 +234,7 @@ const createStyles = (colors) =>
     },
     badgeText: {
       fontSize: scaleFont(14, 0.35),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       color: colors.background,
     },
     badgeTextEmpty: {
@@ -250,7 +250,7 @@ const createStyles = (colors) =>
     },
     closeButtonText: {
       fontSize: scaleFont(14, 0.35),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       color: colors.primaryText,
     },
   });

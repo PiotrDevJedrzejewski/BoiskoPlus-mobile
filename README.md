@@ -1,6 +1,6 @@
 # BoiskoPlus Mobile
 
-Mobilna wersja aplikacji **BoiskoPlus** — platformy do organizowania i wyszukiwania wydarzeń sportowych. Zbudowana w **React Native** z **Expo** (SDK 54), korzysta ze wspólnego backendu Express.js + MongoDB.
+Mobilna wersja aplikacji **BoiskoPlus** — platformy do organizowania i wyszukiwania wydarzeń sportowych. Zbudowana w **React Native** z **Expo** (SDK 57), korzysta ze wspólnego backendu Express.js + MongoDB.
 
 ---
 
@@ -40,17 +40,17 @@ Mobilna wersja aplikacji **BoiskoPlus** — platformy do organizowania i wyszuki
 
 ## Stack technologiczny
 
-| Warstwa         | Technologia                                      |
-| --------------- | ------------------------------------------------ |
-| Framework       | React Native 0.81 + Expo SDK 54                  |
-| Nawigacja       | Expo Router 6 (file-based) + React Navigation 7  |
-| Mapy            | Mapbox (`@rnmapbox/maps`)                        |
-| Czat real-time  | Socket.IO Client                                 |
-| Autoryzacja     | Firebase Auth + Google Sign-In + JWT             |
-| Storage         | Expo SecureStore + AsyncStorage                  |
-| Animacje        | React Native Reanimated 4 + Lottie              |
-| UI              | Expo BlurView, Linear Gradient, Gesture Handler  |
-| Backend         | Express.js + MongoDB + Socket.IO (wspólny z web) |
+| Warstwa        | Technologia                                      |
+| -------------- | ------------------------------------------------ |
+| Framework      | React Native 0.81 + Expo SDK 54                  |
+| Nawigacja      | Expo Router 6 (file-based) + React Navigation 7  |
+| Mapy           | Mapbox (`@rnmapbox/maps`)                        |
+| Czat real-time | Socket.IO Client                                 |
+| Autoryzacja    | Firebase Auth + Google Sign-In + JWT             |
+| Storage        | Expo SecureStore + AsyncStorage                  |
+| Animacje       | React Native Reanimated 4 + Lottie               |
+| UI             | Expo BlurView, Linear Gradient, Gesture Handler  |
+| Backend        | Express.js + MongoDB + Socket.IO (wspólny z web) |
 
 ---
 
@@ -101,6 +101,7 @@ Mobilna wersja aplikacji **BoiskoPlus** — platformy do organizowania i wyszuki
 ### 5. Zarządzanie wydarzeniami
 
 #### Tworzenie wydarzenia
+
 - Formularz z polami: nazwa, opis, typ gry, typ boiska, poziom trudności
 - Wybór daty i godziny
 - Adres z geokodowaniem (Mapbox)
@@ -110,18 +111,21 @@ Mobilna wersja aplikacji **BoiskoPlus** — platformy do organizowania i wyszuki
 - Wybór predefiniowanego boiska z mapy
 
 #### Edycja wydarzenia
+
 - Modyfikacja wszystkich pól wydarzenia
 - Podgląd liczby zainteresowanych / zaakceptowanych / odrzuconych
 - Zarządzanie statusami uczestników (akceptuj / odrzuć)
 - Usuwanie i kończenie wydarzenia
 
 #### Moje Gry — panel zarządzania
+
 - **Wszystkie wydarzenia** — z filtrami: własne / zaakceptowane / zainteresowane / odrzucone / zakończone
 - **Aktywne wydarzenia** — nadchodzące, posortowane chronologicznie
 - **Moje wydarzenia (autor)** — tylko te, które użytkownik stworzył
 - **Historia** — zakończone i anulowane wydarzenia
 
 #### Widok pojedynczego wydarzenia
+
 - Pełne informacje: data, lokalizacja, typ gry, opis, poziom, liczba graczy
 - Przyciski akcji: dołącz / opuść / zainteresowany
 - Lista uczestników z podziałem na statusy
@@ -147,6 +151,7 @@ Mobilna wersja aplikacji **BoiskoPlus** — platformy do organizowania i wyszuki
 ### 7. Profil użytkownika
 
 #### Własny profil
+
 - Wyświetlanie avatara, nicku, danych osobowych
 - Statystyki: rozegrane gry, zorganizowane wydarzenia, polubienia, punkty
 - Przejście do edycji profilu
@@ -154,12 +159,14 @@ Mobilna wersja aplikacji **BoiskoPlus** — platformy do organizowania i wyszuki
 - Usunięcie konta (z kaskadowym usunięciem danych)
 
 #### Edycja profilu
+
 - Zmiana nicku (walidacja zabronionych słów: admin, mod, itp.)
 - Zmiana imienia i nazwiska (obsługa polskich znaków)
 - Zmiana e-maila, telefonu, daty urodzenia
 - Upload avatara (image picker + manipulator)
 
 #### Profil innego użytkownika
+
 - Podgląd publicznych danych i statystyk
 - Polubienie / cofnięcie polubienia
 - Akcje znajomych: dodaj / akceptuj / odrzuć / usuń / anuluj zaproszenie
@@ -212,7 +219,7 @@ Mobilna wersja aplikacji **BoiskoPlus** — platformy do organizowania i wyszuki
 
 ### 13. Premium
 
-- *Status: Coming Soon*
+- _Status: Coming Soon_
 - Planowane funkcje:
   - Brak reklam
   - Odznaka supportera
@@ -223,23 +230,24 @@ Mobilna wersja aplikacji **BoiskoPlus** — platformy do organizowania i wyszuki
 
 ## Obsługiwane dyscypliny
 
-| #  | Dyscyplina        | Klucz            |
-| -- | ----------------- | ---------------- |
-| 1  | Piłka nożna       | `football`       |
-| 2  | Siatkówka         | `volleyball`     |
-| 3  | Koszykówka        | `basketball`     |
-| 4  | Piłka ręczna      | `handball`       |
-| 5  | Rugby             | `rugby`          |
-| 6  | Hokej             | `hockey`         |
-| 7  | Tenis             | `tennis`         |
-| 8  | Badminton         | `badminton`      |
-| 9  | Tenis stołowy     | `tableTennis`    |
-| 10 | Kręgle            | `bowling`        |
-| 11 | Karty             | `cards`          |
-| 12 | Planszówki        | `boardGames`     |
-| 13 | Inne              | `other`          |
+| #   | Dyscyplina    | Klucz         |
+| --- | ------------- | ------------- |
+| 1   | Piłka nożna   | `football`    |
+| 2   | Siatkówka     | `volleyball`  |
+| 3   | Koszykówka    | `basketball`  |
+| 4   | Piłka ręczna  | `handball`    |
+| 5   | Rugby         | `rugby`       |
+| 6   | Hokej         | `hockey`      |
+| 7   | Tenis         | `tennis`      |
+| 8   | Badminton     | `badminton`   |
+| 9   | Tenis stołowy | `tableTennis` |
+| 10  | Kręgle        | `bowling`     |
+| 11  | Karty         | `cards`       |
+| 12  | Planszówki    | `boardGames`  |
+| 13  | Inne          | `other`       |
 
 Dodatkowe klasyfikacje:
+
 - **Typ boiska**: pole/orlik, hala, inne
 - **Poziom**: początkujący, średniozaawansowany, zaawansowany, profesjonalny, inny
 
@@ -253,44 +261,45 @@ Backend jest wspólny z wersją web. Poniżej lista endpointów wykorzystywanych
 
 `/api/v1/auth-mobile`
 
-| Metoda   | Endpoint               | Opis                                      |
-| -------- | ---------------------- | ----------------------------------------- |
-| `POST`   | `/register`            | Rejestracja — zwraca token w body JSON    |
-| `POST`   | `/login`               | Logowanie — zwraca token w body JSON      |
-| `GET`    | `/logout`              | Wylogowanie                               |
-| `POST`   | `/complete-oauth`      | Dokończenie rejestracji OAuth              |
-| `POST`   | `/login-oauth`         | Logowanie przez OAuth                     |
-| `POST`   | `/forgot-password`     | Żądanie resetu hasła                      |
-| `POST`   | `/reset-password/:token` | Reset hasła z tokenem                   |
-| `PATCH`  | `/change-password`     | Zmiana hasła (wymaga auth)                |
+| Metoda  | Endpoint                 | Opis                                   |
+| ------- | ------------------------ | -------------------------------------- |
+| `POST`  | `/register`              | Rejestracja — zwraca token w body JSON |
+| `POST`  | `/login`                 | Logowanie — zwraca token w body JSON   |
+| `GET`   | `/logout`                | Wylogowanie                            |
+| `POST`  | `/complete-oauth`        | Dokończenie rejestracji OAuth          |
+| `POST`  | `/login-oauth`           | Logowanie przez OAuth                  |
+| `POST`  | `/forgot-password`       | Żądanie resetu hasła                   |
+| `POST`  | `/reset-password/:token` | Reset hasła z tokenem                  |
+| `PATCH` | `/change-password`       | Zmiana hasła (wymaga auth)             |
 
 ### Użytkownicy
 
 `/api/v1/users`
 
-| Metoda   | Endpoint                        | Opis                                |
-| -------- | ------------------------------- | ----------------------------------- |
-| `GET`    | `/current-user`                 | Pobranie profilu zalogowanego       |
-| `GET`    | `/search?query=...`             | Wyszukiwanie użytkowników po nicku  |
-| `GET`    | `/:id`                          | Pobranie profilu po ID              |
-| `PATCH`  | `/current-user/update-user`     | Aktualizacja profilu                |
-| `DELETE` | `/current-user/delete`          | Usunięcie konta (kaskadowe)         |
+| Metoda   | Endpoint                    | Opis                               |
+| -------- | --------------------------- | ---------------------------------- |
+| `GET`    | `/current-user`             | Pobranie profilu zalogowanego      |
+| `GET`    | `/search?query=...`         | Wyszukiwanie użytkowników po nicku |
+| `GET`    | `/:id`                      | Pobranie profilu po ID             |
+| `PATCH`  | `/current-user/update-user` | Aktualizacja profilu               |
+| `DELETE` | `/current-user/delete`      | Usunięcie konta (kaskadowe)        |
 
 ### Wydarzenia
 
 `/api/v1/events`
 
-| Metoda   | Endpoint            | Opis                                             |
-| -------- | ------------------- | ------------------------------------------------ |
-| `GET`    | `/`                 | Pobranie wydarzeń użytkownika                    |
-| `POST`   | `/`                 | Utworzenie wydarzenia                             |
-| `GET`    | `/:eventID`         | Szczegóły wydarzenia                             |
-| `PATCH`  | `/:eventID`         | Edycja wydarzenia (tylko autor)                  |
-| `DELETE` | `/:eventID`         | Usunięcie wydarzenia (tylko autor)               |
-| `POST`   | `/search`           | Wyszukiwanie geolokalizacyjne (2dsphere)         |
-| `POST`   | `/update-statuses`  | Ręczna aktualizacja statusów wydarzeń            |
+| Metoda   | Endpoint           | Opis                                     |
+| -------- | ------------------ | ---------------------------------------- |
+| `GET`    | `/`                | Pobranie wydarzeń użytkownika            |
+| `POST`   | `/`                | Utworzenie wydarzenia                    |
+| `GET`    | `/:eventID`        | Szczegóły wydarzenia                     |
+| `PATCH`  | `/:eventID`        | Edycja wydarzenia (tylko autor)          |
+| `DELETE` | `/:eventID`        | Usunięcie wydarzenia (tylko autor)       |
+| `POST`   | `/search`          | Wyszukiwanie geolokalizacyjne (2dsphere) |
+| `POST`   | `/update-statuses` | Ręczna aktualizacja statusów wydarzeń    |
 
 Automatyczne funkcje:
+
 - Tworzenie pokoju czatu grupowego przy tworzeniu wydarzenia
 - Geokodowanie adresu przez Mapbox
 - Okresowa aktualizacja statusów: upcoming → live → completed
@@ -299,32 +308,33 @@ Automatyczne funkcje:
 
 `/api/v1/status`
 
-| Metoda   | Endpoint                              | Opis                                    |
-| -------- | ------------------------------------- | --------------------------------------- |
-| `POST`   | `/events/:eventID/join`               | Dołączenie do wydarzenia (interested)   |
-| `DELETE` | `/events/:eventID/leave`              | Opuszczenie wydarzenia                  |
-| `PATCH`  | `/events/:eventID/users/:userID/status` | Zmiana statusu uczestnika (autor)     |
-| `GET`    | `/events/:eventID/users`              | Lista uczestników                       |
-| `GET`    | `/events/:eventID/my-status`          | Własny status w wydarzeniu              |
-| `GET`    | `/status`                             | Wszystkie statusy użytkownika           |
-| `PATCH`  | `/events/:eventID/mark-finished`      | Oznaczenie wydarzenia jako zakończone   |
-| `PATCH`  | `/mark-read/:eventID`                 | Oznaczenie powiadomienia jako przeczytane |
+| Metoda   | Endpoint                                | Opis                                      |
+| -------- | --------------------------------------- | ----------------------------------------- |
+| `POST`   | `/events/:eventID/join`                 | Dołączenie do wydarzenia (interested)     |
+| `DELETE` | `/events/:eventID/leave`                | Opuszczenie wydarzenia                    |
+| `PATCH`  | `/events/:eventID/users/:userID/status` | Zmiana statusu uczestnika (autor)         |
+| `GET`    | `/events/:eventID/users`                | Lista uczestników                         |
+| `GET`    | `/events/:eventID/my-status`            | Własny status w wydarzeniu                |
+| `GET`    | `/status`                               | Wszystkie statusy użytkownika             |
+| `PATCH`  | `/events/:eventID/mark-finished`        | Oznaczenie wydarzenia jako zakończone     |
+| `PATCH`  | `/mark-read/:eventID`                   | Oznaczenie powiadomienia jako przeczytane |
 
 ### Czat
 
 `/api/v1/chat`
 
-| Metoda   | Endpoint                    | Opis                                       |
-| -------- | --------------------------- | ------------------------------------------ |
-| `GET`    | `/rooms`                    | Pobranie pokojów czatu                     |
-| `POST`   | `/rooms`                    | Utworzenie/pobranie pokoju prywatnego       |
-| `GET`    | `/messages/:roomId`         | Historia wiadomości (paginacja)            |
-| `PATCH`  | `/messages/read`            | Oznaczenie wiadomości jako przeczytane     |
-| `GET`    | `/messages/unreaded/count`  | Liczba nieprzeczytanych                    |
-| `DELETE` | `/messages/clear`           | Usunięcie swoich wiadomości                |
-| `GET`    | `/group/:eventId`           | Pobranie/utworzenie czatu grupowego         |
+| Metoda   | Endpoint                   | Opis                                   |
+| -------- | -------------------------- | -------------------------------------- |
+| `GET`    | `/rooms`                   | Pobranie pokojów czatu                 |
+| `POST`   | `/rooms`                   | Utworzenie/pobranie pokoju prywatnego  |
+| `GET`    | `/messages/:roomId`        | Historia wiadomości (paginacja)        |
+| `PATCH`  | `/messages/read`           | Oznaczenie wiadomości jako przeczytane |
+| `GET`    | `/messages/unreaded/count` | Liczba nieprzeczytanych                |
+| `DELETE` | `/messages/clear`          | Usunięcie swoich wiadomości            |
+| `GET`    | `/group/:eventId`          | Pobranie/utworzenie czatu grupowego    |
 
 Format ID pokojów:
+
 - Prywatny: `private_{sortedUserID1}_{sortedUserID2}`
 - Grupowy: `group_{eventID}`
 
@@ -332,27 +342,27 @@ Format ID pokojów:
 
 `/api/v1/friendship`
 
-| Metoda   | Endpoint                        | Opis                               |
-| -------- | ------------------------------- | ---------------------------------- |
-| `GET`    | `/friends`                      | Lista znajomych                    |
-| `GET`    | `/pending`                      | Oczekujące zaproszenia             |
-| `GET`    | `/status/:otherUserID`          | Status relacji z użytkownikiem     |
-| `POST`   | `/send/:recipientID`            | Wysłanie zaproszenia               |
-| `PATCH`  | `/:friendshipID/respond`        | Akceptacja/odrzucenie zaproszenia  |
-| `DELETE` | `/:friendshipID`                | Usunięcie znajomego                |
+| Metoda   | Endpoint                 | Opis                              |
+| -------- | ------------------------ | --------------------------------- |
+| `GET`    | `/friends`               | Lista znajomych                   |
+| `GET`    | `/pending`               | Oczekujące zaproszenia            |
+| `GET`    | `/status/:otherUserID`   | Status relacji z użytkownikiem    |
+| `POST`   | `/send/:recipientID`     | Wysłanie zaproszenia              |
+| `PATCH`  | `/:friendshipID/respond` | Akceptacja/odrzucenie zaproszenia |
+| `DELETE` | `/:friendshipID`         | Usunięcie znajomego               |
 
 ### Statystyki i ranking
 
 `/api/v1/user-stats`
 
-| Metoda   | Endpoint                     | Opis                                          |
-| -------- | ---------------------------- | --------------------------------------------- |
-| `GET`    | `/current`                   | Statystyki zalogowanego                       |
-| `GET`    | `/leaderboard?type=&limit=`  | Ranking (points / likes / gamesPlayed / eventsOrganized) |
-| `GET`    | `/:userId`                   | Statystyki użytkownika                        |
-| `POST`   | `/multiple`                  | Statystyki wielu użytkowników                 |
-| `POST`   | `/like`                      | Polubienie użytkownika                        |
-| `DELETE` | `/like`                      | Cofnięcie polubienia                          |
+| Metoda   | Endpoint                    | Opis                                                     |
+| -------- | --------------------------- | -------------------------------------------------------- |
+| `GET`    | `/current`                  | Statystyki zalogowanego                                  |
+| `GET`    | `/leaderboard?type=&limit=` | Ranking (points / likes / gamesPlayed / eventsOrganized) |
+| `GET`    | `/:userId`                  | Statystyki użytkownika                                   |
+| `POST`   | `/multiple`                 | Statystyki wielu użytkowników                            |
+| `POST`   | `/like`                     | Polubienie użytkownika                                   |
+| `DELETE` | `/like`                     | Cofnięcie polubienia                                     |
 
 Obliczanie punktów: `(eventsOrganized × 30) + (gamesPlayed × 10) + (totalLikes × 3)`
 
@@ -360,51 +370,54 @@ Obliczanie punktów: `(eventsOrganized × 30) + (gamesPlayed × 10) + (totalLike
 
 `/api/v1/notifications`
 
-| Metoda   | Endpoint                   | Opis                              |
-| -------- | -------------------------- | --------------------------------- |
-| `GET`    | `/preferences`             | Pobranie preferencji              |
-| `PUT`    | `/preferences`             | Aktualizacja preferencji          |
-| `POST`   | `/mute-chat/:chatRoomId`   | Wyciszenie pokoju czatu           |
-| `DELETE` | `/mute-chat/:chatRoomId`   | Odciszenie pokoju czatu           |
-| `POST`   | `/mute-event/:eventId`     | Wyciszenie wydarzenia             |
-| `DELETE` | `/mute-event/:eventId`     | Odciszenie wydarzenia             |
-| `GET`    | `/unread`                  | Nieprzeczytane powiadomienia      |
+| Metoda   | Endpoint                 | Opis                         |
+| -------- | ------------------------ | ---------------------------- |
+| `GET`    | `/preferences`           | Pobranie preferencji         |
+| `PUT`    | `/preferences`           | Aktualizacja preferencji     |
+| `POST`   | `/mute-chat/:chatRoomId` | Wyciszenie pokoju czatu      |
+| `DELETE` | `/mute-chat/:chatRoomId` | Odciszenie pokoju czatu      |
+| `POST`   | `/mute-event/:eventId`   | Wyciszenie wydarzenia        |
+| `DELETE` | `/mute-event/:eventId`   | Odciszenie wydarzenia        |
+| `GET`    | `/unread`                | Nieprzeczytane powiadomienia |
 
 ### Lokalizacja
 
 `/api/v1/location-mobile`
 
-| Metoda | Endpoint          | Opis                                    |
-| ------ | ----------------- | --------------------------------------- |
-| `POST` | `/reverse-geocode` | Konwersja lat/lon → miasto/region       |
-| `POST` | `/geocode`         | Konwersja miasto → lat/lon             |
+| Metoda | Endpoint           | Opis                              |
+| ------ | ------------------ | --------------------------------- |
+| `POST` | `/reverse-geocode` | Konwersja lat/lon → miasto/region |
+| `POST` | `/geocode`         | Konwersja miasto → lat/lon        |
 
 ### Zgłoszenia
 
 `/api/v1/reports`
 
-| Metoda | Endpoint          | Opis                                    |
-| ------ | ----------------- | --------------------------------------- |
-| `POST` | `/`               | Utworzenie zgłoszenia (user/event/bug)   |
+| Metoda | Endpoint | Opis                                   |
+| ------ | -------- | -------------------------------------- |
+| `POST` | `/`      | Utworzenie zgłoszenia (user/event/bug) |
 
 ### WebSocket / Socket.IO
 
 #### Namespace `/chat`
-| Zdarzenie       | Opis                                  |
-| --------------- | ------------------------------------- |
-| `newMessage`    | Nowa wiadomość w pokoju               |
-| `newChatRoom`   | Utworzenie nowego pokoju prywatnego    |
-| `messageRead`   | Wiadomości oznaczone jako przeczytane |
+
+| Zdarzenie     | Opis                                  |
+| ------------- | ------------------------------------- |
+| `newMessage`  | Nowa wiadomość w pokoju               |
+| `newChatRoom` | Utworzenie nowego pokoju prywatnego   |
+| `messageRead` | Wiadomości oznaczone jako przeczytane |
 
 #### Namespace `/notifications`
-| Zdarzenie            | Opis                                    |
-| -------------------- | --------------------------------------- |
-| `friendRequest`      | Otrzymanie zaproszenia do znajomych     |
-| `eventStatusUpdate`  | Zmiana statusu gracza w wydarzeniu      |
-| `eventReminder`      | Przypomnienie o nadchodzącym wydarzeniu |
-| `notificationMuted`  | Wyciszenie pokoju/wydarzenia            |
+
+| Zdarzenie           | Opis                                    |
+| ------------------- | --------------------------------------- |
+| `friendRequest`     | Otrzymanie zaproszenia do znajomych     |
+| `eventStatusUpdate` | Zmiana statusu gracza w wydarzeniu      |
+| `eventReminder`     | Przypomnienie o nadchodzącym wydarzeniu |
+| `notificationMuted` | Wyciszenie pokoju/wydarzenia            |
 
 Funkcje real-time:
+
 - Cache uprawnień do pokojów (TTL 5 min)
 - Śledzenie użytkowników online
 - Automatyczne ponowne dołączanie do pokojów po reconnect
@@ -435,6 +448,7 @@ npm run ios
 ```
 
 Wymagane zmienne środowiskowe / konfiguracja:
+
 - Plik `google-services.json` (Firebase Android)
 - Plik `GoogleService-Info.plist` (Firebase iOS)
 - Konfiguracja Mapbox access token

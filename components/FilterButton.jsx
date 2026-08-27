@@ -39,7 +39,7 @@ const createStyles = (ui) => StyleSheet.create({
   filterButtonActive: {},
   filterLabel: {
     fontSize: ui.scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: COLORS.primary,
     marginTop: ui.verticalScale(4),
     opacity: 0.5,

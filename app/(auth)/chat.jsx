@@ -194,7 +194,7 @@ const createStyles = (colors) =>
     headerTextWrapper: {},
     headerText: {
       fontSize: scaleFont(24, 0.45),
-      fontFamily: 'Montserrat-Bold',
+      fontFamily: 'BarlowCondensed-ExtraBold',
       color: colors.primaryText,
       marginLeft: SPACING.md,
     },
@@ -220,12 +220,12 @@ const createStyles = (colors) =>
     },
     filterText: {
       fontSize: scaleFont(13, 0.35),
-      fontFamily: 'Lato-Regular',
+      fontFamily: 'Inter-Regular',
       // color: COLORS.primary,
     },
     filterTextActive: {
       color: colors.background,
-      fontFamily: 'Montserrat-Bold',
+      fontFamily: 'BarlowCondensed-Bold',
     },
     searchContainer: {
       paddingHorizontal: SPACING.md,
@@ -244,7 +244,7 @@ const createStyles = (colors) =>
       paddingRight: SPACING.md,
       flex: 1,
       fontSize:scaleFont(16, 0.35),
-      fontFamily: 'Lato-Regular',
+      fontFamily: 'Inter-Regular',
       color: colors.primaryText,
     },
     searchIcon: {
@@ -263,7 +263,7 @@ const createStyles = (colors) =>
     emptyText: {
       marginTop: SPACING.sm,
       fontSize: scaleFont(16, 0.35),
-      fontFamily: 'Lato-Regular',
+      fontFamily: 'Inter-Regular',
       color: colors.thirdText,
     },
   })

@@ -21,7 +21,7 @@ import { useDashboard } from "../../context/DashboardContext";
 import { useMapStore } from "../../context/mapStore";
 import { fetchNearbyEvents } from "../../assets/utils/eventsApi";
 import { getNearbyPlaces } from "../../assets/utils/geoDistance";
-import sportsPlacesData from "../../assets/data/orliki_hale_polska.json";
+import sportsPlacesData from "../../assets/data/orliki_hale_polaczony_naprawiony.json";
 import {
   formatEventDateLabel,
   getEventTitle,
@@ -131,7 +131,8 @@ const DashboardHome = () => {
   );
 
   const goToEvent = (id) => router.push(`/(auth)/single-event?id=${id}`);
-  const goToFind = () => router.push("/(auth)/find-event");
+  const goToFind = () =>
+    router.push("/(auth)/events-managment/events-dashboard");
 
   const getBackgroundImage = (gameType) => {
     switch (gameType) {
@@ -272,7 +273,7 @@ const DashboardHome = () => {
                 style={styles.RecommendCard_pressable}
                 onPress={() => goToEvent(featuredEvent._id)}
               >
-                <Text style={styles.RecommendCard_button_text}>DOŁACZ!</Text>
+                <Text style={styles.RecommendCard_button_text}>DOŁĄCZ!</Text>
                 <AntDesign
                   name="arrow-right"
                   size={12}
@@ -310,7 +311,9 @@ const DashboardHome = () => {
               styles.NavigationBoxes_buttonWrapper,
               pressed && styles.NavigationBoxes_buttonWrapper_pressed,
             ]}
-            onPress={() => router.navigate("/(auth)/find-event")}
+            onPress={() =>
+              router.navigate("/(auth)/events-managment/events-dashboard")
+            }
           >
             <LinearGradient
               colors={[colors.backgroundSecondary, "#000"]}
@@ -480,18 +483,21 @@ const createStyles = (colors) =>
       fontSize: scaleFont(16),
       color: colors.primaryText,
       marginLeft: SPACING.md,
+      fontFamily: "BarlowCondensed-Bold",
     },
     LevelCard_section_header_textNickname: {
       fontSize: scaleFont(16),
       color: colors.PrimaryGreen,
       fontWeight: "bold",
       marginLeft: SPACING.sm,
+      fontFamily: "Inter-Medium",
     },
     LevelCard_section_header_textSubtitle: {
       fontSize: scaleFont(14),
       color: colors.secondaryText,
       marginLeft: SPACING.md,
       paddingLeft: SPACING.md,
+      fontFamily: "Inter-Regular",
     },
     LevelCard_section_header_level: {
       paddingRight: SPACING.md,
@@ -500,11 +506,13 @@ const createStyles = (colors) =>
     LevelCard_section_header_level_text: {
       fontSize: scaleFont(14),
       color: colors.secondaryText,
+      fontFamily: "Inter-Regular",
     },
     LevelCard_section_header_level_number: {
       fontSize: scaleFont(16),
       color: colors.PrimaryGreen,
       fontWeight: "bold",
+      fontFamily: "BarlowCondensed-ExtraBold",
     },
 
     LevelCard_fillBar: {
@@ -544,6 +552,7 @@ const createStyles = (colors) =>
     StatsCard_section_text: {
       fontSize: scaleFont(12),
       color: colors.primaryText,
+      fontFamily: "Inter-Medium",
     },
 
     RecommendCard: {
@@ -581,17 +590,18 @@ const createStyles = (colors) =>
       gap: SPACING.sm,
     },
     RecommendCard_date_text: {
-      fontSize: scaleFont(14),
+      fontSize: scaleFont(10),
       color: colors.PrimaryGreen,
+      fontFamily: "Inter-Regular",
     },
     RecommendCard_title: {
       marginTop: SPACING.sm,
       maxWidth: "80%",
     },
     RecommendCard_title_text: {
-      fontSize: scaleFont(28),
+      fontSize: scaleFont(30),
       color: colors.primaryText,
-      fontFamily: "ObjectFont",
+      fontFamily: "BarlowCondensed-ExtraBold",
     },
     RecommendCard_Players: {
       marginTop: SPACING.sm,
@@ -600,24 +610,28 @@ const createStyles = (colors) =>
       gap: SPACING.sm,
     },
     RecommendCard_Players_text: {
-      fontSize: scaleFont(14),
+      fontSize: scaleFont(10),
+      marginTop: 2,
       color: colors.secondaryText,
+      fontFamily: "Inter-Regular",
     },
     RecommendCard_location: {
-      marginTop: SPACING.sm,
+      marginTop: SPACING.md,
       flexDirection: "row",
       alignItems: "center",
       gap: SPACING.sm,
     },
     RecommendCard_location_text: {
-      fontSize: scaleFont(14),
+      fontSize: scaleFont(10),
+      marginTop: 2,
       color: colors.secondaryText,
+      fontFamily: "Inter-Regular",
     },
     RecommendCard_button: {
       marginTop: SPACING.xl,
-      maxWidth: "70%",
+      maxWidth: "50%",
       borderRadius: BORDER_RADIUS.md,
-      backgroundColor: colors.PrimaryYellow,
+      backgroundColor: colors.PrimaryGreen,
       paddingVertical: SPACING.sm,
       marginBottom: SPACING.lg,
     },
@@ -625,14 +639,15 @@ const createStyles = (colors) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      gap: SPACING.sm,
-      justifyContent: "space-evenly",
+      justifyContent: "space-between",
+      paddingLeft: SPACING.lg,
+      paddingRight: SPACING.md,
       alignItems: "center",
     },
     RecommendCard_button_text: {
-      fontSize: scaleFont(16),
+      fontSize: scaleFont(18),
       color: colors.background,
-      fontWeight: "bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     RecommendCard_button_icon: {
       alignSelf: "center",
@@ -649,11 +664,13 @@ const createStyles = (colors) =>
       fontSize: scaleFont(16),
       color: colors.secondaryText,
       textAlign: "center",
+      fontFamily: "Inter-Regular",
     },
     RecommendCard_empty_cta: {
       fontSize: scaleFont(14),
       color: colors.PrimaryGreen,
       fontWeight: "bold",
+      fontFamily: "Inter-SemiBold",
     },
     NavigationBoxes: {
       flex: 1,
@@ -665,6 +682,7 @@ const createStyles = (colors) =>
       color: colors.primaryText,
       fontWeight: "bold",
       marginBottom: SPACING.sm,
+      fontFamily: "BarlowCondensed-Bold",
     },
     NavigationBoxes_buttonsWrapper: {
       flex: 1,
@@ -696,6 +714,7 @@ const createStyles = (colors) =>
       fontSize: scaleFont(10),
       color: colors.primaryText,
       textAlign: "center",
+      fontFamily: "Inter-SemiBold",
     },
 
     NearEvent: {
@@ -712,16 +731,19 @@ const createStyles = (colors) =>
       fontSize: scaleFont(12),
       color: colors.primaryText,
       fontWeight: "bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     NearEvent_title_more: {
       fontSize: scaleFont(10),
       color: colors.PrimaryGreen,
       fontWeight: "bold",
+      fontFamily: "Inter-SemiBold",
     },
     NearEvent_empty: {
       fontSize: scaleFont(12),
       color: colors.Placeholder,
       paddingVertical: SPACING.md,
       textAlign: "center",
+      fontFamily: "Inter-Regular",
     },
   });

@@ -274,7 +274,7 @@ const createStyles = (colors) =>
     },
     headerText: {
       fontSize: scaleFont(24, 0.45),
-      fontFamily: 'Montserrat-Bold',
+      fontFamily: 'BarlowCondensed-ExtraBold',
       color: colors.primaryText,
       marginLeft: SPACING.md,
     },
@@ -310,7 +310,7 @@ const createStyles = (colors) =>
       flex: 1,
       fontSize: scaleFont(16, 0.35),
       color: colors.primaryText,
-      fontFamily: 'Lato-Regular',
+      fontFamily: 'Inter-Regular',
       minHeight: verticalScale(32),
     },
     clearButton: {
@@ -338,7 +338,7 @@ const createStyles = (colors) =>
     },
     sectionTitle: {
       fontSize: scaleFont(14, 0.35),
-      fontFamily: 'Montserrat-Bold',
+      fontFamily: 'BarlowCondensed-Bold',
       color: colors.PrimaryGreen,
       textTransform: 'uppercase',
       marginBottom: verticalScale(8),
@@ -365,7 +365,7 @@ const createStyles = (colors) =>
     },
     filterTabText: {
       fontSize: scaleFont(12, 0.3),
-      fontFamily: 'Lato-Regular',
+      fontFamily: 'Inter-Regular',
       color: colors.thirdText,
     },
     filterTabTextActive: {
@@ -376,7 +376,7 @@ const createStyles = (colors) =>
     emptyText: {
       textAlign: 'center',
       fontSize: scaleFont(13, 0.3),
-      fontFamily: 'Lato-Regular',
+      fontFamily: 'Inter-Regular',
       color: colors.thirdText,
       paddingVertical: verticalScale(12),
       fontStyle: 'italic',
@@ -384,7 +384,7 @@ const createStyles = (colors) =>
     hintText: {
       textAlign: 'center',
       fontSize: scaleFont(12, 0.3),
-      fontFamily: 'Lato-Regular',
+      fontFamily: 'Inter-Regular',
       color: colors.thirdText,
       paddingTop: verticalScale(8),
       fontStyle: 'italic',

@@ -8,6 +8,7 @@ import {
   Pressable,
   Alert,
   Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
@@ -34,11 +35,13 @@ import {
 import { dbg, useDebugMount } from "../assets/utils/debugLogger";
 import * as AppleAuthentication from "expo-apple-authentication";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Login = () => {
   dbg("LoginScreen");
   useDebugMount("LoginScreen");
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { login, loginWithGoogle, loginWithApple } = useAuth();
   const { styles, colors } = useThemedStyles(createStyles);
 
@@ -273,109 +276,129 @@ const Login = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.auth}>
-      <View style={styles.authMask} />
-      <View style={styles.authFormContainer}>
-        <Text style={styles.authFormTitle}>Login</Text>
+    <KeyboardAvoidingView
+      style={styles.keyboardView}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={[
+          styles.auth,
+          { paddingBottom: verticalScale(40) + insets.bottom },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+      >
+        <View style={styles.authMask} />
+        <View style={styles.authFormContainer}>
+          <Text style={styles.authFormTitle}>Login</Text>
 
-        <View style={styles.authForm}>
-          {/* Email Input */}
-          <View style={styles.authFormGroup}>
-            <Text style={styles.label}>Email lub Nick</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Wprowadź email lub nick"
-              placeholderTextColor="#999"
-              value={formData.email}
-              onChangeText={(value) => handleChange("email", value)}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              editable={!isLoading}
-            />
+          <View style={styles.authForm}>
+            {/* Email Input */}
+            <View style={styles.authFormGroup}>
+              <Text style={styles.label}>Email lub Nick</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Wprowadź email lub nick"
+                placeholderTextColor="#999"
+                value={formData.email}
+                onChangeText={(value) => handleChange("email", value)}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                editable={!isLoading}
+              />
+            </View>
+
+            {/* Password Input */}
+            <View style={styles.authFormGroup}>
+              <Text style={styles.label}>Hasło</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Wprowadź hasło"
+                placeholderTextColor="#999"
+                secureTextEntry={!showPassword}
+                value={formData.password}
+                onChangeText={(value) => handleChange("password", value)}
+                editable={!isLoading}
+              />
+              <View style={styles.authFormGroupButtons}>
+                <Pressable
+                  style={styles.authFormShow}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Text style={styles.showButtonText}>
+                    {showPassword ? "Ukryj" : "Pokaż"}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={styles.authFormShow}
+                  onPress={handleForgotPassword}
+                >
+                  <Text style={styles.showButtonText}>Zapomniałeś hasła?</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Submit Button */}
+            {/* isLoading */}
+            {isLoading ? (
+              <LottieView
+                source={spinner}
+                autoPlay
+                loop
+                style={styles.loader}
+              />
+            ) : (
+              <Button1
+                text="Zaloguj się"
+                fontFamily="Inter-SemiBold"
+                width={"100%"}
+                height={verticalScale(50)}
+                fontSize={scaleFont(20, 0.4)}
+                lineColor="#fff"
+                backgroundColor={colors.PrimaryGreen}
+                color={colors.background}
+                onPress={handleSubmit}
+              />
+            )}
           </View>
 
-          {/* Password Input */}
-          <View style={styles.authFormGroup}>
-            <Text style={styles.label}>Hasło</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Wprowadź hasło"
-              placeholderTextColor="#999"
-              secureTextEntry={!showPassword}
-              value={formData.password}
-              onChangeText={(value) => handleChange("password", value)}
-              editable={!isLoading}
-            />
-            <View style={styles.authFormGroupButtons}>
+          {/* Alternate Options */}
+          <View style={styles.authFormAlternate}>
+            <Text style={styles.authFormAlternateText}>
+              Nie masz konta?{"    "}
+              <Text style={styles.link} onPress={handleGoToRegister}>
+                Zarejestruj się
+              </Text>
+            </Text>
+            <View style={styles.oauthRow}>
               <Pressable
-                style={styles.authFormShow}
-                onPress={() => setShowPassword(!showPassword)}
+                style={styles.authFormAlternateIcon}
+                onPress={handleAppleSignIn}
+                disabled={isLoading || Platform.OS !== "ios"}
               >
-                <Text style={styles.showButtonText}>
-                  {showPassword ? "Ukryj" : "Pokaż"}
-                </Text>
+                <Image
+                  source={require("../assets/images/appleWhite.png")}
+                  style={styles.appleIconImage}
+                />
+                {Platform.OS !== "ios" && (
+                  <View style={styles.disabledOverlay} />
+                )}
               </Pressable>
               <Pressable
-                style={styles.authFormShow}
-                onPress={handleForgotPassword}
+                style={styles.authFormAlternateIcon}
+                onPress={handleGoogleSignIn}
+                disabled={isLoading}
               >
-                <Text style={styles.showButtonText}>Zapomniałeś hasła?</Text>
+                <Image
+                  source={require("../assets/images/google-icon.png")}
+                  style={styles.googleIconImage}
+                />
               </Pressable>
             </View>
           </View>
-
-          {/* Submit Button */}
-          {/* isLoading */}
-          {isLoading ? (
-            <LottieView source={spinner} autoPlay loop style={styles.loader} />
-          ) : (
-            <Button1
-              text="Zaloguj się"
-              width={"100%"}
-              height={verticalScale(50)}
-              fontSize={scaleFont(20, 0.4)}
-              lineColor="#fff"
-              backgroundColor={colors.PrimaryGreen}
-              color={colors.background}
-              onPress={handleSubmit}
-            />
-          )}
         </View>
-
-        {/* Alternate Options */}
-        <View style={styles.authFormAlternate}>
-          <Text style={styles.authFormAlternateText}>
-            Nie masz konta?{"    "}
-            <Text style={styles.link} onPress={handleGoToRegister}>
-              Zarejestruj się
-            </Text>
-          </Text>
-          <View style={styles.oauthRow}>
-            <Pressable
-              style={styles.authFormAlternateIcon}
-              onPress={handleAppleSignIn}
-              disabled={isLoading || Platform.OS !== "ios"}
-            >
-              <Image
-                source={require("../assets/images/appleWhite.png")}
-                style={styles.appleIconImage}
-              />
-              {Platform.OS !== "ios" && <View style={styles.disabledOverlay} />}
-            </Pressable>
-            <Pressable
-              style={styles.authFormAlternateIcon}
-              onPress={handleGoogleSignIn}
-              disabled={isLoading}
-            >
-              <Image
-                source={require("../assets/images/google-icon.png")}
-                style={styles.googleIconImage}
-              />
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -383,6 +406,10 @@ export default Login;
 
 const createStyles = (colors) =>
   StyleSheet.create({
+    keyboardView: {
+      flex: 1,
+      backgroundColor: colors.backgroundSecondary,
+    },
     auth: {
       flexGrow: 1,
       backgroundColor: colors.backgroundSecondary,
@@ -417,6 +444,7 @@ const createStyles = (colors) =>
       color: colors.primaryText,
       textAlign: "center",
       marginBottom: verticalScale(30),
+      fontFamily: "BarlowCondensed-ExtraBold",
     },
     authForm: {
       width: "100%",
@@ -429,6 +457,7 @@ const createStyles = (colors) =>
       fontWeight: "600",
       color: colors.primaryText,
       marginBottom: verticalScale(8),
+      fontFamily: "Inter-Medium",
     },
     input: {
       backgroundColor: "#f5f5f5",
@@ -440,6 +469,7 @@ const createStyles = (colors) =>
       color: colors.background,
       borderWidth: 1,
       borderColor: "#e0e0e0",
+      fontFamily: "Inter-Regular",
     },
     authFormGroupButtons: {
       flexDirection: "row",
@@ -453,6 +483,7 @@ const createStyles = (colors) =>
       color: colors.PrimaryGreen,
       fontSize: scaleFont(14, 0.35),
       fontWeight: "600",
+      fontFamily: "Inter-SemiBold",
     },
     authFormAlternate: {
       marginTop: verticalScale(30),
@@ -462,10 +493,12 @@ const createStyles = (colors) =>
       fontSize: scaleFont(14, 0.35),
       color: colors.thirdText,
       marginBottom: verticalScale(15),
+      fontFamily: "Inter-Regular",
     },
     link: {
       color: colors.PrimaryGreen,
       fontWeight: "bold",
+      fontFamily: "Inter-SemiBold",
     },
     oauthRow: {
       flexDirection: "row",

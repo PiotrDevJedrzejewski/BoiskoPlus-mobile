@@ -181,13 +181,13 @@ const createStyles = (colors) => StyleSheet.create({
   },
   headerText: {
     fontSize: scaleFont(18, 0.4),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.primaryText,
     marginLeft: SPACING.sm,
   },
   roomName: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
     marginBottom: verticalScale(20),
     paddingLeft: SPACING.xl,
@@ -198,7 +198,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   loadingText: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
     marginTop: verticalScale(12),
   },
@@ -214,7 +214,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   optionText: {
     fontSize: scaleFont(15, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     marginLeft: SPACING.md,
   },
@@ -237,7 +237,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   unmuteText: {
     fontSize: scaleFont(15, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.border,
     marginLeft: SPACING.md,
     flex: 1,
@@ -253,7 +253,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   mutedBadgeText: {
     fontSize: scaleFont(10, 0.25),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: '#fff',
   },
   cancelButton: {
@@ -267,7 +267,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
   },
 })

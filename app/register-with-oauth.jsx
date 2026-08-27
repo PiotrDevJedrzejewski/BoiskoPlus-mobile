@@ -1,5 +1,13 @@
 import { useState, useMemo, useCallback } from "react";
-import { StyleSheet, Text, View, TextInput, ScrollView } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  ScrollView,
+} from "react-native";
 import React from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import LottieView from "lottie-react-native";
@@ -17,6 +25,7 @@ import Button1 from "../components/Button1";
 import spinner from "../assets/utils/spinner.json";
 import { Toast } from "toastify-react-native";
 import DatePicker from "../components/popup/DatePicker";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const parseIsoDate = (value) => {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
@@ -39,6 +48,7 @@ const RegisterWithOAuth = () => {
   dbg("RegisterWithOAuthScreen");
   useDebugMount("RegisterWithOAuthScreen");
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { completeOAuth, completeAppleOAuth } = useAuth();
   const { styles, colors } = useThemedStyles(createStyles);
 
@@ -161,88 +171,106 @@ const RegisterWithOAuth = () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.auth}>
-      <View style={styles.authMask} />
-      <View style={styles.authFormContainer}>
-        <Text style={styles.authFormTitle}>Jeszcze jeden krok</Text>
+    <KeyboardAvoidingView
+      style={styles.keyboardView}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={[
+          styles.auth,
+          { paddingBottom: verticalScale(40) + insets.bottom },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+      >
+        <View style={styles.authMask} />
+        <View style={styles.authFormContainer}>
+          <Text style={styles.authFormTitle}>Jeszcze jeden krok</Text>
 
-        <View style={styles.authForm}>
-          {/* Nick */}
-          <View style={styles.authFormGroup}>
-            <Text style={styles.label}>Ustaw swój nick</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nick/login/pseudonim"
-              placeholderTextColor="#999"
-              value={nick}
-              onChangeText={setNick}
-              maxLength={20}
-              autoCapitalize="none"
+          <View style={styles.authForm}>
+            {/* Nick */}
+            <View style={styles.authFormGroup}>
+              <Text style={styles.label}>Ustaw swój nick</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Nick/login/pseudonim"
+                placeholderTextColor="#999"
+                value={nick}
+                onChangeText={setNick}
+                maxLength={20}
+                autoCapitalize="none"
+              />
+              <Text style={styles.smallText}>3-20 znaków</Text>
+            </View>
+
+            {/* Name */}
+            <View style={styles.authFormGroup}>
+              <Text style={styles.label}>Imię</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Wprowadź imię"
+                placeholderTextColor="#999"
+                value={name}
+                onChangeText={setName}
+                maxLength={20}
+              />
+            </View>
+
+            {/* Surname */}
+            <View style={styles.authFormGroup}>
+              <Text style={styles.label}>Nazwisko</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Wprowadź nazwisko"
+                placeholderTextColor="#999"
+                value={surname}
+                onChangeText={setSurname}
+                maxLength={20}
+              />
+            </View>
+
+            {/* Birth Date */}
+            <View style={styles.authFormGroup}>
+              <Text style={styles.label}>Data urodzenia</Text>
+              <DatePicker
+                value={birthDate}
+                onChange={setBirthDate}
+                minimumDate={new Date(1900, 0, 1)}
+                maximumDate={maxBirthDate}
+              />
+              <Text style={styles.smallText}>
+                aplikacja dla użytkowników 7+
+              </Text>
+            </View>
+
+            {/* Submit */}
+            <Button1
+              text="Dokończ rejestrację"
+              fontFamily="Inter-SemiBold"
+              width={"100%"}
+              height={verticalScale(50)}
+              fontSize={scaleFont(20, 0.4)}
+              lineColor="#fff"
+              backgroundColor={colors.PrimaryGreen}
+              color={colors.background}
+              onPress={handleSubmit}
             />
-            <Text style={styles.smallText}>3-20 znaków</Text>
           </View>
 
-          {/* Name */}
-          <View style={styles.authFormGroup}>
-            <Text style={styles.label}>Imię</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Wprowadź imię"
-              placeholderTextColor="#999"
-              value={name}
-              onChangeText={setName}
-              maxLength={20}
-            />
-          </View>
-
-          {/* Surname */}
-          <View style={styles.authFormGroup}>
-            <Text style={styles.label}>Nazwisko</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Wprowadź nazwisko"
-              placeholderTextColor="#999"
-              value={surname}
-              onChangeText={setSurname}
-              maxLength={20}
-            />
-          </View>
-
-          {/* Birth Date */}
-          <View style={styles.authFormGroup}>
-            <Text style={styles.label}>Data urodzenia</Text>
-            <DatePicker
-              value={birthDate}
-              onChange={setBirthDate}
-              minimumDate={new Date(1900, 0, 1)}
-              maximumDate={maxBirthDate}
-            />
-            <Text style={styles.smallText}>aplikacja dla użytkowników 7+</Text>
-          </View>
-
-          {/* Submit */}
-          <Button1
-            text="Dokończ rejestrację"
-            width={"100%"}
-            height={verticalScale(50)}
-            fontSize={scaleFont(20, 0.4)}
-            lineColor="#fff"
-            backgroundColor={colors.PrimaryGreen}
-            color={colors.background}
-            onPress={handleSubmit}
-          />
-        </View>
-
-        <View style={styles.authFormAlternate}>
-          <Text style={styles.authFormAlternateText}>
-            Masz już konto?{" "}
-            <Text style={styles.link} onPress={() => router.replace("/login")}>
-              Zaloguj się
+          <View style={styles.authFormAlternate}>
+            <Text style={styles.authFormAlternateText}>
+              Masz już konto?{" "}
+              <Text
+                style={styles.link}
+                onPress={() => router.replace("/login")}
+              >
+                Zaloguj się
+              </Text>
             </Text>
-          </Text>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -250,6 +278,10 @@ export default RegisterWithOAuth;
 
 const createStyles = (colors) =>
   StyleSheet.create({
+    keyboardView: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
     loadingContainer: {
       flex: 1,
       justifyContent: "center",
@@ -264,6 +296,7 @@ const createStyles = (colors) =>
       marginTop: verticalScale(20),
       fontSize: scaleFont(18, 0.4),
       color: colors.primaryText,
+      fontFamily: "Inter-Regular",
     },
     auth: {
       flexGrow: 1,
@@ -299,6 +332,7 @@ const createStyles = (colors) =>
       color: colors.primaryText,
       textAlign: "center",
       marginBottom: verticalScale(30),
+      fontFamily: "BarlowCondensed-ExtraBold",
     },
     authForm: {
       width: "100%",
@@ -311,6 +345,7 @@ const createStyles = (colors) =>
       fontWeight: "600",
       color: colors.primaryText,
       marginBottom: verticalScale(8),
+      fontFamily: "Inter-Medium",
     },
     input: {
       backgroundColor: "#f5f5f5",
@@ -322,11 +357,13 @@ const createStyles = (colors) =>
       color: colors.background,
       borderWidth: 1,
       borderColor: "#e0e0e0",
+      fontFamily: "Inter-Regular",
     },
     smallText: {
       color: colors.thirdText,
       fontSize: scaleFont(12, 0.3),
       marginTop: verticalScale(4),
+      fontFamily: "Inter-Regular",
     },
     authFormAlternate: {
       marginTop: verticalScale(30),
@@ -335,9 +372,11 @@ const createStyles = (colors) =>
     authFormAlternateText: {
       fontSize: scaleFont(14, 0.35),
       color: colors.thirdText,
+      fontFamily: "Inter-Regular",
     },
     link: {
       color: colors.PrimaryGreen,
       fontWeight: "bold",
+      fontFamily: "Inter-SemiBold",
     },
   });

@@ -81,7 +81,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   settingRowLabel: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     marginLeft: SPACING.md,
   },
@@ -94,7 +94,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   settingRowValue: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
     marginRight: SPACING.sm,
   },

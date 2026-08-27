@@ -157,14 +157,14 @@ const createStyles = (colors) => StyleSheet.create({
   },
   title: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
     textAlign: 'center',
     marginBottom: verticalScale(12),
   },
   actionText: {
     fontSize: scaleFont(24, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     textAlign: 'center',
     marginBottom: verticalScale(24),
   },
@@ -185,7 +185,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   confirmButtonText: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.background,
   },
   cancelButton: {
@@ -195,7 +195,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
   },
 })

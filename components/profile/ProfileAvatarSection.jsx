@@ -158,7 +158,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   avatarHint: {
     fontSize: scaleFont(10, 0.25),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
     marginTop: verticalScale(4),
   },
@@ -173,7 +173,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   changeAvatarText: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.background,
     marginLeft: SPACING.sm,
   },

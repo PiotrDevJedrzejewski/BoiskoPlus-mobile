@@ -13,9 +13,8 @@ export const fetchEventsCollections = async () => {
 };
 
 /**
- * Pobiera najbliższe wydarzenia od podanej lokalizacji (bez dodatkowych filtrów).
- * Wykorzystuje endpoint wyszukiwarki ($geoNear zwraca wyniki od najbliższego).
- * Zwraca pełną odpowiedź (events, center, total, ...).
+ * Wyszukuje publiczne, nadchodzące wydarzenia według lokalizacji i filtrów.
+ * Zwraca pełną odpowiedź paginacji (events, center, total, hasMore, ...).
  */
 export const fetchNearbyEvents = async ({
   latitude,
@@ -24,19 +23,36 @@ export const fetchNearbyEvents = async ({
   region,
   Country = "Poland",
   distance = 25,
+  eventName,
+  gameType,
+  minPlayerCount,
+  level,
+  maxPrice,
+  ageRange,
   limit = 4,
   page = 1,
+  signal,
 } = {}) => {
-  const { data } = await customFetch.post("/football-events/search", {
-    latitude,
-    longitude,
-    City,
-    region,
-    Country,
-    distance,
-    limit,
-    page,
-  });
+  const { data } = await customFetch.post(
+    "/football-events/search",
+    {
+      latitude,
+      longitude,
+      City,
+      region,
+      Country,
+      distance,
+      eventName,
+      gameType,
+      minPlayerCount,
+      level,
+      maxPrice,
+      ageRange,
+      limit,
+      page,
+    },
+    { signal },
+  );
 
   return data;
 };

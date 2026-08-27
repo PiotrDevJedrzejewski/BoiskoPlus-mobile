@@ -167,6 +167,7 @@ const createStyles = (colors) =>
     color: colors.primaryText,
     fontSize: scaleFont(14, 0.35),
     fontWeight: 'bold',
+    fontFamily: 'Inter-SemiBold',
   },
   avatarWrapper: {
     position: 'relative',
@@ -218,19 +219,19 @@ const createStyles = (colors) =>
   },
   nickname: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
     marginBottom: SPACING.xs,
   },
   ownerName: {
     fontSize: scaleFont(11, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
     marginBottom: SPACING.xs,
   },
   lastMessage: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
   },
 })

@@ -115,7 +115,7 @@ const createStyles = (colors, insets = { bottom: 0 }) =>
     },
     title: {
       fontSize: scaleFont(18),
-      fontFamily: "ObjectFont",
+      fontFamily: "BarlowCondensed-Bold",
       color: colors.primaryText,
       textAlign: "center",
     },

@@ -137,12 +137,6 @@ const DrawerModal = () => {
                 styles={styles}
               />
               <DrawerItem
-                icon="search"
-                label="Szukaj"
-                onPress={() => navigateTo("/(auth)/find-event")}
-                styles={styles}
-              />
-              <DrawerItem
                 icon="chatbubbles"
                 label="Czat"
                 onPress={() => navigateTo("/(auth)/chat")}
@@ -156,7 +150,7 @@ const DrawerModal = () => {
               />
               <DrawerItem
                 icon="calendar"
-                label="Moje Wydarzenia"
+                label="Wydarzenia"
                 onPress={() =>
                   navigateTo("/(auth)/events-managment/events-dashboard")
                 }

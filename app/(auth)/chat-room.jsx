@@ -660,12 +660,12 @@ const createStyles = (colors, insetsBottom = 0) =>
     },
     headerUsername: {
       fontSize: scaleFont(16, 0.35),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-ExtraBold",
       color: colors.primaryText,
     },
     headerSubtitle: {
       fontSize: scaleFont(12, 0.3),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.thirdText,
       marginTop: verticalScale(2),
     },
@@ -695,7 +695,7 @@ const createStyles = (colors, insetsBottom = 0) =>
     },
     settingsOptionText: {
       fontSize: scaleFont(14, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
     },
     // Loading
@@ -725,13 +725,13 @@ const createStyles = (colors, insetsBottom = 0) =>
     emptyText: {
       marginTop: SPACING.md,
       fontSize: scaleFont(16, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.thirdText,
     },
     emptySubtext: {
       marginTop: SPACING.sm,
       fontSize: scaleFont(14, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.thirdText,
       opacity: 0.7,
     },
@@ -744,7 +744,7 @@ const createStyles = (colors, insetsBottom = 0) =>
     },
     typingIndicatorText: {
       fontSize: scaleFont(12, 0.3),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
     },
     typingAnimationWrapper: {
@@ -772,7 +772,7 @@ const createStyles = (colors, insetsBottom = 0) =>
       paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.sm,
       fontSize: scaleFont(16, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.primaryText,
       marginRight: SPACING.sm,
     },
@@ -797,14 +797,14 @@ const createStyles = (colors, insetsBottom = 0) =>
     loadingOlderText: {
       marginLeft: SPACING.sm,
       fontSize: scaleFont(12, 0.3),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.thirdText,
     },
     noMoreMessages: {
       textAlign: "center",
       paddingVertical: verticalScale(10),
       fontSize: scaleFont(12, 0.3),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.thirdText,
       fontStyle: "italic",
     },

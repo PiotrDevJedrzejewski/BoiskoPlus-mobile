@@ -36,19 +36,19 @@ const createStyles = (colors) => StyleSheet.create({
   },
   senderName: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
     marginBottom: verticalScale(2),
   },
   time: {
     fontSize: scaleFont(10, 0.25),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
     marginBottom: verticalScale(4),
   },
   messageText: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
   },
 })

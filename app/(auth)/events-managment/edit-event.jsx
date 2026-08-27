@@ -702,7 +702,7 @@ const createStyles = (colors) =>
     header_title: {
       fontSize: scaleFont(18, 0.4),
       color: colors.primaryText,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       textAlign: "center",
     },
 
@@ -730,7 +730,7 @@ const createStyles = (colors) =>
     SlotsRow_value: {
       fontSize: scaleFont(20, 0.4),
       color: colors.PrimaryGreen,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     SlotsRow_edit: {
       flexDirection: "row",
@@ -769,7 +769,7 @@ const createStyles = (colors) =>
     },
     Tabs_button_text_active: {
       color: colors.PrimaryGreen,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     Tabs_badge: {
       minWidth: scaleFont(18),
@@ -783,6 +783,7 @@ const createStyles = (colors) =>
       fontSize: scaleFont(10, 0.3),
       color: colors.background,
       fontWeight: "700",
+      fontFamily: "Inter-SemiBold",
     },
 
     emptyText: {
@@ -790,6 +791,7 @@ const createStyles = (colors) =>
       color: colors.secondaryText,
       textAlign: "center",
       paddingVertical: verticalScale(24),
+      fontFamily: "Inter-Regular",
     },
 
     InfoGrid: {
@@ -842,6 +844,7 @@ const createStyles = (colors) =>
       fontSize: scaleFont(14, 0.35),
       color: colors.background,
       fontWeight: "700",
+      fontFamily: "Inter-SemiBold",
     },
 
     ActionsGrid: {

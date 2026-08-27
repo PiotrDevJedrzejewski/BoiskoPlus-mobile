@@ -56,6 +56,8 @@ const EVENT_STATUS_LABELS = {
   cancelled: "Odwołane",
 };
 
+const ENDED_EVENT_STATUSES = ["completed", "cancelled"];
+
 const SingleEvent = () => {
   dbg("SingleEventScreen");
   useDebugMount("SingleEventScreen");
@@ -492,6 +494,7 @@ const SingleEvent = () => {
 
   const isParticipating =
     userStatus === "accepted" || userStatus === "interested";
+  const isEventEnded = ENDED_EVENT_STATUSES.includes(event.eventStatus);
 
   return (
     <View style={styles.screen}>
@@ -580,6 +583,91 @@ const SingleEvent = () => {
             </Text>
           </View>
         </View>
+
+        {/* Akcje */}
+        {isEventEnded ? (
+          <View style={styles.Actions}>
+            <Pressable
+              style={[styles.Actions_main, styles.Actions_main_disabled]}
+              disabled
+            >
+              <Text
+                style={[
+                  styles.Actions_main_text,
+                  styles.Actions_main_text_disabled,
+                ]}
+              >
+                Zakończono
+              </Text>
+            </Pressable>
+            <Pressable style={styles.Actions_small} onPress={handleShare}>
+              <MaterialCommunityIcons
+                name="share-variant-outline"
+                size={scaleFont(20)}
+                color={colors.primaryText}
+              />
+            </Pressable>
+            <Pressable style={styles.Actions_small} onPress={handleBookmark}>
+              <Ionicons
+                name="bookmark-outline"
+                size={scaleFont(20)}
+                color={colors.primaryText}
+              />
+            </Pressable>
+          </View>
+        ) : userStatus === "invited" ? (
+          <View style={styles.Actions}>
+            <Pressable
+              style={[styles.Actions_main, { flex: 1 }]}
+              onPress={() => handleRespondToInvite(true)}
+            >
+              <Text style={styles.Actions_main_text}>AKCEPTUJ</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.Actions_small, styles.Actions_decline]}
+              onPress={() => handleRespondToInvite(false)}
+            >
+              <Ionicons
+                name="close"
+                size={scaleFont(20)}
+                color={colors.Danger}
+              />
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.Actions}>
+            <Pressable
+              style={[
+                styles.Actions_main,
+                isParticipating && styles.Actions_main_leave,
+              ]}
+              disabled={statusLoading}
+              onPress={
+                isParticipating
+                  ? () => setShowLeaveConfirm(true)
+                  : handleJoinRequest
+              }
+            >
+              <Text style={styles.Actions_main_text}>
+                {isParticipating ? "WYCOFAJ SIĘ" : "ZGŁOŚ CHĘĆ UDZIAŁU"}
+              </Text>
+            </Pressable>
+            <Pressable style={styles.Actions_small} onPress={handleShare}>
+              <MaterialCommunityIcons
+                name="share-variant-outline"
+                size={scaleFont(20)}
+                color={colors.primaryText}
+              />
+            </Pressable>
+            <Pressable style={styles.Actions_small} onPress={handleBookmark}>
+              <Ionicons
+                name="bookmark-outline"
+                size={scaleFont(20)}
+                color={colors.primaryText}
+              />
+            </Pressable>
+          </View>
+        )}
 
         {/* Progress bar */}
         <View style={styles.ProgressCard}>
@@ -708,61 +796,6 @@ const SingleEvent = () => {
           )}
         </View>
 
-        {/* Akcje */}
-        {userStatus === "invited" ? (
-          <View style={styles.Actions}>
-            <Pressable
-              style={[styles.Actions_main, { flex: 1 }]}
-              onPress={() => handleRespondToInvite(true)}
-            >
-              <Text style={styles.Actions_main_text}>AKCEPTUJ</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.Actions_small, styles.Actions_decline]}
-              onPress={() => handleRespondToInvite(false)}
-            >
-              <Ionicons
-                name="close"
-                size={scaleFont(20)}
-                color={colors.Danger}
-              />
-            </Pressable>
-          </View>
-        ) : (
-          <View style={styles.Actions}>
-            <Pressable
-              style={[
-                styles.Actions_main,
-                isParticipating && styles.Actions_main_leave,
-              ]}
-              disabled={statusLoading}
-              onPress={
-                isParticipating
-                  ? () => setShowLeaveConfirm(true)
-                  : handleJoinRequest
-              }
-            >
-              <Text style={styles.Actions_main_text}>
-                {isParticipating ? "WYCOFAJ SIĘ" : "ZGŁOŚ CHĘĆ UDZIAŁU"}
-              </Text>
-            </Pressable>
-            <Pressable style={styles.Actions_small} onPress={handleShare}>
-              <MaterialCommunityIcons
-                name="share-variant-outline"
-                size={scaleFont(20)}
-                color={colors.primaryText}
-              />
-            </Pressable>
-            <Pressable style={styles.Actions_small} onPress={handleBookmark}>
-              <Ionicons
-                name="bookmark-outline"
-                size={scaleFont(20)}
-                color={colors.primaryText}
-              />
-            </Pressable>
-          </View>
-        )}
-
         <BottomSpacer />
       </ScrollView>
 
@@ -830,6 +863,7 @@ const createStyles = (colors) =>
       fontSize: scaleFont(14, 0.35),
       color: "#000",
       fontWeight: "bold",
+      fontFamily: "Inter-SemiBold",
     },
 
     header: {
@@ -848,7 +882,7 @@ const createStyles = (colors) =>
     header_title: {
       fontSize: scaleFont(18, 0.35),
       color: colors.primaryText,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       textAlign: "center",
     },
 
@@ -878,7 +912,7 @@ const createStyles = (colors) =>
     StatsCard_section_value: {
       fontSize: scaleFont(20, 0.35),
       color: colors.PrimaryGreen,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     StatsCard_divider: {
       width: 1,
@@ -886,12 +920,13 @@ const createStyles = (colors) =>
     },
 
     ProgressCard: {
-      borderRadius: BORDER_RADIUS.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.secondaryCard,
+      // borderRadius: BORDER_RADIUS.lg,
+      // borderWidth: 1,
+      // borderColor: colors.border,
+      // backgroundColor: colors.secondaryCard,
       padding: SPACING.md,
       marginBottom: SPACING.md,
+      marginTop: SPACING.md,
       gap: SPACING.sm,
     },
     ProgressCard_header: {
@@ -902,7 +937,7 @@ const createStyles = (colors) =>
     ProgressCard_title: {
       fontSize: scaleFont(14, 0.35),
       color: colors.primaryText,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     ProgressCard_count: {
       fontSize: scaleFont(12, 0.3),
@@ -942,7 +977,7 @@ const createStyles = (colors) =>
     },
     Tabs_button_text_active: {
       color: colors.PrimaryGreen,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
 
     InfoGrid: {
@@ -1002,7 +1037,7 @@ const createStyles = (colors) =>
     Organizer_title: {
       fontSize: scaleFont(14, 0.35),
       color: colors.primaryText,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     Organizer_contact: {
       flexDirection: "row",
@@ -1033,6 +1068,9 @@ const createStyles = (colors) =>
       paddingVertical: SPACING.md,
       alignItems: "center",
     },
+    Actions_main_disabled: {
+      backgroundColor: colors.NeutralButton,
+    },
     Actions_main_leave: {
       backgroundColor: colors.Danger,
     },
@@ -1040,6 +1078,10 @@ const createStyles = (colors) =>
       fontSize: scaleFont(14, 0.35),
       color: "#000",
       fontWeight: "bold",
+      fontFamily: "Inter-SemiBold",
+    },
+    Actions_main_text_disabled: {
+      color: colors.InactiveIcon,
     },
     Actions_small: {
       width: scale(48),

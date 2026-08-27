@@ -253,7 +253,7 @@ const Settings = () => {
 
         {/* Wersja aplikacji */}
         <View style={styles.versionContainer}>
-          <Text style={styles.versionText}>BoiskoPlus Mobile v1.0.0</Text>
+          <Text style={styles.versionText}>BoiskoPlus Mobile v2/.0.0</Text>
         </View>
         <BottomSpacer />
       </ScrollView>
@@ -277,7 +277,7 @@ const createStyles = (colors) =>
     },
     headerText: {
       fontSize: scaleFont(24, 0.45),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-ExtraBold",
       color: colors.primaryText,
       marginLeft: SPACING.md,
     },
@@ -294,7 +294,7 @@ const createStyles = (colors) =>
     },
     versionText: {
       fontSize: scaleFont(12, 0.3),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       color: colors.thirdText,
     },
     locationInfo: {
@@ -309,7 +309,7 @@ const createStyles = (colors) =>
     locationInfoText: {
       textAlign: "center",
       fontSize: scaleFont(14, 0.35),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
       fontStyle: "italic",
       textTransform: "capitalize",
       fontWeight: "bold",

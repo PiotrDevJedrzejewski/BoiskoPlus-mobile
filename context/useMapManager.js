@@ -11,7 +11,7 @@
  *
  * ⚠️ WYWOŁYWANY W `app/(auth)/_layout.jsx`, NIE w show-map.jsx.
  * Systemowy dialog o lokalizację musi pojawić się zaraz po zalogowaniu,
- * a lokalizacja jest potrzebna także poza mapą (dashboard, find-event),
+ * a lokalizacja jest potrzebna także poza mapą (dashboard i wydarzenia),
  * więc manager musi startować razem z drzewem (auth) — dokładnie tak,
  * jak robił to stary <MapProvider>. Wewnętrzne refy pilnują, żeby
  * bootstrap wykonał się dokładnie raz.
@@ -77,7 +77,7 @@ export const useMapManager = () => {
       }
 
       // Dopiero TERAZ lokalizacja jest rozstrzygnięta — ekrany zależne od
-      // niej (dashboard-home, find-event) mogą bezpiecznie odpytać backend.
+      // niej ekrany zależne od lokalizacji mogą bezpiecznie odpytać backend.
       useMapStore.getState().setLocationResolved(true);
     },
     [getSavedLocation, reverseGeocode, saveLocation],

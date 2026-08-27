@@ -89,7 +89,10 @@ const CustomTabBar = React.memo(function CustomTabBar() {
 
   const startActive = isTabActive("dashboard-home");
   const mapActive = isTabActive("show-map");
-  const findEventActive = isTabActive("find-event");
+  const eventsActive =
+    isTabActive("events-managment") ||
+    isTabActive("single-event") ||
+    isTabActive("find-event");
   const chatActive = isTabActive("chat");
 
   if (hidden) return null;
@@ -129,18 +132,18 @@ const CustomTabBar = React.memo(function CustomTabBar() {
 
         <Pressable
           style={styles.tabItem}
-          onPress={() => handlePress("find-event")}
+          onPress={() => handlePress("events-managment/events-dashboard")}
         >
           <Ionicons
-            name={findEventActive ? "calendar" : "calendar-outline"}
+            name={eventsActive ? "calendar" : "calendar-outline"}
             size={ICON_SIZE}
-            color={findEventActive ? colors.primaryText : colors.thirdText}
+            color={eventsActive ? colors.primaryText : colors.thirdText}
           />
           <Text
             style={[
               styles.tabLabel,
               {
-                color: findEventActive ? colors.primaryText : colors.thirdText,
+                color: eventsActive ? colors.primaryText : colors.thirdText,
               },
             ]}
           >

@@ -13,6 +13,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 
 import EventSimpleCard from "../../../components/Cards/EventSimpleCard";
+import UpcomingEventsTab from "../../../components/events/UpcomingEventsTab";
 import WeekCalendar, { toDateKey } from "../../../components/WeekCalendar";
 import BottomSpacer from "../../../components/BottomSpacer";
 import { useDashboard } from "../../../context/DashboardContext";
@@ -28,8 +29,9 @@ const TABS = [
   { key: "finished", label: "Zakończone" },
 ];
 
-// Statusy uczestnika (statusModel) przełączane w modalu filtrów.
+// Role i statusy użytkownika przełączane w modalu filtrów zakładki "Moje".
 const STATUS_FILTERS = [
+  { key: "owner", label: "Organizowane", icon: "ribbon-outline" },
   { key: "invited", label: "Zaproszenia", icon: "mail-outline" },
   { key: "accepted", label: "Zaakceptowane", icon: "checkmark-circle-outline" },
   { key: "interested", label: "Zainteresowane", icon: "star-outline" },
@@ -108,6 +110,7 @@ const EventsDashboard = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [statusFilters, setStatusFilters] = useState({
+    owner: true,
     invited: true,
     accepted: true,
     interested: true,
@@ -145,9 +148,15 @@ const EventsDashboard = () => {
       status: "owner",
       key: `owner-${event._id}`,
     }));
+    const ownerEventIds = new Set(
+      ownerEvents.map((event) => String(event._id)),
+    );
     const userItems = userEvents
       .filter(
-        (item) => item.eventID && !TOMBSTONE_STATUSES.includes(item.status),
+        (item) =>
+          item.eventID &&
+          !ownerEventIds.has(String(item.eventID._id)) &&
+          !TOMBSTONE_STATUSES.includes(item.status),
       )
       .map((item) => ({
         event: item.eventID,
@@ -166,11 +175,9 @@ const EventsDashboard = () => {
       if (activeTab === "finished") {
         if (!isEnded) return false;
       } else if (activeTab === "mine") {
-        if (status !== "owner" || isEnded) return false;
+        if (isEnded || !statusFilters[status]) return false;
       } else {
-        // upcoming
-        if (isEnded) return false;
-        if (status !== "owner" && !statusFilters[status]) return false;
+        return false;
       }
 
       if (selectedDate) {
@@ -224,18 +231,22 @@ const EventsDashboard = () => {
           />
         </Pressable>
         <Text style={styles.header_title}>Wydarzenia</Text>
-        <Pressable
-          style={[styles.header_side, styles.header_filters]}
-          onPress={() => setShowFilters(true)}
-          hitSlop={SPACING.xs}
-        >
-          <Ionicons
-            name="options-outline"
-            size={scaleFont(16)}
-            color={colors.primaryText}
-          />
-          <Text style={styles.header_filters_text}>Filtry</Text>
-        </Pressable>
+        {activeTab !== "finished" ? (
+          <Pressable
+            style={[styles.header_side, styles.header_filters]}
+            onPress={() => setShowFilters(true)}
+            hitSlop={SPACING.xs}
+          >
+            <Ionicons
+              name="options-outline"
+              size={scaleFont(16)}
+              color={colors.primaryText}
+            />
+            <Text style={styles.header_filters_text}>Filtry</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.header_side} />
+        )}
       </View>
 
       {/* Tabs */}
@@ -247,7 +258,10 @@ const EventsDashboard = () => {
               styles.Tabs_button,
               activeTab === tab.key && styles.Tabs_button_active,
             ]}
-            onPress={() => setActiveTab(tab.key)}
+            onPress={() => {
+              setShowFilters(false);
+              setActiveTab(tab.key);
+            }}
           >
             <Text
               style={[
@@ -267,14 +281,24 @@ const EventsDashboard = () => {
         onSelectDate={setSelectedDate}
       />
 
-      {isInitialLoading && (
+      {activeTab === "upcoming" && (
+        <UpcomingEventsTab
+          filtersVisible={showFilters}
+          onCloseFilters={() => setShowFilters(false)}
+          selectedDate={selectedDate}
+          unreadEventIds={unreadEventIds}
+          onEventPress={handleEventPress}
+        />
+      )}
+
+      {activeTab !== "upcoming" && isInitialLoading && (
         <View style={styles.stateContainer}>
           <ActivityIndicator size="large" color={colors.PrimaryGreen} />
           <Text style={styles.stateText}>Ładowanie wydarzeń...</Text>
         </View>
       )}
 
-      {error && !loading && (
+      {activeTab !== "upcoming" && error && !loading && (
         <View style={styles.stateContainer}>
           <Ionicons
             name="alert-circle-outline"
@@ -291,7 +315,7 @@ const EventsDashboard = () => {
         </View>
       )}
 
-      {!isInitialLoading && !error && (
+      {activeTab !== "upcoming" && !isInitialLoading && !error && (
         <ScrollView
           style={styles.list}
           contentContainerStyle={styles.list_content}
@@ -331,7 +355,7 @@ const EventsDashboard = () => {
 
       {/* Modal filtrów statusów uczestnika */}
       <Modal
-        visible={showFilters}
+        visible={showFilters && activeTab === "mine"}
         transparent
         animationType="fade"
         onRequestClose={() => setShowFilters(false)}
@@ -401,12 +425,13 @@ const createStyles = (colors) =>
       marginBottom: SPACING.md,
     },
     header_side: {
+      minWidth: verticalScale(72),
       justifyContent: "center",
     },
     header_title: {
       fontSize: scaleFont(22, 0.4),
       color: colors.primaryText,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
     header_filters: {
       flexDirection: "row",
@@ -446,7 +471,7 @@ const createStyles = (colors) =>
     },
     Tabs_button_text_active: {
       color: colors.PrimaryGreen,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
     },
 
     list: {
@@ -489,6 +514,7 @@ const createStyles = (colors) =>
       fontSize: scaleFont(13, 0.3),
       color: colors.background,
       fontWeight: "700",
+      fontFamily: "Inter-SemiBold",
     },
 
     modal_backdrop: {
@@ -508,7 +534,7 @@ const createStyles = (colors) =>
     modal_title: {
       fontSize: scaleFont(16, 0.35),
       color: colors.primaryText,
-      fontFamily: "Lato-Bold",
+      fontFamily: "BarlowCondensed-Bold",
       marginBottom: SPACING.sm,
       textAlign: "center",
     },
@@ -540,5 +566,6 @@ const createStyles = (colors) =>
       fontSize: scaleFont(13, 0.3),
       color: colors.primaryText,
       fontWeight: "700",
+      fontFamily: "Inter-SemiBold",
     },
   });

@@ -132,7 +132,7 @@ const createStyles = (ui) => StyleSheet.create({
   loadingText: {
     color: COLORS.secondary,
     fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
   },
   iconWrapper: {
     flexDirection: 'row',
@@ -143,7 +143,7 @@ const createStyles = (ui) => StyleSheet.create({
   gameType: {
     color: COLORS.secondary,
     fontSize: ui.scaleFont(12, 0.3),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     marginRight: ui.spacing(12, 0.35),
     textTransform: 'uppercase',
   },
@@ -156,13 +156,13 @@ const createStyles = (ui) => StyleSheet.create({
   },
   title: {
     fontSize: ui.scaleFont(18, 0.4),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: COLORS.primary,
     marginBottom: ui.verticalScale(4),
   },
   address: {
     fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: COLORS.primary,
     opacity: 0.8,
     fontStyle: 'italic',
@@ -191,11 +191,11 @@ const createStyles = (ui) => StyleSheet.create({
   dateText: {
     color: COLORS.primary,
     fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
   },
   description: {
     fontSize: ui.scaleFont(14, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: COLORS.primary,
     opacity: 0.9,
   },
@@ -215,7 +215,7 @@ const createStyles = (ui) => StyleSheet.create({
   infoText: {
     color: COLORS.primary,
     fontSize: ui.scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     marginLeft: ui.spacing(4, 0.25),
   },
 })

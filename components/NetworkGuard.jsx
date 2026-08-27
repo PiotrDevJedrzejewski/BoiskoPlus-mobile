@@ -382,14 +382,14 @@ const createStyles = (ui) =>
       paddingVertical: ui.verticalScale(40),
     },
     title: {
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-ExtraBold",
       fontSize: ui.moderateScale(22, 0.35),
       color: COLORS.primary,
       marginTop: ui.verticalScale(16),
       textAlign: "center",
     },
     subtitle: {
-      fontFamily: "Montserrat-Regular",
+      fontFamily: "Inter-Regular",
       fontSize: ui.moderateScale(14, 0.35),
       color: COLORS.grayLight,
       marginTop: ui.verticalScale(8),
@@ -402,7 +402,7 @@ const createStyles = (ui) =>
       marginTop: ui.verticalScale(24),
     },
     reasonText: {
-      fontFamily: "Montserrat-Regular",
+      fontFamily: "Inter-Regular",
       fontSize: ui.moderateScale(12, 0.35),
       color: COLORS.grayLight,
       marginTop: ui.verticalScale(10),
@@ -410,7 +410,7 @@ const createStyles = (ui) =>
       lineHeight: ui.moderateScale(18, 0.35),
     },
     retryText: {
-      fontFamily: "Montserrat-Regular",
+      fontFamily: "Inter-Regular",
       fontSize: ui.moderateScale(12, 0.35),
       color: COLORS.gray,
       marginTop: ui.verticalScale(12),
@@ -424,7 +424,7 @@ const createStyles = (ui) =>
       paddingVertical: ui.verticalScale(10),
     },
     exitButtonText: {
-      fontFamily: "Montserrat-SemiBold",
+      fontFamily: "Inter-SemiBold",
       fontSize: ui.moderateScale(13, 0.35),
       color: COLORS.secondary,
     },

@@ -50,7 +50,7 @@ const createStyles = (colors) =>
   },
   headerText: {
     fontSize: scaleFont(16, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.primaryText,
     marginLeft: SPACING.md,
   },

@@ -184,7 +184,7 @@ const createStyles = (colors) =>
     headerText: {
       color: colors.primaryText,
       fontSize: scaleFont(15, 0.35),
-      fontFamily: "Montserrat-Bold",
+      fontFamily: "BarlowCondensed-ExtraBold",
     },
     optionButton: {
       flexDirection: "row",
@@ -199,6 +199,6 @@ const createStyles = (colors) =>
     },
     optionLabel: {
       fontSize: scaleFont(13, 0.3),
-      fontFamily: "Lato-Regular",
+      fontFamily: "Inter-Regular",
     },
   });

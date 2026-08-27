@@ -387,7 +387,7 @@ const createStyles = (colors) => StyleSheet.create({
   loadingText: {
     marginTop: verticalScale(12),
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
   },
   header: {
@@ -410,7 +410,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   headerText: {
     fontSize: scaleFont(22, 0.45),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-ExtraBold',
     color: colors.primaryText,
     marginLeft: SPACING.sm,
   },
@@ -431,7 +431,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   label: {
     fontSize: scaleFont(14, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.PrimaryGreen,
     marginBottom: verticalScale(8),
   },
@@ -444,7 +444,7 @@ const createStyles = (colors) => StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.primaryText,
   },
   inputDateWrapper: {
@@ -461,13 +461,13 @@ const createStyles = (colors) => StyleSheet.create({
   },
   errorText: {
     fontSize: scaleFont(12, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.Danger,
     marginTop: verticalScale(4),
   },
   helperText: {
     fontSize: scaleFont(11, 0.3),
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     color: colors.thirdText,
     marginTop: verticalScale(4),
     textAlign: 'right',
@@ -486,7 +486,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   submitButtonText: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.background,
     marginLeft: SPACING.sm,
   },
@@ -503,7 +503,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: scaleFont(16, 0.35),
-    fontFamily: 'Montserrat-Bold',
+    fontFamily: 'BarlowCondensed-Bold',
     color: colors.primaryText,
     marginLeft: SPACING.sm,
   },
