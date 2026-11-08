@@ -12,6 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
+import { getDeviceId } from "../assets/utils/deviceId";
 import Constants from "expo-constants";
 import customFetch from "../assets/utils/customFetch";
 import { useAuth } from "./AuthContext";
@@ -131,10 +132,6 @@ const getExpoPushToken = async () => {
  * Pobierz unikalny identyfikator urządzenia
  * Używany do mapowania token → device na serwerze
  */
-const getDeviceId = () => {
-  // Device.modelId + osBuildId daje stabilny fingerprint
-  return `${Device.modelName || "unknown"}_${Device.osInternalBuildId || Device.osBuildId || "unknown"}_${Platform.OS}`;
-};
 
 export const NotificationProvider = ({ children }) => {
   dbg("NotificationProvider");

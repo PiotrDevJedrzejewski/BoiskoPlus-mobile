@@ -68,7 +68,7 @@ const Register = () => {
   useDebugMount("RegisterScreen");
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { loginWithApple } = useAuth();
+  const { loginWithApple, loginWithGoogle } = useAuth();
   const { styles, colors } = useThemedStyles(createStyles);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState([false, false]);
@@ -106,53 +106,39 @@ const Register = () => {
   const handleGoogleAuthSuccess = async (idToken, user) => {
     setIsLoading(true);
     try {
-      // Use the original Google ID token (not Firebase token)
-      // Backend uses OAuth2Client.verifyIdToken() which expects a Google ID token
-      try {
-        console.log("[Google Auth] Checking if user exists in backend...");
-        await customFetch.post("/auth-mobile/login-oauth", {
-          email: user.email,
-          googleIdToken: idToken,
-        });
+      // Rejestracja przez Google zaczyna się od próby logowania.
+      // Jeśli konto już istnieje, użytkownik zostaje zalogowany zamiast rejestrowany
+      // (loginWithGoogle zapisuje token i przekierowuje do dashboardu).
+      // Jeśli konta nie ma, przechodzimy do uzupełnienia danych rejestracji.
+      const result = await loginWithGoogle(user.email, idToken);
 
-        console.log("[Google Auth] User exists, logging in...");
-        Toast.success("Zalogowano pomyślnie przez Google!");
-        router.replace("/(auth)/dashboard-home");
-      } catch (loginError) {
-        if (
-          loginError.response?.status === 401 ||
-          loginError.response?.status === 404
-        ) {
-          console.log(
-            "[Google Auth] User not found, redirecting to complete registration",
-          );
-          router.push({
-            pathname: "/register-with-oauth",
-            params: {
-              email: user.email,
-              name: user.displayName?.split(" ")[0] || "",
-              surname: user.displayName?.split(" ").slice(1).join(" ") || "",
-              googleIdToken: idToken,
-              avatarUrl: user.photoURL || "",
-            },
-          });
-        } else {
-          throw loginError;
-        }
+      if (result.success) {
+        Toast.success("Konto już istniało - zalogowano przez Google");
+        return;
       }
+
+      if (result.userNotFound) {
+        console.log(
+          "[Google Auth] User not found, redirecting to complete registration",
+        );
+        router.push({
+          pathname: "/register-with-oauth",
+          params: {
+            email: user.email,
+            name: user.displayName?.split(" ")[0] || "",
+            surname: user.displayName?.split(" ").slice(1).join(" ") || "",
+            googleIdToken: idToken,
+            avatarUrl: user.photoURL || "",
+          },
+        });
+        return;
+      }
+
+      Toast.error(result.error || "Błąd podczas rejestracji przez Google");
     } catch (error) {
       console.error("[Google Auth] Exception:", error);
-      console.error("[Google Auth] Error details:", {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-      });
 
-      if (error.response?.data?.msg) {
-        Toast.error(error.response.data.msg);
-      } else if (
-        error.code === "auth/account-exists-with-different-credential"
-      ) {
+      if (error.code === "auth/account-exists-with-different-credential") {
         Toast.error(
           "Konto z tym emailem już istnieje. Użyj innej metody logowania.",
         );
@@ -238,7 +224,7 @@ const Register = () => {
         age: birthDate,
       };
 
-      await customFetch.post("/auth/register", submitData);
+      await customFetch.post("/auth-mobile/register", submitData);
 
       Toast.success("Rejestracja zakończona pomyślnie!");
       router.replace("/login");
@@ -570,11 +556,9 @@ const Register = () => {
 
           {/* Alternate Options */}
           <View style={styles.authFormAlternate}>
-            <Pressable onPress={() => router.push("/login")}>
-              <Text style={styles.authFormAlternateText}>
-                Masz już konto? <Text style={styles.link}>Zaloguj się</Text>
-              </Text>
-            </Pressable>
+            <Text style={styles.authFormAlternateText}>
+              Zarejestruj się za pomocą
+            </Text>
             <View style={styles.oauthRow}>
               <Pressable
                 style={styles.authFormAlternateIcon}

@@ -7,6 +7,7 @@ import {
   Pressable,
   ActivityIndicator,
   Alert,
+  InteractionManager,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -85,6 +86,7 @@ const SingleEvent = () => {
 
   const [showAd, setShowAd] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [leaveLoading, setLeaveLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   const [isChatMuted, setIsChatMuted] = useState(false);
@@ -294,16 +296,28 @@ const SingleEvent = () => {
   };
 
   const confirmLeave = async () => {
+    // Guard: wielokrotne tapnięcie "TAK" nie może wysłać kilku DELETE
+    if (leaveLoading) return;
+    setLeaveLoading(true);
     try {
       await customFetch.delete(`/status/events/${eventID}/leave`);
       setUserStatus(null);
       setShowLeaveConfirm(false);
       notifyStatusChange("left");
-      Toast.success("Pomyślnie wycofano z wydarzenia");
+      // Toast dopiero po zamknięciu modala — pokazanie overlaya podczas
+      // animacji zamykania natywnego Modala potrafi zamrozić dotyk
+      // na niektórych Androidach (ghost window).
+      InteractionManager.runAfterInteractions(() => {
+        Toast.success("Pomyślnie wycofano z wydarzenia");
+      });
     } catch (error) {
       setShowLeaveConfirm(false);
-      Toast.error("Nie możesz się wycofać z tego wydarzenia");
+      InteractionManager.runAfterInteractions(() => {
+        Toast.error("Nie możesz się wycofać z tego wydarzenia");
+      });
       console.error("Błąd podczas wycofywania z wydarzenia:", error);
+    } finally {
+      setLeaveLoading(false);
     }
   };
 
@@ -804,8 +818,11 @@ const SingleEvent = () => {
         visible={showLeaveConfirm}
         title="Wycofać się z wydarzenia? Twoje miejsce zostanie zwolnione."
         actionText="WYCOFAJ SIĘ"
+        loading={leaveLoading}
         onConfirm={confirmLeave}
-        onClose={() => setShowLeaveConfirm(false)}
+        onClose={() => {
+          if (!leaveLoading) setShowLeaveConfirm(false);
+        }}
       />
       <SingleEventSettings
         visible={showSettings}

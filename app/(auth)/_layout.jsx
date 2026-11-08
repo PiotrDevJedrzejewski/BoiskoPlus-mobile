@@ -21,7 +21,7 @@ import DrawerModal from "../../Navigation/DrawerModal";
 const AuthLayout = () => {
   dbg("AuthLayout");
   useDebugMount("AuthLayout");
-  const { user, isAuthChecked } = useAuth();
+  const { user, loading } = useAuth();
 
   // Bootstrap lokalizacji (systemowy dialog o uprawnienia + odczyt/zapis
   // lokalizacji). Musi żyć na poziomie całego drzewa (auth), a nie tylko
@@ -31,7 +31,7 @@ const AuthLayout = () => {
   const { styles } = useThemedStyles(createStyles);
 
   // Auth guard — redirect to home if not authenticated
-  if (isAuthChecked && !user) {
+  if (!loading && !user) {
     return <Redirect href="/" />;
   }
 

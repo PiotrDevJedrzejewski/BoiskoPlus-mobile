@@ -92,10 +92,7 @@ const Login = () => {
         console.log("[Google Sign-in] Login successful, redirecting...");
         // Redirect is handled inside loginWithGoogle → authorized() in AuthContext
       } else {
-        if (
-          result.error?.includes("nie istnieje") ||
-          result.error?.includes("complete")
-        ) {
+        if (result.userNotFound) {
           console.log("[Google Sign-in] User needs to complete registration");
           router.push({
             pathname: "/register-with-oauth",

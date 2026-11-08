@@ -48,10 +48,26 @@ const getSocketUrl = () => {
   );
 };
 
-const getSocketOptions = (authToken) => ({
+// Serwer oznacza w ten sposób nieważną sesję (odpowiednik HTTP 401).
+// Inne błędy połączenia (sieć, błąd serwera) nie wylogowują użytkownika.
+const isSessionExpiredError = (error) => {
+  return error?.data?.type === "SESSION_EXPIRED";
+};
+
+const getSocketOptions = () => ({
   transports: ["polling", "websocket"],
   upgrade: true,
-  auth: { token: authToken },
+  // Funkcja jest wywoływana przy każdej próbie połączenia, więc po zmianie hasła
+  // (nowy token w SecureStore) reconnect użyje aktualnego tokena, a nie starego.
+  auth: async (callback) => {
+    let token = null;
+    try {
+      token = await SecureStore.getItemAsync("authToken");
+    } catch (error) {
+      console.error("[Socket] Błąd pobierania tokena:", error);
+    }
+    callback({ token });
+  },
   reconnection: true,
   // Infinity — w tle socket jest świadomie rozłączany (patrz AppState effect),
   // więc próby lecą tylko w foreground; backoff do 30 s ogranicza ruch.
@@ -86,7 +102,7 @@ export const SocketIoProvider = ({ children }) => {
   useDebugMount("SocketIoProvider");
   useProviderRenderCount("SocketIoProvider");
 
-  const { user, isAuthChecked } = useAuth();
+  const { user, isAuthChecked, handleSessionExpired } = useAuth();
   const { shouldShowNotification } = useNotification();
 
   // ─── Audio ──
@@ -159,7 +175,7 @@ export const SocketIoProvider = ({ children }) => {
       if (cancelled) return;
 
       const socketUrl = getSocketUrl();
-      const socketOptions = getSocketOptions(authToken);
+      const socketOptions = getSocketOptions();
       const store = useSocketStore.getState();
       const _joinedRooms = _getJoinedRooms();
 
@@ -207,6 +223,9 @@ export const SocketIoProvider = ({ children }) => {
       newChatSocket.on("connect_error", (error) => {
         console.error("[Chat] Connection error:", error.message);
         useSocketStore.getState().setChatConnectionState(ConnectionState.ERROR);
+        if (isSessionExpiredError(error)) {
+          handleSessionExpired();
+        }
       });
       newChatSocket.on("roomsRestored", (rooms) => {
         rooms.forEach((roomId) => _joinedRooms.add(roomId));
@@ -244,6 +263,9 @@ export const SocketIoProvider = ({ children }) => {
         useSocketStore
           .getState()
           .setNotificationConnectionState(ConnectionState.ERROR);
+        if (isSessionExpiredError(error)) {
+          handleSessionExpired();
+        }
       });
       newNotificationSocket.on("authError", handleAuthError);
 
