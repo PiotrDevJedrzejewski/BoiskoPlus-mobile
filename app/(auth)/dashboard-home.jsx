@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,7 +7,7 @@ import {
   Pressable,
   Image,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -19,6 +19,7 @@ import { dbg, useDebugMount } from "../../assets/utils/debugLogger";
 import { useAuth } from "../../context/AuthContext";
 import { useDashboard } from "../../context/DashboardContext";
 import { useMapStore } from "../../context/mapStore";
+import { useDeepLinkStore } from "../../context/deepLinkStore";
 import { fetchNearbyEvents } from "../../assets/utils/eventsApi";
 import { getNearbyPlaces } from "../../assets/utils/geoDistance";
 import sportsPlacesData from "../../assets/data/orliki_hale_polaczony_naprawiony.json";
@@ -60,6 +61,24 @@ const DashboardHome = () => {
 
   const { consents, user, userStats } = useAuth();
   const { eventsData } = useDashboard();
+
+  // Dashboard is the landing screen after every login. A route waiting from
+  // an event link or a cold-start push notification is opened once this screen
+  // is focused — at that point the post-login replace() has finished and the
+  // Stack is mounted. `pendingRoute` is a dependency because a notification
+  // can be saved after the dashboard is already focused.
+  const pendingRoute = useDeepLinkStore((state) => state.pendingRoute);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!pendingRoute) return;
+
+      const route = useDeepLinkStore.getState().consumePendingRoute();
+      if (route) {
+        router.push(route);
+      }
+    }, [pendingRoute, router]),
+  );
   // Lokalizacja z mapStore, nie z AsyncStorage — zapis jest asynchroniczny
   // (GPS + reverse-geocoding), więc przy pierwszym uruchomieniu odczyt
   // storage’u wyścigował się z bootstrapem i zwracał pustkę.

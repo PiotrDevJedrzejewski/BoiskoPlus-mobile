@@ -1,7 +1,7 @@
 {
   "name": "boiskoplus-mobile",
   "main": "expo-router/entry",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -31,6 +31,7 @@
     "expo-auth-session": "~57.0.5",
     "expo-blur": "~57.0.2",
     "expo-build-properties": "~57.0.7",
+    "expo-clipboard": "~57.0.2",
     "expo-constants": "~57.0.7",
     "expo-crypto": "~57.0.1",
     "expo-dev-client": "~57.0.9",
@@ -66,6 +67,7 @@
     "toastify-react-native": "^7.2.3",
     "zustand": "^5.0.12"
   },
+  "author": "Piotr Jędrzejewski",
   "devDependencies": {
     "react-test-renderer": "19.1.0"
   },

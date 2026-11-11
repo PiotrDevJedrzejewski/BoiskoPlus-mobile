@@ -19,7 +19,8 @@ import customFetch, {
 } from "../assets/utils/customFetch";
 import { getDeviceId } from "../assets/utils/deviceId";
 import { router } from "expo-router";
-import { storage } from "../assets/utils/firebase";
+import { storage, auth } from "../assets/utils/firebase";
+import { signOut as firebaseSignOut } from "firebase/auth";
 import { deleteObject } from "firebase/storage";
 import { getStorageRefFromUrlOrPath } from "../assets/utils/firebaseStorage";
 import {
@@ -612,6 +613,27 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Wylogowanie z Google i Firebase (login.jsx i register.jsx logują do obu).
+  // Bez tego GoogleSignin.signIn() zwraca ostatnio wybrane konto i nie pokazuje
+  // listy kont, więc użytkownik nie może zmienić konta.
+  const signOutFromGoogle = useCallback(async () => {
+    try {
+      const currentGoogleUser = await GoogleSignin.getCurrentUser();
+      if (currentGoogleUser) {
+        await GoogleSignin.signOut();
+        console.log("Wylogowano z Google");
+      }
+    } catch (googleError) {
+      console.error("Błąd podczas wylogowania z Google:", googleError);
+    }
+
+    try {
+      await firebaseSignOut(auth);
+    } catch (firebaseError) {
+      console.error("Błąd podczas wylogowania z Firebase:", firebaseError);
+    }
+  }, []);
+
   // Funkcja wylogowania
   const logout = useCallback(async () => {
     // Push token trzeba wyrejestrować przed usunięciem tokena sesji,
@@ -629,22 +651,13 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Błąd podczas wylogowania na serwerze:", error);
     } finally {
-      // Wyloguj z Google jeśli sesja jest aktywna
-      try {
-        const isSignedIn = await GoogleSignin.getCurrentUser();
-        if (isSignedIn) {
-          await GoogleSignin.signOut();
-          console.log("Wylogowano z Google");
-        }
-      } catch (googleError) {
-        console.error("Błąd podczas wylogowania z Google:", googleError);
-      }
+      await signOutFromGoogle();
 
       // Zawsze wyczyść lokalny stan
       await clearLocalStorageAndState();
       router.replace("/");
     }
-  }, [clearLocalStorageAndState]);
+  }, [clearLocalStorageAndState, signOutFromGoogle]);
 
   const deleteAccount = useCallback(async () => {
     try {
@@ -674,14 +687,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.status === 200) {
         // Konto zostało usunięte po stronie backendu, czyścimy lokalne dane i sesję Google.
-        try {
-          const isSignedIn = await GoogleSignin.getCurrentUser();
-          if (isSignedIn) {
-            await GoogleSignin.signOut();
-          }
-        } catch (googleError) {
-          console.error("Błąd podczas wylogowania z Google:", googleError);
-        }
+        await signOutFromGoogle();
 
         await clearAllLocalData();
         router.replace("/");
@@ -704,7 +710,7 @@ export const AuthProvider = ({ children }) => {
           error.response?.data?.msg || "Wystąpił błąd podczas usuwania konta",
       };
     }
-  }, [clearAllLocalData, user?.avatarUrl]);
+  }, [clearAllLocalData, signOutFromGoogle, user?.avatarUrl]);
 
   const updateConsents = useCallback(
     async (updates) => {
@@ -919,6 +925,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       deleteAccount,
       handleSessionExpired,
+      signOutFromGoogle,
       isAuthChecked,
       consents,
       consentsLoading,
@@ -956,6 +963,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       deleteAccount,
       handleSessionExpired,
+      signOutFromGoogle,
       isAuthChecked,
       consents,
       consentsLoading,

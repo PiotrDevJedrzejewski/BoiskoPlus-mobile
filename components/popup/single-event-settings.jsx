@@ -24,7 +24,9 @@ const SingleEventSettings = ({
   onToggleChatMute,
   onToggleNotificationsMute,
   onReport,
+  onShare,
   title = "Opcje wydarzenia",
+  headerIcon = "settings-outline",
   options: optionsProp,
 }) => {
   const { styles, colors } = useThemedStyles(createStyles);
@@ -73,6 +75,13 @@ const SingleEventSettings = ({
   // (np. ekran zarządzania właściciela) — każda opcja: { key, label, icon, color?, onPress }.
   const options = optionsProp ?? [
     {
+      key: "share",
+      label: "Udostępnij wydarzenie",
+      icon: "share-social-outline",
+      color: colors.primaryText,
+      onPress: onShare,
+    },
+    {
       key: "chatMute",
       label: isChatMuted ? "Włącz powiadomienia czatu" : "Wycisz czat",
       icon: isChatMuted ? "chatbubble-ellipses" : "chatbubble-ellipses-outline",
@@ -108,7 +117,7 @@ const SingleEventSettings = ({
           {/* Header label */}
           <View style={styles.header}>
             <Ionicons
-              name="settings-outline"
+              name={headerIcon}
               size={18}
               color={colors.secondaryText}
             />

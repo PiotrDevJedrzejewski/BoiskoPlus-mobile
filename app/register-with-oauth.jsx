@@ -49,7 +49,7 @@ const RegisterWithOAuth = () => {
   useDebugMount("RegisterWithOAuthScreen");
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { completeOAuth, completeAppleOAuth } = useAuth();
+  const { completeOAuth, completeAppleOAuth, signOutFromGoogle } = useAuth();
   const { styles, colors } = useThemedStyles(createStyles);
 
   const {
@@ -161,6 +161,14 @@ const RegisterWithOAuth = () => {
     maxBirthDate,
   ]);
 
+  // Wylogowanie z Google przed powrotem na ekran logowania przerywa pętlę:
+  // bez niego signIn() zwraca to samo niezarejestrowane konto i użytkownik
+  // wraca tutaj, zamiast móc wybrać inne konto.
+  const handleGoToLogin = useCallback(async () => {
+    await signOutFromGoogle();
+    router.replace("/login");
+  }, [signOutFromGoogle, router]);
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -241,6 +249,9 @@ const RegisterWithOAuth = () => {
               <Text style={styles.smallText}>
                 aplikacja dla użytkowników 7+
               </Text>
+              {email ? (
+                <Text style={styles.smallText}>Email: {email}</Text>
+              ) : null}
             </View>
 
             {/* Submit */}
@@ -262,7 +273,7 @@ const RegisterWithOAuth = () => {
               Masz już konto?{" "}
               <Text
                 style={styles.link}
-                onPress={() => router.replace("/login")}
+                onPress={handleGoToLogin}
               >
                 Zaloguj się
               </Text>

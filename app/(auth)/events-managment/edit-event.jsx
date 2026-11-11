@@ -7,18 +7,17 @@ import {
   Pressable,
   ActivityIndicator,
   Alert,
-  Share,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { Toast } from "toastify-react-native";
 import EventSimpleCard from "../../../components/Cards/EventSimpleCard";
 import PlayerCardWithActions from "../../../components/PlayerCardWithActions";
 import FormEvent from "../../../components/FormEvent";
 import ConfirmModal from "../../../components/popup/ConfirmModal";
 import InviteModal from "../../../components/popup/InviteModal";
 import SingleEventSettings from "../../../components/popup/single-event-settings";
+import ShareEventModal from "../../../components/popup/ShareEventModal";
 import BottomSpacer from "../../../components/BottomSpacer";
 import customFetch from "../../../assets/utils/customFetch";
 import { useDashboard } from "../../../context/DashboardContext";
@@ -87,6 +86,7 @@ const EditEvent = () => {
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   const requests = users.filter((u) => u.status === "interested");
@@ -204,15 +204,8 @@ const EditEvent = () => {
     }
   };
 
-  const handleShare = async () => {
-    // try {
-    Toast.info("Udostępnianie wydarzenia jest w trakcie implementacji.");
-    // await Share.share({
-    //   message: `Dołącz do mojego wydarzenia "${event?.eventName || getGameTypeLabel(event?.gameType)}" w aplikacji Boisko+! ${formatEventDateLabel(event)} — ${event?.addressString || event?.address?.city || ""}`,
-    // });
-    // } catch {
-    // użytkownik anulował udostępnianie
-    // }
+  const handleShare = () => {
+    setShowShareModal(true);
   };
 
   const handleOpenGroupChat = () => {
@@ -639,6 +632,12 @@ const EditEvent = () => {
             onPress: () => router.push(`/(auth)/single-event?id=${id}`),
           },
           {
+            key: "share",
+            label: "Zaproś przez link",
+            icon: "share-social-outline",
+            onPress: handleShare,
+          },
+          {
             key: "finish",
             label: "Zakończ wydarzenie",
             icon: "checkmark-done-outline",
@@ -652,6 +651,14 @@ const EditEvent = () => {
             onPress: () => setShowDeleteModal(true),
           },
         ]}
+      />
+
+      {/* Edit screen is organizer-only, so the invitation link is always used */}
+      <ShareEventModal
+        visible={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        event={event}
+        isOwner
       />
     </View>
   );

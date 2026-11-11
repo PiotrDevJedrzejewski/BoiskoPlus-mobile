@@ -22,6 +22,7 @@ export default {
           "Aplikacja potrzebuje dostępu do galerii, aby umożliwić zmianę zdjęcia profilowego.",
       },
       googleServicesFile: "./GoogleService-Info.plist",
+      associatedDomains: ["applinks:boiskoplus.pl"],
     },
     android: {
       adaptiveIcon: {
@@ -33,6 +34,16 @@ export default {
       package: "com.boiskoplusmobile.app",
       permissions: ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       googleServicesFile: "./google-services.json",
+      intentFilters: [
+        {
+          action: "VIEW",
+          autoVerify: true,
+          data: [
+            { scheme: "https", host: "boiskoplus.pl", pathPrefix: "/link-redirect/" },
+          ],
+          category: ["BROWSABLE", "DEFAULT"],
+        },
+      ],
     },
     web: {
       bundler: "metro",

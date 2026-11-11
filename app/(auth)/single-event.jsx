@@ -19,8 +19,11 @@ import EventSimpleCard from "../../components/Cards/EventSimpleCard";
 import ConfirmModal from "../../components/popup/ConfirmModal";
 import FullScreenAd from "../../components/popup/FullScreenAd";
 import SingleEventSettings from "../../components/popup/single-event-settings";
+import ShareEventModal from "../../components/popup/ShareEventModal";
 import BottomSpacer from "../../components/BottomSpacer";
 import customFetch from "../../assets/utils/customFetch";
+import { getEventOwnerId } from "../../assets/utils/eventLinks";
+import { useAuth } from "../../context/AuthContext";
 import { useDashboard } from "../../context/DashboardContext";
 import { useNotification } from "../../context/NotificationContext";
 import { useSocketStore } from "../../context/socketStore";
@@ -66,8 +69,11 @@ const SingleEvent = () => {
   const { styles, colors } = useThemedStyles(createStyles);
 
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  // `ref` comes from a shared event link: the user who shared it
+  const { id, ref } = useLocalSearchParams();
   const eventID = id;
+
+  const { user } = useAuth();
 
   const { filteredEvents, setAdShow } = useDashboard();
   const { muteChatRoom, unmuteChatRoom, muteEvent, unmuteEvent, preferences } =
@@ -88,6 +94,7 @@ const SingleEvent = () => {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [leaveLoading, setLeaveLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const [isChatMuted, setIsChatMuted] = useState(false);
   const [isNotificationsMuted, setIsNotificationsMuted] = useState(false);
@@ -282,7 +289,8 @@ const SingleEvent = () => {
     try {
       setShowAd(true);
       setUserStatus("interested");
-      await customFetch.post(`/status/events/${eventID}/join`);
+      const body = ref ? { referredBy: ref } : undefined;
+      await customFetch.post(`/status/events/${eventID}/join`, body);
       notifyStatusChange("interested");
     } catch (error) {
       Alert.alert("Info", "Już masz status dla tego wydarzenia");
@@ -391,8 +399,17 @@ const SingleEvent = () => {
     Toast.info("Zapisywanie wydarzeń — już wkrótce!");
   };
 
+  const isOwner =
+    !!user?._id && String(user._id) === getEventOwnerId(event);
+
   const handleShare = () => {
-    Toast.info("Udostępnianie wydarzeń — już wkrótce!");
+    if (event?.isPrivate && !isOwner) {
+      Toast.info(
+        "Wydarzenie prywatne, tylko organizator może udostępniać informacje",
+      );
+      return;
+    }
+    setShowShareModal(true);
   };
 
   if (loading) {
@@ -832,6 +849,14 @@ const SingleEvent = () => {
         onToggleChatMute={handleToggleChatMute}
         onToggleNotificationsMute={handleToggleNotificationsMute}
         onReport={handleReport}
+        onShare={handleShare}
+      />
+      <ShareEventModal
+        visible={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        event={event}
+        isOwner={isOwner}
+        userId={user?._id}
       />
     </View>
   );

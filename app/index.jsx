@@ -21,12 +21,14 @@ const Home = () => {
   const { styles, colors } = useThemedStyles(createStyles);
   const { needsConsent, user, loading } = useAuth();
 
-  // Przekieruj zalogowanego użytkownika do dashboard
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace("/(auth)/dashboard-home");
-    }
-  }, [user, loading]);
+  // Logged-in users are redirected to the dashboard by AuthContext.authorized().
+  // A second replace here could overwrite a screen opened from an event link
+  // or a push notification, so it stays disabled.
+  // useEffect(() => {
+  //   if (!loading && user) {
+  //     router.replace("/(auth)/dashboard-home");
+  //   }
+  // }, [user, loading]);
 
   const buttonSettings = {
     height: verticalScale(50),

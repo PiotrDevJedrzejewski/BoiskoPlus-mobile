@@ -17,6 +17,7 @@ import Constants from "expo-constants";
 import customFetch from "../assets/utils/customFetch";
 import { useAuth } from "./AuthContext";
 import { useSocketStore } from "./socketStore";
+import { useDeepLinkStore } from "./deepLinkStore";
 import {
   dbg,
   useDebugMount,
@@ -262,7 +263,7 @@ export const NotificationProvider = ({ children }) => {
   }, []);
 
   const navigateFromNotification = useCallback(
-    (response) => {
+    (response, isColdStart = false) => {
       if (!response) return;
       // Dedupe — cold-start potrafi dostarczyć tę samą odpowiedź
       // przez listener ORAZ getLastNotificationResponseAsync
@@ -281,15 +282,19 @@ export const NotificationProvider = ({ children }) => {
         store.clearInvite(data.eventId);
       }
 
-      // Odrocz nawigację — przy cold starcie Stack mógł się jeszcze
-      // nie zamontować (push do niezaładowanej trasy → 404/pusty ekran)
-      setTimeout(() => {
-        try {
-          router.push(route);
-        } catch (error) {
-          console.error("[Push] Błąd nawigacji:", error);
-        }
-      }, 500);
+      // Cold start: dashboard-home opens the route once it is focused
+      // (after the post-login replace). App already running: the Stack is
+      // mounted, so navigate right away.
+      if (isColdStart) {
+        useDeepLinkStore.getState().setPendingRoute(route);
+        return;
+      }
+
+      try {
+        router.push(route);
+      } catch (error) {
+        console.error("[Push] Błąd nawigacji:", error);
+      }
     },
     [router, resolveNotificationRoute],
   );
@@ -305,7 +310,7 @@ export const NotificationProvider = ({ children }) => {
     // Listener wyżej nie odpala się dla tej odpowiedzi — trzeba ją pobrać ręcznie.
     // Provider montuje się w AuthLayout, więc auth jest już rozstrzygnięty.
     Notifications.getLastNotificationResponseAsync()
-      .then(navigateFromNotification)
+      .then((response) => navigateFromNotification(response, true))
       .catch(() => {});
 
     return () => {
