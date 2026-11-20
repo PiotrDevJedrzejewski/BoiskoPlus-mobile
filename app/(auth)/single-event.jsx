@@ -30,6 +30,7 @@ import { useSocketStore } from "../../context/socketStore";
 import { dbg, useDebugMount } from "../../assets/utils/debugLogger";
 import {
   getEventOccupancy,
+  getEventPlayersPreview,
   formatEventDateLabel,
   formatEventFormat,
   getGameTypeLabel,
@@ -440,6 +441,8 @@ const SingleEvent = () => {
   }
 
   const occupancy = getEventOccupancy(event);
+  // TEMPORARY FIX: see getEventPlayersPreview in eventDisplay.js
+  const playersPreview = getEventPlayersPreview(event);
   const progress =
     occupancy.max > 0
       ? Math.min(1, Math.max(0, occupancy.current / occupancy.max))
@@ -607,10 +610,10 @@ const SingleEvent = () => {
             </View>
             <Text style={styles.StatsCard_section_value}>
               <Text style={{ color: colors.PrimaryGreen }}>
-                {occupancy.current}
+                {playersPreview.current}
               </Text>
               {" / "}
-              {occupancy.max}
+              {playersPreview.max}
             </Text>
           </View>
         </View>

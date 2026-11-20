@@ -26,7 +26,7 @@ import sportsPlacesData from "../../assets/data/orliki_hale_polaczony_naprawiony
 import {
   formatEventDateLabel,
   getEventTitle,
-  getEventOccupancy,
+  getEventPlayersPreview,
   buildUserStatusMap,
 } from "../../assets/utils/eventDisplay";
 
@@ -141,8 +141,9 @@ const DashboardHome = () => {
     consents.locationAccepted,
   ]);
 
+  // TEMPORARY FIX: see getEventPlayersPreview in eventDisplay.js
   const featuredOccupancy = featuredEvent
-    ? getEventOccupancy(featuredEvent)
+    ? getEventPlayersPreview(featuredEvent)
     : null;
   const statusMap = useMemo(
     () => buildUserStatusMap(eventsData.userEvents),

@@ -30,6 +30,7 @@ import {
 } from "../Theme/ScalableStyles";
 import BottomSpacer from "./BottomSpacer";
 import GameTypeButton from "./GameTypeButton";
+import { getEventPlayersPreview } from "../assets/utils/eventDisplay";
 
 const GAME_TYPES = [
   { label: "Piłka nożna", value: "football" },
@@ -299,6 +300,15 @@ const FormEvent = ({
   const getOptionLabel = (options, value) =>
     options.find((o) => o.value === value)?.label || "Wybierz...";
 
+  // TEMPORARY FIX: see getEventPlayersPreview in eventDisplay.js
+  const getPlayersPreview = () => {
+    const preview = getEventPlayersPreview({
+      format: eventData.format || "11v11",
+      playerCount: parseInt(eventData.playerCount, 10) || 0,
+    });
+    return `${preview.current}/${preview.max}`;
+  };
+
   return (
     <>
       <ScrollView
@@ -493,45 +503,6 @@ const FormEvent = ({
           />
         </Pressable>
 
-        {/* Liczba graczy */}
-        <Text style={styles.label}>Ilu graczy szukasz</Text>
-        <View style={styles.playerCountWrapper}>
-          <Pressable
-            style={styles.playerCountButton}
-            onPress={() => adjustPlayerCount(1)}
-          >
-            <Ionicons
-              name="add"
-              size={scaleFont(24, 0.35)}
-              color={colors.PrimaryGreen}
-              style={styles.playerBtnText}
-            />
-          </Pressable>
-          <TextInput
-            value={eventData.playerCount}
-            onChangeText={(value) => {
-              const digits = value.replace(/\D/g, "");
-              if (digits === "" || parseInt(digits) <= 999) {
-                handleChange("playerCount", digits);
-              }
-            }}
-            keyboardType="numeric"
-            placeholder="0"
-            placeholderTextColor={colors.thirdText}
-            style={styles.playerCountInput}
-          />
-          <Pressable
-            style={styles.playerCountButton}
-            onPress={() => adjustPlayerCount(-1)}
-          >
-            <Ionicons
-              name="remove"
-              size={scaleFont(24, 0.35)}
-              color={colors.PrimaryGreen}
-              style={styles.playerBtnText}
-            />
-          </Pressable>
-        </View>
         {/* Format */}
         <Text style={styles.label}>Format gry</Text>
         <Pressable
@@ -559,6 +530,61 @@ const FormEvent = ({
             color={colors.thirdText}
           />
         </Pressable>
+
+        {/* Liczba graczy */}
+        <Text style={styles.label}>Ilu graczy szukasz</Text>
+        <View style={styles.playerCountWrapper}>
+          <Pressable
+            style={styles.playerCountButton}
+            onPress={() => adjustPlayerCount(-1)}
+          >
+            <Ionicons
+              name="remove"
+              size={scaleFont(24, 0.35)}
+              color={colors.PrimaryGreen}
+              style={styles.playerBtnText}
+            />
+          </Pressable>
+          <TextInput
+            value={eventData.playerCount}
+            onChangeText={(value) => {
+              const digits = value.replace(/\D/g, "");
+              if (digits === "" || parseInt(digits) <= 999) {
+                handleChange("playerCount", digits);
+              }
+            }}
+            keyboardType="numeric"
+            placeholder="0"
+            placeholderTextColor={colors.thirdText}
+            style={styles.playerCountInput}
+          />
+          <Pressable
+            style={styles.playerCountButton}
+            onPress={() => adjustPlayerCount(1)}
+          >
+            <Ionicons
+              name="add"
+              size={scaleFont(24, 0.35)}
+              color={colors.PrimaryGreen}
+              style={styles.playerBtnText}
+            />
+          </Pressable>
+        </View>
+
+        {/* Podgląd */}
+        <Text style={styles.label}>Podgląd</Text>
+        <View style={styles.pickerWrapper}>
+          <Ionicons
+            name="people"
+            size={scaleFont(18, 0.35)}
+            color={colors.PrimaryGreen}
+            style={styles.previewIcon}
+          />
+          <Text style={styles.pickerButtonText} numberOfLines={1}>
+            {getPlayersPreview()}
+          </Text>
+        </View>
+
         {/* Poziom */}
         <Text style={styles.label}>Poziom</Text>
         <Pressable
@@ -972,6 +998,9 @@ const createStyles = (colors) =>
       paddingHorizontal: SPACING.sm,
       borderWidth: 1,
       borderColor: colors.border,
+    },
+    previewIcon: {
+      marginRight: SPACING.sm,
     },
     playerBtnText: {
       fontFamily: "BarlowCondensed-Bold",

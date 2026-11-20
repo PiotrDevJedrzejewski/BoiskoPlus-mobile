@@ -4,7 +4,7 @@ export default {
   expo: {
     name: "Boisko+",
     slug: "boiskoplus",
-    version: "2.2.3",
+    version: "2.2.4",
     orientation: "portrait",
     icon: "./assets/images/BoiskoPlus512.png",
     scheme: "boiskoplusmobile",

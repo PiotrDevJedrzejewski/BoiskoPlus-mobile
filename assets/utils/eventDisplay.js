@@ -75,6 +75,15 @@ export const formatEventFormat = (format) => {
   return format;
 };
 
+/** Łączna liczba graczy wynikająca z formatu ("11v11" → 22). "other"/brak → null. */
+export const getFormatTotalPlayers = (format) => {
+  const match = /^(\d+)v(\d+)$/.exec(format || "");
+  if (!match) {
+    return null;
+  }
+  return Number(match[1]) + Number(match[2]);
+};
+
 /**
  * Zajętość wydarzenia liczona ze statusModel + eventModel.
  * `acceptedCount` = liczba zaakceptowanych (osobna kolekcja `statuses`).
@@ -88,6 +97,28 @@ export const getEventOccupancy = (event) => {
     remaining,
     max: current + remaining,
     isFull: remaining <= 0,
+  };
+};
+
+/**
+ * TEMPORARY FIX: podgląd "zajęte/łącznie" liczony z formatu gry.
+ * Przy formacie "NvN" organizator ma już (łącznie - playerCount) graczy,
+ * a playerCount maleje przy akceptacji, więc zaakceptowani są wliczeni.
+ * Dla "other" brak znanej pojemności → fallback na getEventOccupancy.
+ * Do zastąpienia docelowym rozwiązaniem pojemności (PLAN-ready-check-4.0, sekcja 6).
+ */
+export const getEventPlayersPreview = (event) => {
+  const formatTotal = getFormatTotalPlayers(event?.format);
+
+  if (formatTotal === null) {
+    const occupancy = getEventOccupancy(event);
+    return { current: occupancy.current, max: occupancy.max };
+  }
+
+  const remaining = Math.max(0, Number(event?.playerCount ?? 0));
+  return {
+    current: Math.max(0, formatTotal - remaining),
+    max: formatTotal,
   };
 };
 

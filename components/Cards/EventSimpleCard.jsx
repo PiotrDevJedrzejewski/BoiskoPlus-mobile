@@ -9,7 +9,7 @@ import {
   formatEventDateLabel,
   formatEventFormat,
   getEventDistanceLabel,
-  getEventOccupancy,
+  getEventPlayersPreview,
   getEventTitle,
   getParticipationBadge,
 } from "../../assets/utils/eventDisplay";
@@ -35,7 +35,8 @@ const getRecommendCardBackground = (gameType) => {
 const EventSimpleCard = ({ event, myStatus, onPress, highlighted = false }) => {
   const { styles, colors } = useThemedStyles(createStyles);
 
-  const occupancy = getEventOccupancy(event);
+  // TEMPORARY FIX: see getEventPlayersPreview in eventDisplay.js
+  const playersPreview = getEventPlayersPreview(event);
   const distanceLabel = getEventDistanceLabel(event);
   const badge = getParticipationBadge(myStatus);
   const date = formatEventDateLabel(event);
@@ -75,7 +76,7 @@ const EventSimpleCard = ({ event, myStatus, onPress, highlighted = false }) => {
             color={colors.PrimaryGreen}
           />
           <Text style={styles.event_card_footer_players}>
-            {occupancy.current}/{occupancy.max} Graczy
+            {playersPreview.current}/{playersPreview.max} Graczy
           </Text>
           {!!distanceLabel && (
             <>
