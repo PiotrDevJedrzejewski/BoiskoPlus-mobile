@@ -335,16 +335,16 @@ const ShowMap = () => {
       } else if (events.length === 1) {
         // Jeden event - wyśrodkuj na nim
         const event = events[0];
-        if (event.geolocation?.coordinates) {
-          const [longitude, latitude] = event.geolocation.coordinates;
+        if (event.location?.geolocation?.coordinates) {
+          const [longitude, latitude] = event.location.geolocation.coordinates;
           flyTo([longitude, latitude], 14);
         }
       } else {
         // Wiele eventów - wyśrodkuj na średniej z max 4 pierwszych
         const eventsToCenter = events.slice(0, 4);
         const validCoords = eventsToCenter
-          .filter((event) => event.geolocation?.coordinates)
-          .map((event) => event.geolocation.coordinates);
+          .filter((event) => event.location?.geolocation?.coordinates)
+          .map((event) => event.location.geolocation.coordinates);
 
         if (validCoords.length > 0) {
           const avgLongitude =

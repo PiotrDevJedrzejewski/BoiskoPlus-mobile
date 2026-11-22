@@ -9,7 +9,7 @@ import {
   formatEventDateLabel,
   formatEventFormat,
   getEventDistanceLabel,
-  getEventPlayersPreview,
+  getEventSquad,
   getEventTitle,
   getParticipationBadge,
 } from "../../assets/utils/eventDisplay";
@@ -35,8 +35,7 @@ const getRecommendCardBackground = (gameType) => {
 const EventSimpleCard = ({ event, myStatus, onPress, highlighted = false }) => {
   const { styles, colors } = useThemedStyles(createStyles);
 
-  // TEMPORARY FIX: see getEventPlayersPreview in eventDisplay.js
-  const playersPreview = getEventPlayersPreview(event);
+  const squad = getEventSquad(event);
   const distanceLabel = getEventDistanceLabel(event);
   const badge = getParticipationBadge(myStatus);
   const date = formatEventDateLabel(event);
@@ -64,9 +63,9 @@ const EventSimpleCard = ({ event, myStatus, onPress, highlighted = false }) => {
         <Text style={styles.event_card_titel} numberOfLines={1}>
           {getEventTitle(event)}
         </Text>
-        {!!event.address?.city && (
+        {!!event.location?.city && (
           <Text style={styles.event_card_city} numberOfLines={1}>
-            {event.address.city}
+            {event.location.city}
           </Text>
         )}
         <View style={styles.event_card_footer}>
@@ -76,7 +75,7 @@ const EventSimpleCard = ({ event, myStatus, onPress, highlighted = false }) => {
             color={colors.PrimaryGreen}
           />
           <Text style={styles.event_card_footer_players}>
-            {playersPreview.current}/{playersPreview.max} Graczy
+            {squad.current}/{squad.max} Graczy
           </Text>
           {!!distanceLabel && (
             <>

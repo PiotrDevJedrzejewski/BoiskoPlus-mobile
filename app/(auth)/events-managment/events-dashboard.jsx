@@ -43,13 +43,11 @@ const TOMBSTONE_STATUSES = ["invite_cancelled", "invite_declined"];
 const ENDED_EVENT_STATUSES = ["completed", "cancelled"];
 
 const getEventDate = (event) => {
-  let date = null;
-  if (event?.startDateTime) {
-    date = new Date(event.startDateTime);
-  } else if (event?.startDate) {
-    date = new Date(`${event.startDate}T${event.startHour || "00:00"}`);
+  if (!event?.startDateTime) {
+    return null;
   }
-  return date && !Number.isNaN(date.getTime()) ? date : null;
+  const date = new Date(event.startDateTime);
+  return Number.isNaN(date.getTime()) ? null : date;
 };
 
 /** "Dzisiaj • 24.04.2025" / "Jutro • ..." / "Czwartek • ..." */

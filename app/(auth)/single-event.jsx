@@ -30,7 +30,7 @@ import { useSocketStore } from "../../context/socketStore";
 import { dbg, useDebugMount } from "../../assets/utils/debugLogger";
 import {
   getEventOccupancy,
-  getEventPlayersPreview,
+  getEventSquad,
   formatEventDateLabel,
   formatEventFormat,
   getGameTypeLabel,
@@ -272,10 +272,10 @@ const SingleEvent = () => {
       setUserStatus(newStatus);
       notifyStatusChange(newStatus);
     } catch (error) {
-      Alert.alert(
-        "Błąd",
+      Toast.error(
         error?.response?.data?.msg ||
           "Nie udało się odpowiedzieć na zaproszenie",
+        "top",
       );
       console.error("Błąd respondToInvite:", error);
     }
@@ -322,7 +322,10 @@ const SingleEvent = () => {
     } catch (error) {
       setShowLeaveConfirm(false);
       InteractionManager.runAfterInteractions(() => {
-        Toast.error("Nie możesz się wycofać z tego wydarzenia");
+        Toast.error(
+          error?.response?.data?.msg ||
+            "Nie możesz się wycofać z tego wydarzenia",
+        );
       });
       console.error("Błąd podczas wycofywania z wydarzenia:", error);
     } finally {
@@ -441,12 +444,9 @@ const SingleEvent = () => {
   }
 
   const occupancy = getEventOccupancy(event);
-  // TEMPORARY FIX: see getEventPlayersPreview in eventDisplay.js
-  const playersPreview = getEventPlayersPreview(event);
+  const squad = getEventSquad(event);
   const progress =
-    occupancy.max > 0
-      ? Math.min(1, Math.max(0, occupancy.current / occupancy.max))
-      : 0;
+    squad.max > 0 ? Math.min(1, Math.max(0, squad.current / squad.max)) : 0;
 
   const infoItems = [
     {
@@ -457,7 +457,7 @@ const SingleEvent = () => {
     {
       icon: "location-outline",
       label: "Adres",
-      value: event.addressString || event.address?.city || "—",
+      value: event.location?.addressString || event.location?.city || "—",
     },
     {
       icon: "football-outline",
@@ -467,12 +467,12 @@ const SingleEvent = () => {
     {
       icon: "golf-outline",
       label: "Nawierzchnia",
-      value: FIELD_TYPE_LABELS[event.fieldType] || "—",
+      value: FIELD_TYPE_LABELS[event.venueType] || "—",
     },
     {
       icon: "time-outline",
       label: "Czas trwania",
-      value: event.duration ? `${event.duration} minut` : "—",
+      value: event.durationMinutes ? `${event.durationMinutes} minut` : "—",
     },
     {
       icon: "wallet-outline",
@@ -501,9 +501,10 @@ const SingleEvent = () => {
     {
       icon: "accessibility-outline",
       label: "Przedział wiekowy",
-      value: Array.isArray(event.ageRange)
-        ? `${event.ageRange[0]} - ${event.ageRange[1]} lat`
-        : "—",
+      value:
+        event.ageMin != null && event.ageMax != null
+          ? `${event.ageMin} - ${event.ageMax} lat`
+          : "—",
     },
     ...(event.phoneNumber
       ? [
@@ -595,7 +596,7 @@ const SingleEvent = () => {
               <Text style={styles.StatsCard_section_label}>POSZUKIWANI</Text>
             </View>
             <Text style={styles.StatsCard_section_value}>
-              {occupancy.remaining}
+              {occupancy.openSlots}
             </Text>
           </View>
           <View style={styles.StatsCard_divider} />
@@ -610,10 +611,10 @@ const SingleEvent = () => {
             </View>
             <Text style={styles.StatsCard_section_value}>
               <Text style={{ color: colors.PrimaryGreen }}>
-                {playersPreview.current}
+                {squad.current}
               </Text>
               {" / "}
-              {playersPreview.max}
+              {squad.max}
             </Text>
           </View>
         </View>
@@ -708,7 +709,7 @@ const SingleEvent = () => {
           <View style={styles.ProgressCard_header}>
             <Text style={styles.ProgressCard_title}>Zapełnienie</Text>
             <Text style={styles.ProgressCard_count}>
-              {occupancy.current} / {occupancy.max}
+              {squad.current} / {squad.max}
             </Text>
           </View>
           <View style={styles.ProgressCard_track}>

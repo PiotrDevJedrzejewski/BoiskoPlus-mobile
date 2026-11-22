@@ -26,7 +26,7 @@ import sportsPlacesData from "../../assets/data/orliki_hale_polaczony_naprawiony
 import {
   formatEventDateLabel,
   getEventTitle,
-  getEventPlayersPreview,
+  getEventSquad,
   buildUserStatusMap,
 } from "../../assets/utils/eventDisplay";
 
@@ -141,10 +141,7 @@ const DashboardHome = () => {
     consents.locationAccepted,
   ]);
 
-  // TEMPORARY FIX: see getEventPlayersPreview in eventDisplay.js
-  const featuredOccupancy = featuredEvent
-    ? getEventPlayersPreview(featuredEvent)
-    : null;
+  const featuredSquad = featuredEvent ? getEventSquad(featuredEvent) : null;
   const statusMap = useMemo(
     () => buildUserStatusMap(eventsData.userEvents),
     [eventsData.userEvents],
@@ -276,7 +273,7 @@ const DashboardHome = () => {
             <View style={styles.RecommendCard_Players}>
               <Ionicons name="person" size={14} color={colors.PrimaryGreen} />
               <Text style={styles.RecommendCard_Players_text}>
-                {featuredOccupancy.current}/{featuredOccupancy.max} GRACZY
+                {featuredSquad.current}/{featuredSquad.max} GRACZY
               </Text>
             </View>
             <View style={styles.RecommendCard_location}>
@@ -285,7 +282,7 @@ const DashboardHome = () => {
                 style={styles.RecommendCard_location_text}
                 numberOfLines={1}
               >
-                {(featuredEvent.addressString || "").toUpperCase()}
+                {(featuredEvent.location?.addressString || "").toUpperCase()}
               </Text>
             </View>
             <View style={styles.RecommendCard_button}>

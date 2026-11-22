@@ -184,14 +184,14 @@ const EventMarkerEventList = ({ events, onClose }) => {
                     {event.eventName}
                   </Text>
                   <Text style={styles.eventAddress} numberOfLines={1}>
-                    {event.addressString}
+                    {event.location?.addressString}
                   </Text>
 
                   {/* Szczegóły */}
                   <View style={styles.detailsRow}>
                     <View style={styles.detailItem}>
                       <Ionicons name='time' size={moderateScale(13, 0.3)} color={colors.PrimaryGreen} />
-                      <Text style={styles.detailText}>{event.duration}min</Text>
+                      <Text style={styles.detailText}>{event.durationMinutes}min</Text>
                     </View>
                     <View style={styles.detailItem}>
                       <MaterialCommunityIcons name='cash' size={moderateScale(13, 0.3)} color={colors.PrimaryGreen} />
@@ -199,7 +199,7 @@ const EventMarkerEventList = ({ events, onClose }) => {
                     </View>
                     <View style={styles.detailItem}>
                       <Ionicons name='people' size={moderateScale(13, 0.3)} color={colors.PrimaryGreen} />
-                      <Text style={styles.detailText}>{event.playerCount}</Text>
+                      <Text style={styles.detailText}>{event.openSlots}</Text>
                     </View>
                     <View style={styles.detailItem}>
                       <Ionicons name='speedometer-outline' size={moderateScale(13, 0.3)} color={colors.PrimaryGreen} />
@@ -207,7 +207,7 @@ const EventMarkerEventList = ({ events, onClose }) => {
                     </View>
                     <View style={styles.detailItem}>
                       <MaterialCommunityIcons name='human-cane' size={moderateScale(13, 0.3)} color={colors.PrimaryGreen} />
-                      <Text style={styles.detailText}>{event.ageRange?.[0] ?? 0}–{event.ageRange?.[1] ?? 100}l</Text>
+                      <Text style={styles.detailText}>{event.ageMin ?? 0}–{event.ageMax ?? 100}l</Text>
                     </View>
                   </View>
                 </View>

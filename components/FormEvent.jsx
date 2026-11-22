@@ -30,7 +30,11 @@ import {
 } from "../Theme/ScalableStyles";
 import BottomSpacer from "./BottomSpacer";
 import GameTypeButton from "./GameTypeButton";
-import { getEventPlayersPreview } from "../assets/utils/eventDisplay";
+import {
+  MAX_SEARCHED_PLAYERS,
+  getMaxSearchedPlayers,
+  getEventSquad,
+} from "../assets/utils/eventDisplay";
 
 const GAME_TYPES = [
   { label: "Piłka nożna", value: "football" },
@@ -71,25 +75,72 @@ const defaultEventData = {
     hour: "2-digit",
     minute: "2-digit",
   }),
-  duration: "90",
-  address: {
+  durationMinutes: "90",
+  location: {
     city: "",
     street: "",
     addressNumber: "",
     postalCode: "",
   },
-  fieldType: "field",
-  playerCount: "",
+  venueType: "field",
+  searchedPlayers: "",
   level: "beginner",
   price: "",
   paymentMethod: "Na miejscu",
   eventDescription: "",
   phoneNumber: "",
-  ageRange: [0, 100],
-  isParticipating: false,
+  ageMin: 0,
+  ageMax: 100,
+  organizerPlays: false,
   isPrivate: false,
   isRecurring: false,
   format: "11v11",
+};
+
+const padTwoDigits = (value) => String(value).padStart(2, "0");
+
+// startDate/startHour are internal state of the date and hour pickers.
+// They are read with local getters (not toISOString) to avoid a timezone shift.
+const buildEventDataFromEvent = (event) => {
+  const startDateTime = new Date(event.startDateTime);
+  const startDate = `${startDateTime.getFullYear()}-${padTwoDigits(startDateTime.getMonth() + 1)}-${padTwoDigits(startDateTime.getDate())}`;
+  const startHour = `${padTwoDigits(startDateTime.getHours())}:${padTwoDigits(startDateTime.getMinutes())}`;
+
+  return {
+    eventName: event.eventName ?? "",
+    gameType: event.gameType,
+    startDate,
+    startHour,
+    durationMinutes: String(event.durationMinutes ?? ""),
+    location: {
+      city: event.location?.city ?? "",
+      street: event.location?.street ?? "",
+      addressNumber: event.location?.addressNumber ?? "",
+      postalCode: event.location?.postalCode ?? "",
+    },
+    venueType: event.venueType,
+    format: event.format,
+    searchedPlayers: String(event.searchedPlayers ?? ""),
+    organizerPlays: Boolean(event.organizerPlays),
+    level: event.level,
+    price: String(event.price ?? ""),
+    paymentMethod: event.paymentMethod ?? "",
+    eventDescription: event.eventDescription ?? "",
+    phoneNumber: event.phoneNumber ?? "",
+    ageMin: event.ageMin ?? 0,
+    ageMax: event.ageMax ?? 100,
+    isPrivate: Boolean(event.isPrivate),
+    isRecurring: Boolean(event.isRecurring),
+  };
+};
+
+// Cuts the value down to the limit allowed for the given format and organizer participation.
+const limitSearchedPlayers = (searchedPlayers, format, organizerPlays) => {
+  const maxSearchedPlayers = getMaxSearchedPlayers(format, organizerPlays);
+  if (parseInt(searchedPlayers, 10) > maxSearchedPlayers) {
+    return String(maxSearchedPlayers);
+  }
+  return searchedPlayers;
 };
 
 // Funkcja parsująca dane z predefined place (orlika)
@@ -145,9 +196,7 @@ const FormEvent = ({
   const { styles, colors } = useThemedStyles(createStyles);
 
   const [eventData, setEventData] = useState(
-    initialData
-      ? { ...initialData, ageRange: initialData.ageRange ?? [0, 100] }
-      : defaultEventData,
+    initialData ? buildEventDataFromEvent(initialData) : defaultEventData,
   );
   const [loading, setLoading] = useState(false);
   const [pickerModal, setPickerModal] = useState(null);
@@ -155,11 +204,11 @@ const FormEvent = ({
 
   const postalPart2Ref = useRef(null);
   const [postalPart1, setPostalPart1] = useState(() => {
-    const code = initialData?.address?.postalCode || "";
+    const code = initialData?.location?.postalCode || "";
     return code.split("-")[0] || "";
   });
   const [postalPart2, setPostalPart2] = useState(() => {
-    const code = initialData?.address?.postalCode || "";
+    const code = initialData?.location?.postalCode || "";
     return code.split("-")[1] || "";
   });
 
@@ -171,7 +220,7 @@ const FormEvent = ({
       if (parsedAddress) {
         setEventData((prev) => ({
           ...prev,
-          address: {
+          location: {
             city: parsedAddress.city,
             street: parsedAddress.street,
             addressNumber: parsedAddress.addressNumber,
@@ -189,9 +238,41 @@ const FormEvent = ({
   }, [predefinedPlace, mode]);
 
   const adjustPlayerCount = (delta) => {
-    const current = parseInt(eventData.playerCount, 10) || 0;
-    const next = Math.min(999, Math.max(0, current + delta));
-    handleChange("playerCount", String(next));
+    const current = parseInt(eventData.searchedPlayers, 10) || 0;
+    const maxSearchedPlayers = getMaxSearchedPlayers(
+      eventData.format,
+      eventData.organizerPlays,
+    );
+    const next = Math.min(maxSearchedPlayers, Math.max(1, current + delta));
+    handleChange("searchedPlayers", String(next));
+  };
+
+  const handleFormatChange = (format) => {
+    setEventData((prev) => ({
+      ...prev,
+      format,
+      searchedPlayers: limitSearchedPlayers(
+        prev.searchedPlayers,
+        format,
+        prev.organizerPlays,
+      ),
+    }));
+  };
+
+  const handleOrganizerPlaysChange = (organizerPlays) => {
+    setEventData((prev) => ({
+      ...prev,
+      organizerPlays,
+      searchedPlayers: limitSearchedPlayers(
+        prev.searchedPlayers,
+        prev.format,
+        organizerPlays,
+      ),
+    }));
+  };
+
+  const handleAgeRangeChange = ([ageMin, ageMax]) => {
+    setEventData((prev) => ({ ...prev, ageMin, ageMax }));
   };
 
   const handleChange = (name, value) => {
@@ -221,16 +302,54 @@ const FormEvent = ({
       Alert.alert("Błąd", "Wybierz typ gry");
       return false;
     }
-    if (!eventData.address.city.trim()) {
+    if (!eventData.location.city.trim()) {
       Alert.alert("Błąd", "Podaj miasto");
       return false;
     }
-    if (!eventData.address.street.trim()) {
+    if (!eventData.location.street.trim()) {
       Alert.alert("Błąd", "Podaj ulicę");
       return false;
     }
     if (!/^\d{2}-\d{3}$/.test(`${postalPart1}-${postalPart2}`)) {
       Alert.alert("Błąd", "Kod pocztowy musi być w formacie XX-XXX");
+      return false;
+    }
+
+    const durationMinutes = parseInt(eventData.durationMinutes, 10);
+    if (Number.isNaN(durationMinutes) || durationMinutes < 1) {
+      Alert.alert("Błąd", "Czas trwania musi być liczbą większą od 0");
+      return false;
+    }
+
+    const searchedPlayers = parseInt(eventData.searchedPlayers, 10);
+    if (
+      Number.isNaN(searchedPlayers) ||
+      searchedPlayers < 1 ||
+      searchedPlayers > MAX_SEARCHED_PLAYERS
+    ) {
+      Alert.alert(
+        "Błąd",
+        `Liczba szukanych graczy musi być w zakresie 1–${MAX_SEARCHED_PLAYERS}`,
+      );
+      return false;
+    }
+    const maxSearchedPlayers = getMaxSearchedPlayers(
+      eventData.format,
+      eventData.organizerPlays,
+    );
+    if (searchedPlayers > maxSearchedPlayers) {
+      Alert.alert(
+        "Błąd",
+        `Przy formacie ${eventData.format} możesz szukać maksymalnie ${maxSearchedPlayers} graczy`,
+      );
+      return false;
+    }
+    const acceptedPlayers = initialData?.acceptedPlayers ?? 0;
+    if (mode === "edit" && searchedPlayers < acceptedPlayers) {
+      Alert.alert(
+        "Błąd",
+        `Nie możesz szukać mniej graczy, niż już zaakceptowałeś (${acceptedPlayers})`,
+      );
       return false;
     }
     return true;
@@ -245,20 +364,32 @@ const FormEvent = ({
       const startDateTime = new Date(
         `${eventData.startDate}T${eventData.startHour}`,
       );
-      const endDateTime = new Date(
-        startDateTime.getTime() + parseInt(eventData.duration) * 60000,
-      );
 
       const postalCode = `${postalPart1}-${postalPart2}`;
-      let dataToSend = {
-        ...eventData,
-        address: { ...eventData.address, postalCode },
-        duration: parseInt(eventData.duration),
-        playerCount: parseInt(eventData.playerCount) || 0,
-        price: parseInt(eventData.price) || 0,
+      const dataToSend = {
+        eventName: eventData.eventName,
+        eventDescription: eventData.eventDescription,
+        gameType: eventData.gameType,
+        level: eventData.level,
+        venueType: eventData.venueType,
         startDateTime: startDateTime.toISOString(),
-        endDateTime: endDateTime.toISOString(),
-        addressString: `${eventData.address.street} ${eventData.address.addressNumber}, ${eventData.address.city}, ${postalCode}`,
+        durationMinutes: parseInt(eventData.durationMinutes),
+        location: {
+          city: eventData.location.city,
+          street: eventData.location.street,
+          addressNumber: eventData.location.addressNumber,
+          postalCode,
+        },
+        format: eventData.format,
+        searchedPlayers: parseInt(eventData.searchedPlayers, 10),
+        organizerPlays: eventData.organizerPlays,
+        price: parseInt(eventData.price) || 0,
+        paymentMethod: eventData.paymentMethod,
+        phoneNumber: eventData.phoneNumber,
+        ageMin: eventData.ageMin,
+        ageMax: eventData.ageMax,
+        isPrivate: eventData.isPrivate,
+        isRecurring: eventData.isRecurring,
       };
 
       if (dataToSend.price === 0) {
@@ -285,12 +416,13 @@ const FormEvent = ({
       }
     } catch (error) {
       console.error("Błąd podczas zapisywania wydarzenia:", error);
-      Toast.error("Błąd podczas zapisywania wydarzenia!", "top");
       if (error.response?.data?.msg) {
         const messages = error.response.data.msg.split(",");
         messages.forEach((msg) => {
           Toast.error(msg.trim(), "top");
         });
+      } else {
+        Toast.error("Błąd podczas zapisywania wydarzenia!", "top");
       }
     } finally {
       setLoading(false);
@@ -300,14 +432,23 @@ const FormEvent = ({
   const getOptionLabel = (options, value) =>
     options.find((o) => o.value === value)?.label || "Wybierz...";
 
-  // TEMPORARY FIX: see getEventPlayersPreview in eventDisplay.js
   const getPlayersPreview = () => {
-    const preview = getEventPlayersPreview({
-      format: eventData.format || "11v11",
-      playerCount: parseInt(eventData.playerCount, 10) || 0,
+    const squad = getEventSquad({
+      format: eventData.format,
+      searchedPlayers: parseInt(eventData.searchedPlayers, 10) || 0,
+      organizerPlays: eventData.organizerPlays,
+      acceptedPlayers: initialData?.acceptedPlayers ?? 0,
     });
-    return `${preview.current}/${preview.max}`;
+    return `${squad.current}/${squad.max}`;
   };
+
+  // DatePicker lists years only up to maximumDate, so events can be planned until the end of next year.
+  const maxEventDate = new Date(new Date().getFullYear() + 1, 11, 31);
+
+  const ageRange = useMemo(
+    () => [eventData.ageMin, eventData.ageMax],
+    [eventData.ageMin, eventData.ageMax],
+  );
 
   return (
     <>
@@ -374,6 +515,7 @@ const FormEvent = ({
         <DatePicker
           value={eventData.startDate}
           onChange={(value) => handleChange("startDate", value)}
+          maximumDate={maxEventDate}
         />
         <Text style={styles.label}>Godzina</Text>
         <HourPicker
@@ -385,8 +527,8 @@ const FormEvent = ({
         <Text style={styles.label}>Czas trwania (minuty)</Text>
         <TextInput
           style={styles.input}
-          value={eventData.duration}
-          onChangeText={(value) => handleChange("duration", value)}
+          value={eventData.durationMinutes}
+          onChangeText={(value) => handleChange("durationMinutes", value)}
           keyboardType="numeric"
           placeholder="90"
           placeholderTextColor={colors.thirdText}
@@ -396,10 +538,10 @@ const FormEvent = ({
         <Text style={styles.label}>Miasto</Text>
         <TextInput
           style={styles.input}
-          value={eventData.address.city}
+          value={eventData.location.city}
           onChangeText={(value) => {
             if (!/\d/.test(value)) {
-              handleChange("address.city", value);
+              handleChange("location.city", value);
             }
           }}
           placeholder="Np. Łódź"
@@ -422,10 +564,10 @@ const FormEvent = ({
             <Text style={styles.label}>Ulica</Text>
             <TextInput
               style={styles.input}
-              value={eventData.address.street}
+              value={eventData.location.street}
               onChangeText={(value) => {
                 if (!/\d/.test(value)) {
-                  handleChange("address.street", value);
+                  handleChange("location.street", value);
                 }
               }}
               placeholder="Np. Sportowa"
@@ -436,10 +578,10 @@ const FormEvent = ({
             <Text style={styles.label}>Numer</Text>
             <TextInput
               style={styles.input}
-              value={eventData.address.addressNumber}
+              value={eventData.location.addressNumber}
               onChangeText={(value) => {
                 if (/^\d*$/.test(value)) {
-                  handleChange("address.addressNumber", value);
+                  handleChange("location.addressNumber", value);
                 }
               }}
               keyboardType="numeric"
@@ -487,14 +629,14 @@ const FormEvent = ({
           style={styles.pickerWrapper}
           onPress={() =>
             setPickerModal({
-              field: "fieldType",
+              field: "venueType",
               options: FIELD_TYPES,
               title: "Wybierz typ boiska",
             })
           }
         >
           <Text style={styles.pickerButtonText} numberOfLines={1}>
-            {getOptionLabel(FIELD_TYPES, eventData.fieldType)}
+            {getOptionLabel(FIELD_TYPES, eventData.venueType)}
           </Text>
           <Ionicons
             name="chevron-down"
@@ -546,11 +688,11 @@ const FormEvent = ({
             />
           </Pressable>
           <TextInput
-            value={eventData.playerCount}
+            value={eventData.searchedPlayers}
             onChangeText={(value) => {
               const digits = value.replace(/\D/g, "");
-              if (digits === "" || parseInt(digits) <= 999) {
-                handleChange("playerCount", digits);
+              if (digits === "" || parseInt(digits) <= MAX_SEARCHED_PLAYERS) {
+                handleChange("searchedPlayers", digits);
               }
             }}
             keyboardType="numeric"
@@ -641,12 +783,11 @@ const FormEvent = ({
         <Text style={styles.label}>Wiek</Text>
         <View style={styles.ageRangeContainer}>
           <Text style={styles.ageRangeLabel}>
-            {eventData.ageRange?.[0] ?? 0} – {eventData.ageRange?.[1] ?? 100}{" "}
-            lat
+            {eventData.ageMin} – {eventData.ageMax} lat
           </Text>
           <Slider
-            value={eventData.ageRange}
-            onValueChange={(value) => handleChange("ageRange", value)}
+            value={ageRange}
+            onValueChange={handleAgeRangeChange}
             minimumValue={0}
             maximumValue={100}
             step={1}
@@ -690,11 +831,11 @@ const FormEvent = ({
         <View style={styles.checkboxContainer}>
           <View style={styles.checkboxRow}>
             <Switch
-              value={eventData.isParticipating}
-              onValueChange={(value) => handleChange("isParticipating", value)}
+              value={eventData.organizerPlays}
+              onValueChange={handleOrganizerPlaysChange}
               trackColor={{ false: colors.thirdText, true: colors.DarkGreen }}
               thumbColor={
-                eventData.isParticipating
+                eventData.organizerPlays
                   ? colors.PrimaryGreen
                   : colors.thirdText
               }
@@ -761,7 +902,12 @@ const FormEvent = ({
         title={pickerModal?.title || ""}
         iconMap={pickerModal?.iconMap}
         onSelect={(value) => {
-          if (pickerModal) handleChange(pickerModal.field, value);
+          if (!pickerModal) return;
+          if (pickerModal.field === "format") {
+            handleFormatChange(value);
+          } else {
+            handleChange(pickerModal.field, value);
+          }
         }}
         onClose={() => setPickerModal(null)}
       />

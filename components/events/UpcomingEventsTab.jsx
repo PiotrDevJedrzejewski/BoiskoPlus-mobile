@@ -76,7 +76,7 @@ const createDefaultFilters = () => ({
   distance: DEFAULT_DISTANCE,
   eventName: "",
   gameType: "",
-  minPlayerCount: "",
+  minOpenSlots: "",
   level: "",
   maxPrice: "",
   ageRange: [0, 100],
@@ -183,7 +183,7 @@ const UpcomingEventsTab = ({
         distance: Math.round(filters.distance),
         eventName: filters.eventName.trim() || undefined,
         gameType: filters.gameType || undefined,
-        minPlayerCount: sanitizeOptionalNumber(filters.minPlayerCount),
+        minOpenSlots: sanitizeOptionalNumber(filters.minOpenSlots),
         level: filters.level || undefined,
         maxPrice: sanitizeOptionalNumber(filters.maxPrice),
         ageRange,
@@ -318,8 +318,8 @@ const UpcomingEventsTab = ({
       }
     }
 
-    const minPlayerCount = sanitizeOptionalNumber(draftFilters.minPlayerCount);
-    if (minPlayerCount !== undefined && minPlayerCount < 1) {
+    const minOpenSlots = sanitizeOptionalNumber(draftFilters.minOpenSlots);
+    if (minOpenSlots !== undefined && minOpenSlots < 1) {
       Toast.error(
         "Minimalna liczba wolnych miejsc musi wynosić co najmniej 1",
         "top",
@@ -604,11 +604,11 @@ const UpcomingEventsTab = ({
                   <Text style={styles.label}>Min. wolnych miejsc</Text>
                   <TextInput
                     style={styles.input}
-                    value={draftFilters.minPlayerCount}
+                    value={draftFilters.minOpenSlots}
                     onChangeText={(value) =>
                       setDraftFilters((previous) => ({
                         ...previous,
-                        minPlayerCount: value.replace(/\D/g, "").slice(0, 3),
+                        minOpenSlots: value.replace(/\D/g, "").slice(0, 3),
                       }))
                     }
                     keyboardType="numeric"

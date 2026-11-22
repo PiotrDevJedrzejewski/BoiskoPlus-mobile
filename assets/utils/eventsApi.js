@@ -25,7 +25,7 @@ export const fetchNearbyEvents = async ({
   distance = 25,
   eventName,
   gameType,
-  minPlayerCount,
+  minOpenSlots,
   level,
   maxPrice,
   ageRange,
@@ -44,7 +44,7 @@ export const fetchNearbyEvents = async ({
       distance,
       eventName,
       gameType,
-      minPlayerCount,
+      minOpenSlots,
       level,
       maxPrice,
       ageRange,
@@ -62,11 +62,6 @@ export const parseEventDate = (event) => {
 
   if (event.startDateTime) {
     const parsed = new Date(event.startDateTime);
-    if (!Number.isNaN(parsed.getTime())) return parsed;
-  }
-
-  if (event.startDate && event.startHour) {
-    const parsed = new Date(`${event.startDate}T${event.startHour}`);
     if (!Number.isNaN(parsed.getTime())) return parsed;
   }
 

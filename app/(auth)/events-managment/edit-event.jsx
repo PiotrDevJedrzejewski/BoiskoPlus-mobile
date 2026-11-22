@@ -11,6 +11,7 @@ import {
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { Toast } from "toastify-react-native";
 import EventSimpleCard from "../../../components/Cards/EventSimpleCard";
 import PlayerCardWithActions from "../../../components/PlayerCardWithActions";
 import FormEvent from "../../../components/FormEvent";
@@ -169,7 +170,10 @@ const EditEvent = () => {
       await fetchUsers();
     } catch (error) {
       console.error("Błąd zmiany statusu:", error);
-      Alert.alert("Błąd", "Nie udało się zmienić statusu");
+      Toast.error(
+        error.response?.data?.msg || "Nie udało się zmienić statusu",
+        "top",
+      );
     }
   };
 
@@ -236,7 +240,7 @@ const EditEvent = () => {
     {
       icon: "location-outline",
       label: "Adres",
-      value: event.addressString || event.address?.city || "—",
+      value: event.location?.addressString || event.location?.city || "—",
     },
     {
       icon: "football-outline",
@@ -246,12 +250,12 @@ const EditEvent = () => {
     {
       icon: "golf-outline",
       label: "Nawierzchnia",
-      value: FIELD_TYPE_LABELS[event.fieldType] || "—",
+      value: FIELD_TYPE_LABELS[event.venueType] || "—",
     },
     {
       icon: "time-outline",
       label: "Czas trwania",
-      value: event.duration ? `${event.duration} minut` : "—",
+      value: event.durationMinutes ? `${event.durationMinutes} minut` : "—",
     },
     {
       icon: "wallet-outline",
@@ -280,9 +284,10 @@ const EditEvent = () => {
     {
       icon: "accessibility-outline",
       label: "Przedział wiekowy",
-      value: Array.isArray(event.ageRange)
-        ? `${event.ageRange[0]} - ${event.ageRange[1]} lat`
-        : "—",
+      value:
+        event.ageMin != null && event.ageMax != null
+          ? `${event.ageMin} - ${event.ageMax} lat`
+          : "—",
     },
     ...(event.phoneNumber
       ? [
@@ -348,7 +353,7 @@ const EditEvent = () => {
         <View style={styles.SlotsRow}>
           <View style={styles.SlotsRow_card}>
             <Text style={styles.SlotsRow_label}>WOLNE MIEJSCA</Text>
-            <Text style={styles.SlotsRow_value}>{occupancy.remaining}</Text>
+            <Text style={styles.SlotsRow_value}>{occupancy.openSlots}</Text>
           </View>
           <Pressable
             style={[

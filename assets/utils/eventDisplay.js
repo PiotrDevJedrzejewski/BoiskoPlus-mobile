@@ -19,19 +19,21 @@ const GAME_TYPE_LABELS = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// Mirrors MAX_SEARCHED_PLAYERS on the server (limit for the "other" format).
+export const MAX_SEARCHED_PLAYERS = 999;
+
 export const getGameTypeLabel = (gameType) =>
   GAME_TYPE_LABELS[gameType] ?? "Wydarzenie";
 
 /** "DZIŚ · 18:00" / "JUTRO · 18:00" / "25.07 · 18:00" */
 export const formatEventDateLabel = (event) => {
-  let date = null;
-  if (event?.startDateTime) {
-    date = new Date(event.startDateTime);
-  } else if (event?.startDate) {
-    date = new Date(`${event.startDate}T${event.startHour || "00:00"}`);
+  if (!event?.startDateTime) {
+    return "";
   }
 
-  if (!date || Number.isNaN(date.getTime())) {
+  const date = new Date(event.startDateTime);
+
+  if (Number.isNaN(date.getTime())) {
     return "";
   }
 
@@ -85,40 +87,59 @@ export const getFormatTotalPlayers = (format) => {
 };
 
 /**
- * Zajętość wydarzenia liczona ze statusModel + eventModel.
- * `acceptedCount` = liczba zaakceptowanych (osobna kolekcja `statuses`).
- * `playerCount`   = liczba WOLNYCH miejsc (malejąca przy akceptacji).
+ * Maksymalna liczba poszukiwanych graczy (lustro serwera).
+ * NvN: organizator grający zajmuje jedno miejsce z totalPlayers.
+ * "other": stały limit MAX_SEARCHED_PLAYERS.
  */
+export const getMaxSearchedPlayers = (format, organizerPlays) => {
+  const formatTotal = getFormatTotalPlayers(format);
+  if (formatTotal === null) {
+    return MAX_SEARCHED_PLAYERS;
+  }
+  return formatTotal - (organizerPlays ? 1 : 0);
+};
+
+/** Zajętość wydarzenia z pól eventu zwracanych przez serwer. */
 export const getEventOccupancy = (event) => {
-  const current = Number(event?.acceptedCount ?? 0);
-  const remaining = Math.max(0, Number(event?.playerCount ?? 0));
+  const acceptedPlayers = Number(event?.acceptedPlayers ?? 0);
+  const searchedPlayers = Number(event?.searchedPlayers ?? 0);
+  const openSlots = Number(event?.openSlots ?? 0);
   return {
-    current,
-    remaining,
-    max: current + remaining,
-    isFull: remaining <= 0,
+    acceptedPlayers,
+    searchedPlayers,
+    openSlots,
+    isFull: openSlots <= 0,
   };
 };
 
 /**
- * TEMPORARY FIX: podgląd "zajęte/łącznie" liczony z formatu gry.
- * Przy formacie "NvN" organizator ma już (łącznie - playerCount) graczy,
- * a playerCount maleje przy akceptacji, więc zaakceptowani są wliczeni.
- * Dla "other" brak znanej pojemności → fallback na getEventOccupancy.
- * Do zastąpienia docelowym rozwiązaniem pojemności (PLAN-ready-check-4.0, sekcja 6).
+ * Skład meczu "zajęte/łącznie" (Plan §4.8). Działa dla zapisanego eventu
+ * i dla danych formularza (bez `totalPlayers` z serwera).
+ * NvN: organizator jest już wliczony w (totalPlayers - searchedPlayers).
+ * "other": organizator doliczany tylko gdy gra.
  */
-export const getEventPlayersPreview = (event) => {
-  const formatTotal = getFormatTotalPlayers(event?.format);
+export const getEventSquad = ({
+  format,
+  totalPlayers,
+  searchedPlayers,
+  acceptedPlayers,
+  organizerPlays,
+}) => {
+  const searched = Number(searchedPlayers ?? 0);
+  const accepted = Number(acceptedPlayers ?? 0);
+  const squadTotal = totalPlayers ?? getFormatTotalPlayers(format);
 
-  if (formatTotal === null) {
-    const occupancy = getEventOccupancy(event);
-    return { current: occupancy.current, max: occupancy.max };
+  if (squadTotal === null) {
+    const organizerSlot = organizerPlays ? 1 : 0;
+    return {
+      current: accepted + organizerSlot,
+      max: searched + organizerSlot,
+    };
   }
 
-  const remaining = Math.max(0, Number(event?.playerCount ?? 0));
   return {
-    current: Math.max(0, formatTotal - remaining),
-    max: formatTotal,
+    current: squadTotal - searched + accepted,
+    max: squadTotal,
   };
 };
 

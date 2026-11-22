@@ -174,7 +174,9 @@ const MapboxMobile = ({ isInteractive = true }) => {
     () => ({
       type: "FeatureCollection",
       features: (filteredEvents.events || [])
-        .filter((event) => event && event._id && event.geolocation?.coordinates)
+        .filter(
+          (event) => event && event._id && event.location?.geolocation?.coordinates,
+        )
         .map((event, index) => ({
           type: "Feature",
           id: index,
@@ -184,7 +186,7 @@ const MapboxMobile = ({ isInteractive = true }) => {
           },
           geometry: {
             type: "Point",
-            coordinates: event.geolocation.coordinates,
+            coordinates: event.location.geolocation.coordinates,
           },
         })),
     }),

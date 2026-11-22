@@ -45,7 +45,7 @@ export const getEventDistanceKm = (event, fromLocation) => {
     return metersToKm(event.distanceFromCenter);
   }
 
-  const coordinates = event?.geolocation?.coordinates;
+  const coordinates = event?.location?.geolocation?.coordinates;
   if (
     Array.isArray(coordinates) &&
     coordinates.length === 2 &&
