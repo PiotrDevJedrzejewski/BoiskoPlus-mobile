@@ -67,6 +67,10 @@ const NetworkGuard = ({ serverUrl, children }) => {
   const appStateRef = useRef(AppState.currentState);
   const mountedRef = useRef(true);
   const consecutiveFailuresRef = useRef(0);
+  // Android emits network events on every signal-strength change, so logs are
+  // printed only when the reported state actually differs from the previous one.
+  const lastCheckedStateRef = useRef(null);
+  const lastListenerStateRef = useRef(null);
 
   // isInternetReachable on Android EMULATORS (not real devices) can return null/false
   // even when the emulator has internet — detect via __DEV__ + android only.
@@ -94,11 +98,21 @@ const NetworkGuard = ({ serverUrl, children }) => {
       const networkState = await Network.getNetworkStateAsync();
       const { isConnected, isInternetReachable, type } = networkState;
 
-      console.log("[NetworkGuard] Network state:", {
-        isConnected,
-        isInternetReachable,
-        type,
-      });
+      const lastChecked = lastCheckedStateRef.current;
+      const checkedStateChanged =
+        lastChecked === null ||
+        lastChecked.isConnected !== isConnected ||
+        lastChecked.isInternetReachable !== isInternetReachable ||
+        lastChecked.type !== type;
+
+      if (checkedStateChanged) {
+        console.log("[NetworkGuard] Network state:", {
+          isConnected,
+          isInternetReachable,
+          type,
+        });
+        lastCheckedStateRef.current = { isConnected, isInternetReachable, type };
+      }
 
       // On emulators isInternetReachable is often null — treat null as unknown and continue
       const definitivelyOffline =
@@ -200,10 +214,20 @@ const NetworkGuard = ({ serverUrl, children }) => {
   useEffect(() => {
     const sub = Network.addNetworkStateListener((state) => {
       const { isConnected, isInternetReachable } = state;
-      console.log("[NetworkGuard] Network state change:", {
-        isConnected,
-        isInternetReachable,
-      });
+
+      const lastListener = lastListenerStateRef.current;
+      const listenerStateChanged =
+        lastListener === null ||
+        lastListener.isConnected !== isConnected ||
+        lastListener.isInternetReachable !== isInternetReachable;
+
+      if (listenerStateChanged) {
+        console.log("[NetworkGuard] Network state change:", {
+          isConnected,
+          isInternetReachable,
+        });
+        lastListenerStateRef.current = { isConnected, isInternetReachable };
+      }
 
       const definitivelyOffline =
         isConnected === false ||
